@@ -1,0 +1,22 @@
+name: Bug
+description: Reportar um comportamento incorreto ou uma regressão.
+labels: [bug]
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      description: Incluir mapa, seed se existir, ronda, arma e augments relevantes.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Resultado esperado e observado
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      placeholder: Sistema operativo, versão de Python e commit

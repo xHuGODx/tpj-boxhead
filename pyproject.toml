@@ -1,0 +1,30 @@
+[project]
+name = "tpj-boxhead"
+version = "0.1.0"
+description = "Survival shooter em Pygame com rondas, augments e progressão permanente."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = ["pygame>=2.6.1,<3"]
+
+[project.scripts]
+boxhead = "boxhead.__main__:main"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/boxhead"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
