@@ -36,5 +36,10 @@ introduzir um framework de replay para esse fim.
 
 ## Assets
 
-Registar origem, autor, licença/permissão e alterações em `assets/README.md`.
-Consultar o plano de assets antes de acrescentar sprites ou sons de terceiros.
+Os sprites são próprios, criados para o projeto. Guardar os ficheiros-fonte editáveis
+e os exports, com autor, dimensões e organização das animações em `assets/README.md`.
+Seguir a escala, paleta e convenções definidas na issue #21. Placeholders podem ser
+usados durante o desenvolvimento até existir a arte correspondente.
+
+Para outros recursos, como sons e fontes, registar origem, autor, licença/permissão
+e alterações em `assets/README.md`.

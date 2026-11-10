@@ -4,6 +4,9 @@ Survival shooter para Tópicos de Programação para Jogos: inspirado em Boxhead
 com rondas infinitas, bosses periódicos, augments de partida e uma loja de
 melhorias permanentes inspirada em Vampire Survivors.
 
+A direção visual usa sprites próprios (custom sprites), criados para o projeto,
+com identidade visual consistente entre jogador, inimigos, armas e cenários.
+
 O objetivo académico é demonstrar OOP, responsabilidades claras, baixo acoplamento
 e padrões de desenho aplicados a problemas concretos.
 

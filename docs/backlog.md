@@ -9,7 +9,9 @@ Prioridade alta identifica combate e identidade roguelike; prioridade normal ide
 progressão permanente, mapas adicionais e preparação da entrega. Todas fazem parte do plano.
 
 Escolher tarefas com dependências concluídas. Os números organizam o backlog; não impõem
-uma sequência estrita. Geometria, perfil e pesquisa de assets podem começar independentemente.
+uma sequência estrita. Geometria, perfil e criação de sprites próprios podem começar
+independentemente. A arte final usa custom sprites criados para o projeto; a issue #21
+define a produção e integração desses recursos.
 
 ## Combate base
 
@@ -50,7 +52,7 @@ uma sequência estrita. Geometria, perfil e pesquisa de assets podem começar in
 
 | Issue | Dependências |
 | --- | --- |
-| [#21 · Pesquisar sprites e integrar catálogo partilhado de assets](https://github.com/xHuGODx/tpj-boxhead/issues/21) | — |
+| [#21 · Criar sprites próprios e integrar catálogo partilhado de assets](https://github.com/xHuGODx/tpj-boxhead/issues/21) | — |
 | [#22 · Adicionar áudio e feedback visual de combate e escolhas](https://github.com/xHuGODx/tpj-boxhead/issues/22) | [#5](https://github.com/xHuGODx/tpj-boxhead/issues/5), [#6](https://github.com/xHuGODx/tpj-boxhead/issues/6), [#7](https://github.com/xHuGODx/tpj-boxhead/issues/7), [#9](https://github.com/xHuGODx/tpj-boxhead/issues/9) |
 | [#23 · Validar jogo integrado, balancear progressão e medir desempenho](https://github.com/xHuGODx/tpj-boxhead/issues/23) | Issues #1–#22 (jogo integrado) |
 | [#24 · Atualizar UML e justificar os padrões na versão final](https://github.com/xHuGODx/tpj-boxhead/issues/24) | [#23](https://github.com/xHuGODx/tpj-boxhead/issues/23) |

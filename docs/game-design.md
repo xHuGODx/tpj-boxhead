@@ -13,8 +13,10 @@
 - Prismático: uma mecânica nova com impacto visível na forma de jogar.
 - Augments só duram a partida. Uma loja no menu compra melhorias permanentes,
   ao estilo Vampire Survivors, com progresso guardado localmente.
-- A intenção visual é encontrar sprites do Boxhead e modificá-los; a pesquisa
-  e a seleção de assets fazem parte do backlog.
+- A direção visual usa sprites próprios (custom sprites), criados para o projeto:
+  jogador, inimigos, boss, armas/projéteis e elementos dos mapas.
+- A criação dos sprites e a integração num catálogo partilhado fazem parte do
+  backlog. Placeholders permitem desenvolver o gameplay enquanto a arte é criada.
 
 ## Propostas de implementação
 
