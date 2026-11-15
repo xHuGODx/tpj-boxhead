@@ -21,7 +21,6 @@ def main() -> None:
         os.environ["SDL_VIDEODRIVER"] = "dummy"
         os.environ["SDL_AUDIODRIVER"] = "dummy"
 
-    # O SDL só é configurado depois de interpretar os argumentos.
     from boxhead.app import App
 
     App().run(max_frames=args.frames)

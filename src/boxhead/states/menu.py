@@ -1,4 +1,4 @@
-"""Ecrã inicial do scaffold. As funcionalidades estão no backlog."""
+"""Ecrã inicial; permite iniciar partida ou sair."""
 
 from collections.abc import Callable
 
@@ -8,7 +8,9 @@ from boxhead.core.state import State
 
 
 class MenuState(State):
-    def __init__(self, on_quit: Callable[[], None]) -> None:
+    def __init__(self, on_start: Callable[[], None],
+                 on_quit: Callable[[], None]) -> None:
+        self._on_start = on_start
         self._on_quit = on_quit
 
     def enter(self) -> None:
@@ -17,8 +19,12 @@ class MenuState(State):
         self._small = pygame.font.Font(None, 24)
 
     def handle_event(self, event: pygame.event.Event) -> None:
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        if event.type != pygame.KEYDOWN:
+            return
+        if event.key == pygame.K_ESCAPE:
             self._on_quit()
+        elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+            self._on_start()
 
     def update(self, dt: float) -> None:
         pass
@@ -27,16 +33,10 @@ class MenuState(State):
         surface.fill((19, 23, 29))
         width, height = surface.get_size()
         lines = [
-            (self._small, "TÓPICOS DE PROGRAMAÇÃO PARA JOGOS", (153, 163, 176), -120),
-            (self._title, "BOXHEAD", (235, 77, 76), -50),
-            (self._body, "Rondas infinitas. Augments. Evolução permanente.", (225, 230, 237), 35),
-            (
-                self._small,
-                "Base do projeto pronta · Gameplay em desenvolvimento",
-                (153, 163, 176),
-                90,
-            ),
-            (self._small, "ESC para sair", (153, 163, 176), 160),
+            (self._small, "TÓPICOS DE PROGRAMAÇÃO PARA JOGOS", (153, 163, 176), -140),
+            (self._title, "BOXHEAD", (235, 77, 76), -60),
+            (self._body, "ENTER — iniciar partida", (225, 230, 237), 40),
+            (self._small, "ESC — sair", (153, 163, 176), 100),
         ]
         for font, message, color, offset in lines:
             text = font.render(message, True, color)
