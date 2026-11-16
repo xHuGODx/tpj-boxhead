@@ -49,7 +49,7 @@ e serão afinadas com playtests. Os valores e a política de sorteio não são r
 - As três escolhas são distintas e elegíveis para o estado atual da partida.
 - Augments de arma identificam a arma afetada e só aparecem para armas disponíveis.
 - Limites de acumulação, pré-requisitos e incompatibilidades pertencem às definições.
-- Se uma raridade ficar sem três opções, usar um fallback documentado e testado;
+- Se uma raridade ficar sem três opções, usar um fallback documentado;
   nunca apresentar uma escolha impossível nem bloquear a partida.
 - XP excedente pode gerar vários level-ups: enfileirar uma escolha por nível.
 - Nenhum movimento, tiro, spawn, cooldown ou temporizador de combate avança durante a seleção.

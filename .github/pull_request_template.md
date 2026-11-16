@@ -6,6 +6,6 @@ Descrever o comportamento final e ligar a issue: Closes #...
 
 Explicar responsabilidades e padrões quando forem relevantes.
 
-## Validação
+## Verificação manual
 
-Indicar os cenários verificados e os comandos executados.
+Indicar brevemente o que foi experimentado no jogo, se aplicável.

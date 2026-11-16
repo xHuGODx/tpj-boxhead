@@ -12,8 +12,8 @@ e padrões de desenho aplicados a problemas concretos.
 
 ## Estado atual
 
-Setup inicial: pacote Python instalável, janela com ecrã inicial, Game Loop,
-State/StateMachine, testes, lint, formatação e CI em Linux e Windows.
+Setup inicial: pacote Python instalável, janela com ecrã inicial, Game Loop
+e State/StateMachine.
 O combate, os mapas e a progressão estão planeados nas issues; ainda não são jogáveis.
 
 ## Executar
@@ -37,20 +37,15 @@ python -m pip install -e .
 python -m boxhead
 ```
 
-O `uv.lock` fixa o ambiente usado em desenvolvimento e CI. A alternativa com pip
+O `uv.lock` fixa o ambiente usado em desenvolvimento. A alternativa com pip
 instala as dependências declaradas, sem reproduzir necessariamente esse lock.
 
-## Verificações
+## Desenvolvimento
 
-```bash
-uv run --locked ruff check .
-uv run --locked ruff format --check .
-uv run --locked pytest
-uv run --locked boxhead --headless --frames 10
-```
-
-O último comando abre e fecha a aplicação com o driver SDL dummy, sem precisar
-de ecrã. Para aplicar a formatação: `uv run ruff format .`.
+O foco da cadeira é a organização do código e a aplicação de padrões de desenho.
+Este projeto usa verificações manuais simples, sem testes automatizados, lint
+obrigatório ou CI/CD. Para conferir uma alteração, abrir o jogo e experimentar
+a funcionalidade correspondente.
 
 ## Organização
 
@@ -61,9 +56,8 @@ src/boxhead/
 ├── config.py         # Configuração imutável da janela
 ├── core/state.py     # Contrato State e gestor do ciclo de vida
 └── states/menu.py    # Ecrã inicial
-tests/               # Contratos da FSM e encerramento da aplicação
 docs/                # Design, arquitetura e backlog
-.github/             # CI e templates
+.github/             # Templates de issues e PRs
 ```
 
 Os módulos de gameplay serão criados quando as respetivas issues forem implementadas.
