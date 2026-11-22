@@ -9,10 +9,19 @@ import pygame
 from boxhead.core.state import State
 from boxhead.world.world import World
 
+HINT = "R — repetir · M/ESC — menu"
+
 
 class GameOverState(State):
-    def __init__(self, world: World, elapsed: float,
-                 on_retry: Callable[[], None], on_menu: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        world: World,
+        elapsed: float,
+        on_retry: Callable[[], None],
+        on_menu: Callable[[], None],
+        balance: int | None = None,
+    ) -> None:
+        self._balance = balance
         self._world = world
         self._elapsed = elapsed
         self._on_retry = on_retry
@@ -36,12 +45,18 @@ class GameOverState(State):
         surface.fill((19, 23, 29))
         w, h = surface.get_size()
         title = self._title.render("GAME OVER", True, (235, 77, 76))
-        surface.blit(title, title.get_rect(center=(w // 2, h // 2 - 60)))
+        surface.blit(title, title.get_rect(center=(w // 2, h // 2 - 110)))
+        stats = self._world.stats
         lines = [
+            f"Ronda: {stats.round}",
+            f"Nível: {self._world.progression.level}",
+            f"Mortes: {stats.kills}",
             f"Tempo: {self._elapsed:.1f}s",
-            f"Vida: {self._world.player.health}",
-            "R — repetir · M/ESC — menu",
+            f"Moeda: {stats.coins}"
+            + (f" (saldo: {self._balance})" if self._balance is not None else ""),
+            HINT,
         ]
         for i, line in enumerate(lines):
-            text = self._body.render(line, True, (225, 230, 237))
-            surface.blit(text, text.get_rect(center=(w // 2, h // 2 + 20 + i * 40)))
+            color = (153, 163, 176) if i == len(lines) - 1 else (225, 230, 237)
+            text = self._body.render(line, True, color)
+            surface.blit(text, text.get_rect(center=(w // 2, h // 2 - 30 + i * 38)))

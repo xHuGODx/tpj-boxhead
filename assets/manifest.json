@@ -1,0 +1,701 @@
+{
+  "player/player_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 9,
+    "loop": true,
+    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+  },
+  "player/player_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 4,
+    "frames": 4,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "player/player_hurt.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 2,
+    "rows": 4,
+    "frames": 8,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 8,
+    "loop": false,
+    "notes": "Dano sintetizado com flash vermelho"
+  },
+  "player/player_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 6,
+    "rows": 1,
+    "frames": 6,
+    "fps": 9,
+    "loop": false,
+    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+  },
+  "player/player_shadow.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "player/player_shoot.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 3,
+    "rows": 4,
+    "frames": 12,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 12,
+    "loop": false,
+    "notes": "Corpo sem arma equipada; efeito do tiro pode ser posicionado separadamente"
+  },
+  "enemies/enemy_basic_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 9,
+    "loop": true,
+    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+  },
+  "enemies/enemy_basic_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 4,
+    "frames": 4,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "enemies/enemy_basic_hurt.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 2,
+    "rows": 4,
+    "frames": 8,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 8,
+    "loop": false,
+    "notes": "Dano sintetizado com flash vermelho"
+  },
+  "enemies/enemy_basic_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 9,
+    "loop": false,
+    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+  },
+  "enemies/enemy_basic_shadow.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "enemies/enemy_basic_attack.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 3,
+    "rows": 4,
+    "frames": 12,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 10,
+    "loop": false,
+    "notes": "Investida corpo a corpo sintetizada"
+  },
+  "enemies/enemy_red_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 9,
+    "loop": true,
+    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+  },
+  "enemies/enemy_red_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 4,
+    "frames": 4,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "enemies/enemy_red_hurt.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 2,
+    "rows": 4,
+    "frames": 8,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 8,
+    "loop": false,
+    "notes": "Dano sintetizado com flash vermelho"
+  },
+  "enemies/enemy_red_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 9,
+    "loop": false,
+    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+  },
+  "enemies/enemy_red_shadow.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "enemies/enemy_red_prepare.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 3,
+    "rows": 4,
+    "frames": 12,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  "enemies/enemy_red_shoot.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 3,
+    "rows": 4,
+    "frames": 12,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "bosses/boss_01_walk.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 9,
+    "loop": true,
+    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+  },
+  "bosses/boss_01_idle.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 1,
+    "rows": 4,
+    "frames": 4,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "bosses/boss_01_hurt.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 2,
+    "rows": 4,
+    "frames": 8,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 8,
+    "loop": false,
+    "notes": "Dano sintetizado com flash vermelho"
+  },
+  "bosses/boss_01_death.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 8,
+    "rows": 1,
+    "frames": 8,
+    "fps": 9,
+    "loop": false,
+    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+  },
+  "bosses/boss_01_shadow.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "bosses/boss_01_prepare.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 3,
+    "rows": 4,
+    "frames": 12,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 7,
+    "loop": false,
+    "notes": "Cristal a carregar, efeito sintético"
+  },
+  "bosses/boss_01_attack.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ],
+    "fps": 10,
+    "loop": false,
+    "notes": "Golpe e bola de fogo sobreposta"
+  },
+  "weapons/pistol.png": {
+    "frame_size": [
+      112,
+      64
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "weapons/shotgun.png": {
+    "frame_size": [
+      112,
+      64
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "weapons/smg.png": {
+    "frame_size": [
+      112,
+      64
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "weapons/weapon_icons.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 3,
+    "rows": 1,
+    "frames": 3
+  },
+  "projectiles/player_bullet.png": {
+    "frame_size": [
+      32,
+      32
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1,
+    "loop": false
+  },
+  "projectiles/player_pellet.png": {
+    "frame_size": [
+      32,
+      32
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1,
+    "loop": false
+  },
+  "projectiles/enemy_fireball.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 10,
+    "loop": true
+  },
+  "projectiles/boss_projectile.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 10,
+    "loop": true
+  },
+  "projectiles/orbital_satellite.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 10,
+    "loop": true
+  },
+  "effects/muzzle_flash.png": {
+    "frame_size": [
+      48,
+      48
+    ],
+    "columns": 3,
+    "rows": 1,
+    "frames": 3,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/impact_enemy.png": {
+    "frame_size": [
+      48,
+      48
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/impact_wall.png": {
+    "frame_size": [
+      48,
+      48
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/explosion_small.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/explosion_large.png": {
+    "frame_size": [
+      128,
+      128
+    ],
+    "columns": 6,
+    "rows": 1,
+    "frames": 6,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/chain_explosion.png": {
+    "frame_size": [
+      128,
+      128
+    ],
+    "columns": 6,
+    "rows": 1,
+    "frames": 6,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/charge_effect.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 12,
+    "loop": false
+  },
+  "effects/spawn_effect.png": {
+    "frame_size": [
+      128,
+      128
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 12,
+    "loop": false
+  },
+  "environment/floor_tiles.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "notes": "4 variacoes de texturas extraidas da referencia original; tileable aproximado"
+  },
+  "environment/walls.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "notes": "6 tipos reais mais 10 variantes espelhadas/rodadas"
+  },
+  "environment/obstacles.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "columns": 6,
+    "rows": 1,
+    "frames": 6
+  },
+  "environment/decorations.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 5,
+    "rows": 1,
+    "frames": 5
+  },
+  "ui/ui_icons_main.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "columns": 3,
+    "rows": 1,
+    "frames": 3
+  },
+  "ui/healthbar.png": {
+    "frame_size": [
+      384,
+      96
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "ui/xpbar.png": {
+    "frame_size": [
+      384,
+      80
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "augments/augment_icons.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "columns": 6,
+    "rows": 2,
+    "frames": 12
+  },
+  "shop/shop_upgrades.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 3,
+    "rows": 1,
+    "frames": 3
+  },
+  "cards/card_frames.png": {
+    "frame_size": [
+      192,
+      256
+    ],
+    "columns": 3,
+    "rows": 1,
+    "frames": 3,
+    "notes": "Cinzenta, dourada, prismatica. Centros mantidos escuros como na referencia"
+  },
+  "maps/map_01_thumb.png": {
+    "frame_size": [
+      256,
+      256
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "maps/map_02_thumb.png": {
+    "frame_size": [
+      256,
+      256
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  },
+  "maps/map_03_thumb.png": {
+    "frame_size": [
+      256,
+      256
+    ],
+    "columns": 1,
+    "rows": 1,
+    "frames": 1
+  }
+}

@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Callable
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -18,6 +17,17 @@ class EnemyKilled(Event):
     enemy_id: int
     xp_reward: int
     coin_reward: int
+    is_boss: bool = False
+
+
+@dataclass(frozen=True)
+class LevelUp(Event):
+    level: int  
+
+
+@dataclass(frozen=True)
+class RoundStarted(Event):
+    round_number: int
 
 
 @dataclass(frozen=True)
@@ -31,15 +41,16 @@ Handler = Callable[[Event], None]
 class EventQueue:
     """Publica e despacha eventos; nunca despacha durante a publicação.
 
-    Eventos publicados durante o despacho ficam para o despacho seguinte,
-    evitando recursão e efeitos em cadeia sem limite.
+    Eventos publicados durante o despacho ficam para a *geração* seguinte,
+    evitando recursão. O limite aplica-se à profundidade da cadeia (quantas
+    gerações seguidas), não ao número de eventos: muitas mortes no mesmo frame
+    são uma só geração e não são um problema.
     """
 
     MAX_CHAIN = 32
 
     def __init__(self) -> None:
         self._pending: deque[Event] = deque()
-        self._dispatch_count = 0
         self._subscribers: dict[type[Event], list[Handler]] = {}
 
     def subscribe(self, event_type: type[Event], handler: Handler) -> None:
@@ -54,15 +65,17 @@ class EventQueue:
         self._pending.append(event)
 
     def dispatch(self) -> None:
-        """Processa os eventos pendentes por ordem de publicação."""
+        """Processa os eventos pendentes, geração a geração, por ordem de publicação."""
+        generation = 0
         while self._pending:
-            if self._dispatch_count >= self.MAX_CHAIN:
+            if generation >= self.MAX_CHAIN:
+                self._pending.clear()
                 raise RuntimeError("cadeia de eventos excedeu o limite")
-            event = self._pending.popleft()
-            for handler in tuple(self._subscribers.get(type(event), ())):
-                handler(event)
-            self._dispatch_count += 1
-        self._dispatch_count = 0
+            for _ in range(len(self._pending)):
+                event = self._pending.popleft()
+                for handler in tuple(self._subscribers.get(type(event), ())):
+                    handler(event)
+            generation += 1
 
     def clear(self) -> None:
         self._pending.clear()

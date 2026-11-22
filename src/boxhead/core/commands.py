@@ -14,7 +14,7 @@ class Command:
 
 @dataclass(frozen=True)
 class Move(Command):
-    direction: Vector2  
+    direction: Vector2
 
 
 @dataclass(frozen=True)

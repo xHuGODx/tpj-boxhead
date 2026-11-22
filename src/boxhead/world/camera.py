@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 from pygame import Vector2
 
 
@@ -10,8 +12,14 @@ class Camera:
         self.viewport = Vector2(viewport)
         self.center = Vector2(0, 0)
 
-    def follow(self, target: Vector2, smoothing: float = 0.15) -> None:
-        self.center += (target - self.center) * smoothing
+    def snap(self, target: Vector2) -> None:
+        """Centra imediatamente, sem suavização (início de partida)."""
+        self.center = Vector2(target)
+
+    def follow(self, target: Vector2, dt: float, speed: float = 8.0) -> None:
+        """Aproxima-se do alvo; o resultado não depende do frame rate."""
+        factor = 1.0 - math.exp(-speed * dt)
+        self.center += (target - self.center) * factor
 
     def world_to_screen(self, point: Vector2) -> Vector2:
         return point - self.center + self.viewport / 2

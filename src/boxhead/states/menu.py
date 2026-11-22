@@ -1,4 +1,4 @@
-"""Ecrã inicial; permite iniciar partida ou sair."""
+"""Ecrã inicial: jogar, abrir a loja ou sair."""
 
 from collections.abc import Callable
 
@@ -6,16 +6,38 @@ import pygame
 
 from boxhead.core.state import State
 
+HINT = "W/S ou setas para escolher · ENTER confirma · ESC sai"
+
 
 class MenuState(State):
-    def __init__(self, on_start: Callable[[], None],
-                 on_quit: Callable[[], None]) -> None:
-        self._on_start = on_start
+    def __init__(
+        self,
+        on_start: Callable[[], None],
+        on_quit: Callable[[], None],
+        on_shop: Callable[[], None] | None = None,
+        balance: int | None = None,
+        notice: str | None = None,
+    ) -> None:
         self._on_quit = on_quit
+        self._balance = balance
+        self._notice = notice
+        self._items: list[tuple[str, Callable[[], None]]] = [("Jogar", on_start)]
+        if on_shop is not None:
+            self._items.append(("Loja", on_shop))
+        self._items.append(("Sair", on_quit))
+        self._cursor = 0
+
+    @property
+    def cursor(self) -> int:
+        return self._cursor
+
+    @property
+    def labels(self) -> list[str]:
+        return [label for label, _ in self._items]
 
     def enter(self) -> None:
         self._title = pygame.font.Font(None, 100)
-        self._body = pygame.font.Font(None, 30)
+        self._body = pygame.font.Font(None, 38)
         self._small = pygame.font.Font(None, 24)
 
     def handle_event(self, event: pygame.event.Event) -> None:
@@ -23,8 +45,12 @@ class MenuState(State):
             return
         if event.key == pygame.K_ESCAPE:
             self._on_quit()
-        elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
-            self._on_start()
+        elif event.key in (pygame.K_UP, pygame.K_w):
+            self._cursor = (self._cursor - 1) % len(self._items)
+        elif event.key in (pygame.K_DOWN, pygame.K_s):
+            self._cursor = (self._cursor + 1) % len(self._items)
+        elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+            self._items[self._cursor][1]()
 
     def update(self, dt: float) -> None:
         pass
@@ -32,12 +58,21 @@ class MenuState(State):
     def draw(self, surface: pygame.Surface) -> None:
         surface.fill((19, 23, 29))
         width, height = surface.get_size()
-        lines = [
-            (self._small, "TÓPICOS DE PROGRAMAÇÃO PARA JOGOS", (153, 163, 176), -140),
-            (self._title, "BOXHEAD", (235, 77, 76), -60),
-            (self._body, "ENTER — iniciar partida", (225, 230, 237), 40),
-            (self._small, "ESC — sair", (153, 163, 176), 100),
-        ]
-        for font, message, color, offset in lines:
-            text = font.render(message, True, color)
-            surface.blit(text, text.get_rect(center=(width // 2, height // 2 + offset)))
+        center_x = width // 2
+        subtitle = self._small.render("TÓPICOS DE PROGRAMAÇÃO PARA JOGOS", True, (153, 163, 176))
+        surface.blit(subtitle, subtitle.get_rect(center=(center_x, height // 2 - 160)))
+        title = self._title.render("BOXHEAD", True, (235, 77, 76))
+        surface.blit(title, title.get_rect(center=(center_x, height // 2 - 80)))
+        for index, (label, _) in enumerate(self._items):
+            selected = index == self._cursor
+            color = (255, 220, 120) if selected else (225, 230, 237)
+            text = self._body.render(f"> {label}" if selected else label, True, color)
+            surface.blit(text, text.get_rect(center=(center_x, height // 2 + 20 + index * 48)))
+        hint = self._small.render(HINT, True, (153, 163, 176))
+        surface.blit(hint, hint.get_rect(center=(center_x, height - 40)))
+        if self._balance is not None:
+            coins = self._body.render(f"Moeda: {self._balance}", True, (255, 220, 120))
+            surface.blit(coins, coins.get_rect(topright=(width - 24, 20)))
+        if self._notice:
+            warning = self._small.render(self._notice, True, (240, 150, 100))
+            surface.blit(warning, warning.get_rect(center=(center_x, height - 80)))
