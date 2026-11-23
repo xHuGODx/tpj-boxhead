@@ -8,8 +8,8 @@ Usamos Python 3.12, Pygame e uv, como nos exercícios locais da cadeira.
 1. Escolher uma issue cujas dependências estejam concluídas.
 2. Criar uma branch curta, por exemplo `feat/12-player-movement`.
 3. Implementar um comportamento completo e verificável.
-4. Executar lint, formatação, testes relevantes e smoke test do README.
-5. Abrir PR com a issue, o comportamento final e a validação realizada.
+4. Experimentar a funcionalidade no jogo.
+5. Abrir PR com a issue e uma descrição curta da alteração.
 
 Não há atribuições de issues ou divisão por pessoa. As prioridades e dependências
 servem para orientar a sequência de implementação.
@@ -24,15 +24,11 @@ servem para orientar a sequência de implementação.
 - Dados de configuração partilhados devem ser imutáveis; estado de cada entidade pertence à instância.
 - Uma alteração de gameplay deve atualizar a documentação quando mudar regras públicas.
 
-## Validação
+## Verificação manual
 
-Testar regras com falhas significativas: transições, contagens de ronda, recompensas,
-level-ups pendentes, composição de efeitos e gravação do perfil. Não testar detalhes
-visuais com asserts que apenas reproduzem a implementação. Conferir visualmente os
-ecrãs alterados e registar o resultado na PR.
-
-Usar seeds em cenários aleatórios para tornar falhas reproduzíveis. Não é necessário
-introduzir um framework de replay para esse fim.
+Para esta cadeira introdutória, o projeto dispensa testes automatizados, lint
+obrigatório e CI/CD. Confirmar as alterações jogando os cenários relevantes,
+sem exigir suites de testes ou relatórios formais.
 
 ## Assets
 

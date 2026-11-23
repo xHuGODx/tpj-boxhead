@@ -116,6 +116,7 @@ inimigos são máquinas independentes, não estados globais da aplicação.
 - O mapa infinito mantém memória e entidades ativas limitadas à área relevante.
 - O perfil é validado e gravado atomicamente; uma falha de leitura não destrói o ficheiro original.
 
-Os testes devem observar estes contratos. Os algoritmos específicos ficam a cargo
-das issues e devem ser escolhidos segundo as formas e medições reais; GJK é uma
+Estes contratos orientam a implementação e a verificação manual durante o jogo.
+Os algoritmos específicos ficam a cargo das issues e devem ser escolhidos segundo
+as formas e necessidades reais; GJK é uma
 opção para formas convexas, não uma obrigação para todas as colisões.

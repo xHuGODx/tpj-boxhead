@@ -1,8 +1,12 @@
 # Backlog
 
 As 24 issues estão publicadas no GitHub, sem responsáveis atribuídos e sem divisão por pessoa.
-Cada issue contém objetivo, critérios de aceitação, arquitetura, validação e dependências.
+Cada issue contém objetivo, critérios de aceitação, arquitetura, verificação manual e dependências.
 As regras assinaladas como propostas no [design](game-design.md) podem ser ajustadas.
+
+O projeto dispensa testes automatizados, lint obrigatório e CI/CD. As verificações
+das issues são sugestões simples para experimentar as funcionalidades no jogo,
+sem relatórios formais ou pipelines.
 
 O setup inicial já está implementado; as issues descrevem o desenvolvimento a partir dessa base.
 Prioridade alta identifica combate e identidade roguelike; prioridade normal identifica
@@ -54,5 +58,5 @@ define a produção e integração desses recursos.
 | --- | --- |
 | [#21 · Criar sprites próprios e integrar catálogo partilhado de assets](https://github.com/xHuGODx/tpj-boxhead/issues/21) | — |
 | [#22 · Adicionar áudio e feedback visual de combate e escolhas](https://github.com/xHuGODx/tpj-boxhead/issues/22) | [#5](https://github.com/xHuGODx/tpj-boxhead/issues/5), [#6](https://github.com/xHuGODx/tpj-boxhead/issues/6), [#7](https://github.com/xHuGODx/tpj-boxhead/issues/7), [#9](https://github.com/xHuGODx/tpj-boxhead/issues/9) |
-| [#23 · Validar jogo integrado, balancear progressão e medir desempenho](https://github.com/xHuGODx/tpj-boxhead/issues/23) | Issues #1–#22 (jogo integrado) |
+| [#23 · Fazer playtest final e ajustar balanceamento](https://github.com/xHuGODx/tpj-boxhead/issues/23) | Issues #1–#22 (jogo integrado) |
 | [#24 · Atualizar UML e justificar os padrões na versão final](https://github.com/xHuGODx/tpj-boxhead/issues/24) | [#23](https://github.com/xHuGODx/tpj-boxhead/issues/23) |

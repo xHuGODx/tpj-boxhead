@@ -19,8 +19,8 @@ body:
   - type: textarea
     id: architecture
     attributes:
-      label: Arquitetura e validação
-      description: Responsabilidades, padrões justificados e cenários a verificar.
+      label: Arquitetura e verificação manual
+      description: Responsabilidades, padrões justificados e como experimentar no jogo.
   - type: textarea
     id: dependencies
     attributes:
