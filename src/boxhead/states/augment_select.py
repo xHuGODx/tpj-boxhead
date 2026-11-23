@@ -17,7 +17,7 @@ from boxhead.presentation.sprites import SpritePainter
 from boxhead.world.augments import Augment, Offer, Rarity
 from boxhead.world.world import World
 
-CARD_SIZE = (290, 320)
+CARD_SIZE = (290, 360)
 CARD_GAP = 28
 LOCKOUT_SECONDS = 0.4  
 RARITY_LABEL = {
@@ -31,7 +31,7 @@ RARITY_COLOR = {
     Rarity.PRISMATIC: (190, 120, 255),
 }
 _NUMBER_KEYS = (pygame.K_1, pygame.K_2, pygame.K_3)
-HINT = "1/2/3 ou clique para escolher · setas e Enter também funcionam"
+HINT = "1/2/3 ou clique · setas e Enter · ESC pausa"
 
 
 def stacks_label(have: int, max_stacks: int) -> str:
@@ -60,11 +60,18 @@ class AugmentSelectState(State):
         world: World,
         offer: Offer,
         on_choose: Callable[[Augment], None],
+        on_pause: Callable[[State], None] | None = None,
     ) -> None:
         self._resume_target = resume_target
         self._world = world
         self._offer = offer
         self._on_choose = on_choose
+        self._on_pause = on_pause
+        self._chosen = False
+        self._down_keys: set[int] = set()
+        self._mouse_held = False
+        if not 1 <= len(offer.choices) <= 3:
+            raise ValueError("oferta sem escolhas ou com demasiadas opções")
         self._cursor = 0
         self._lockout = LOCKOUT_SECONDS
         self._overlay: pygame.Surface | None = None
@@ -78,9 +85,13 @@ class AugmentSelectState(State):
         return self._lockout > 0
 
     def enter(self) -> None:
+        held = pygame.key.get_pressed()
+        self._down_keys = {key for key in (*_NUMBER_KEYS, pygame.K_RETURN, pygame.K_KP_ENTER) if held[key]}
+        self._mouse_held = pygame.mouse.get_pressed()[0]
+        self._lockout = LOCKOUT_SECONDS
         self._title = pygame.font.Font(None, 56)
-        self._name = pygame.font.Font(None, 32)
-        self._body = pygame.font.Font(None, 26)
+        self._name = pygame.font.Font(None, 28)
+        self._body = pygame.font.Font(None, 24)
         self._small = pygame.font.Font(None, 22)
         self._painter = SpritePainter(catalog())
         self._painter.prepare(["cards/card_frames.png", "augments/augment_icons.png"])
@@ -98,14 +109,24 @@ class AugmentSelectState(State):
         ]
 
     def _choose(self, index: int) -> None:
-        if self.locked or not 0 <= index < len(self._offer.choices):
+        if self._chosen or self.locked or not 0 <= index < len(self._offer.choices):
             return
+        self._chosen = True
         self._on_choose(self._offer.choices[index])
 
     def handle_event(self, event: pygame.event.Event) -> None:
         count = len(self._offer.choices)
-        if event.type == pygame.KEYDOWN:
-            if event.key in _NUMBER_KEYS[:count]:
+        if event.type == pygame.KEYUP:
+            self._down_keys.discard(event.key)
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self._mouse_held = False
+        elif event.type == pygame.KEYDOWN:
+            if getattr(event, "repeat", False) or event.key in self._down_keys:
+                return
+            self._down_keys.add(event.key)
+            if event.key == pygame.K_ESCAPE and self._on_pause is not None:
+                self._on_pause(self)
+            elif event.key in _NUMBER_KEYS[:count]:
                 self._choose(_NUMBER_KEYS.index(event.key))
             elif event.key == pygame.K_LEFT:
                 self._cursor = (self._cursor - 1) % count
@@ -119,7 +140,9 @@ class AugmentSelectState(State):
                 if rect.collidepoint(event.pos):
                     self._cursor = index
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        self._choose(index)
+                        if not self._mouse_held:
+                            self._mouse_held = True
+                            self._choose(index)
                     break
 
     def update(self, dt: float) -> None:
@@ -175,7 +198,9 @@ class AugmentSelectState(State):
         for line in wrap_text(self._name, augment.name, rect.width - 32):
             surface.blit(self._name.render(line, True, (255, 255, 255)), (rect.x + 16, y))
             y += 32
-        y += 8
+        target = f"Arma: {augment.weapon}" if augment.weapon else "Alvo: personagem"
+        surface.blit(self._small.render(target, True, color), (rect.x + 16, y))
+        y += 28
         for line in wrap_text(self._body, augment.description, rect.width - 32):
             surface.blit(self._body.render(line, True, (205, 211, 221)), (rect.x + 16, y))
             y += 26

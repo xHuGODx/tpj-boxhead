@@ -76,6 +76,7 @@ class World:
         # `base_modifiers`: a base da partida (melhorias permanentes do perfil). Os augments
         # somam-se a ela e tudo é recalculado do zero, nunca por cima de valores já alterados.
         self.inventory = AugmentInventory(base_modifiers)
+        self._offer: Offer | None = None
         self.player.set_modifiers(self.inventory.modifiers)
         self.progression = Progression(
             xp_multiplier=lambda: self.inventory.modifiers.xp_gain_multiplier
@@ -110,8 +111,13 @@ class World:
 
     def draw_offer(self, config: OfferConfig = DEFAULT_OFFER) -> Offer:
         """Oferta para a próxima escolha pendente; respeita o que já foi adquirido."""
-        weapons = [w.name for w in self.player.weapons]
-        return draw_offer(AUGMENTS, self.inventory, weapons, self.rng, config)
+        if self._offer is None:
+            weapons = [w.name for w in self.player.weapons]
+            self._offer = draw_offer(AUGMENTS, self.inventory, weapons, self.rng, config)
+        return self._offer
+
+    def clear_offer(self) -> None:
+        self._offer = None
 
     def choose_augment(self, augment: Augment) -> None:
         """Adquire o augment, recalcula os atributos e consome uma escolha pendente.
@@ -121,11 +127,14 @@ class World:
         """
         if self.progression.pending_choices <= 0:
             raise ValueError("não há escolhas pendentes")
+        if self._offer is None or augment not in self._offer.choices:
+            raise ValueError("augment não pertence à oferta atual")
         weapons = [w.name for w in self.player.weapons]
         self.inventory.add(augment, weapons)
         self.player.set_modifiers(self.inventory.modifiers)
         self._sync_behaviors()
         self.progression.consume_choice()
+        self._offer = None
 
     def _sync_behaviors(self) -> None:
         """Cria/atualiza os comportamentos concedidos pelos modificadores atuais."""
@@ -138,18 +147,21 @@ class World:
 
     # ------------------------------------------------------------------ comandos
 
-    def apply(self, command: Command, dt: float) -> None:
+    def apply(self, command: Command, dt: float) -> bool:
         if self.result is not None or not self.player.alive:
-            return
-        # Ler can_fire ANTES: o jogador ativa o cooldown ao aplicar o comando.
-        if isinstance(command, Shoot) and self.player.can_fire:
-            self._fire_weapon()
+            return False
+        if isinstance(command, Shoot):
+            weapon = self.player.try_fire()
+            if weapon is None:
+                return False
+            self._fire_weapon(weapon)
+            return True
         self.player.apply(command, dt)
         self._constrain(self.player.position, self.player.radius)
+        return True
 
-    def _fire_weapon(self) -> None:
+    def _fire_weapon(self, weapon) -> None:
         p = self.player
-        weapon = p.weapon
         origin = p.position + p.orientation * (p.radius + MUZZLE_GAP)
         half_cone = weapon.spread_degrees / 2
         for _ in range(weapon.pellets):
@@ -178,21 +190,32 @@ class World:
         *,
         health_multiplier: float = 1.0,
         speed_multiplier: float = 1.0,
+        jitter: float = SPAWN_JITTER,
     ) -> Enemy:
-        jitter = Vector2(
-            self.rng.uniform(-SPAWN_JITTER, SPAWN_JITTER),
-            self.rng.uniform(-SPAWN_JITTER, SPAWN_JITTER),
+        offset = Vector2(
+            self.rng.uniform(-jitter, jitter),
+            self.rng.uniform(-jitter, jitter),
         )
         enemy = Enemy(
             id=self._next_enemy_id(),
             definition=definition,
-            position=Vector2(position) + jitter,
+            position=Vector2(position) + offset,
             health=definition.max_health * health_multiplier,
             speed=definition.speed * speed_multiplier,
             steer_degrees=self.rng.choice((-1, 1)) * self.rng.uniform(8, 20),
         )
         self.enemies.append(enemy)
         return enemy
+
+    def can_spawn_at(self, position: Vector2, radius: float) -> bool:
+        area = self.map.playable_bounds
+        if not (area.left + radius <= position.x <= area.right - radius
+                and area.top + radius <= position.y <= area.bottom - radius):
+            return False
+        if any(self._obstacle_contact(position, radius, o) is not None for o in self.map.obstacles):
+            return False
+        return not any(e.alive and circle_circle(position, radius, e.position, e.radius)
+                       for e in self.enemies)
 
     # ------------------------------------------------------------------ serviços de comportamentos
 

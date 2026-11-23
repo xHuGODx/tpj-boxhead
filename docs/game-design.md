@@ -91,3 +91,37 @@ Só as compras feitas no menu afetam o perfil; obter um augment não é uma comp
 
 Os passos são orientação, sem prazos ou divisão por pessoa. O backlog regista as
 dependências reais; algumas tarefas podem avançar independentemente.
+
+
+## Regras implementadas de armas, rondas e augments
+
+- Disparo: `Player.try_fire()` é a única autoridade do cooldown. O mundo cria os
+  projéteis apenas quando aceita o comando; a animação usa esse resultado. Cada arma
+  conserva o seu cooldown ao trocar. Input e simulação usam passos variáveis, pelo
+  que o instante do disparo fica quantizado ao frame (no máximo um tiro por frame).
+- Nove cinzentos, três por arma: pistola (dano, cadência, alcance), shotgun (pellets,
+  dano, cadência), SMG (cadência, dano, alcance). Há seis dourados e três prismáticos.
+- Modificadores numéricos são aditivos em relação à base: dois +20% dão 1,40×.
+  Limites derivados: dano 0,1–5×; alcance 0,1–3×; velocidade de movimento 0,1–3×;
+  pellets 1–32 e intervalo mínimo entre tiros 0,05 s. Vida/regen/XP respeitam os
+  limites de acumulação do catálogo. Aumentar vida máxima cura o incremento.
+- A base permanente é copiada ao criar a partida. Recalcular atributos começa
+  sempre nessa base, sem reaplicar multiplicadores anteriores.
+- Uma oferta sorteada pertence ao mundo e mantém-se até ser consumida. Cada
+  aquisição limpa a oferta, consome um nível pendente e recalcula elegibilidade.
+- Pesos, IDs, alvos, referências e ciclos de pré-requisitos são validados. As
+  incompatibilidades são respeitadas nos dois sentidos. Fallback pode apresentar
+  menos de três cartas se não houver suficientes; um pool vazio dispensa o nível.
+- Cartas aceitam uma confirmação por oferta. Teclas/botão mantidos e repetição de
+  teclado não confirmam automaticamente a próxima. Esc abre pausa; continuar
+  preserva a mesma oferta, e abandonar descarta as escolhas dessa partida.
+- As rondas não têm limite numérico. O orçamento cresce até 300 inimigos por ronda
+  (configurável), com máximo de 25 ativos. Vida e composição continuam a escalar.
+  Bosses e escoltas seguem a configuração de cada décima ronda.
+- Spawns usam posições fora da distância de segurança, dentro dos limites e livres
+  de obstáculos e inimigos; se nenhuma estiver disponível, o orçamento espera.
+  Layouts novos precisam de pontos de spawn suficientes para essa distância.
+- Na arena limitada não se removem inimigos por distância: todos continuam vivos
+  na contagem até serem mortos, mesmo fora do ecrã. Não há despawn com recompensa
+  ou conclusão artificial de ronda. Uma política de reposicionamento para chunks
+  será definida com o mapa infinito (#19).

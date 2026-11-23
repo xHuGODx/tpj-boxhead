@@ -132,8 +132,7 @@ class PlayingState(State):
 
         fired = False
         if pygame.K_SPACE in self._pressed:
-            fired = self._world.player.can_fire  # ler ANTES: Shoot ativa o cooldown
-            self._world.apply(Shoot(), dt)
+            fired = self._world.apply(Shoot(), dt)
             if fired:
                 self._shooting_timer = SHOOT_ANIMATION_SECONDS
         self._shooting_timer = max(0.0, self._shooting_timer - dt)

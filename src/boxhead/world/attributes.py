@@ -20,6 +20,7 @@ class WeaponModifiers:
     damage_multiplier: float = 1.0
     fire_rate_multiplier: float = 1.0
     extra_pellets: int = 0
+    range_multiplier: float = 1.0
 
 
 @dataclass
@@ -45,7 +46,8 @@ def derive_weapon(base: WeaponDef, mods: WeaponModifiers) -> WeaponDef:
     """Arma efetiva; `base` é partilhada e imutável, por isso devolve uma cópia."""
     return replace(
         base,
-        damage=base.damage * mods.damage_multiplier,
-        cooldown=base.cooldown / mods.fire_rate_multiplier,
-        pellets=base.pellets + mods.extra_pellets,
+        damage=base.damage * max(0.1, min(5.0, mods.damage_multiplier)),
+        cooldown=max(0.05, base.cooldown / max(0.1, mods.fire_rate_multiplier)),
+        pellets=max(1, min(32, base.pellets + mods.extra_pellets)),
+        projectile_range=base.projectile_range * max(0.1, min(3.0, mods.range_multiplier)),
     )

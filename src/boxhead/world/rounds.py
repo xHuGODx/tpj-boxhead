@@ -9,11 +9,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from math import ceil, isfinite, log
 from typing import TYPE_CHECKING
 
 from pygame import Vector2
 
-from boxhead.core.events import RoundEnded, RoundStarted
+from boxhead.core.events import RoundCompleted, RoundStarted
 from boxhead.world.enemy import BASIC, BOSS, RED, EnemyDef
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ class RoundConfig:
     first_intermission: float = 2.0
     intermission: float = 4.0
     base_enemies: int = 6
+    max_budget: int = 300  # carga total por ronda; número de rondas não tem limite
     enemy_growth: float = 1.25
     spawn_interval: float = 0.6
     max_alive: int = 25  # limita a carga; o resto do orçamento espera
@@ -41,8 +43,29 @@ class RoundConfig:
     boss_escort_fraction: float = 0.5  # fração do orçamento normal que acompanha o boss
     boss_health_per_boss: float = 0.5  # +50% de vida por cada boss já derrotado/aparecido
 
+    def __post_init__(self) -> None:
+        counts = (self.base_enemies, self.max_budget, self.max_alive, self.red_start_round)
+        if any(isinstance(v, bool) or not isinstance(v, int) or v < 1 for v in counts):
+            raise ValueError("contagens de ronda devem ser inteiros positivos")
+        if self.max_budget < self.base_enemies or self.enemy_growth < 1:
+            raise ValueError("curva de inimigos inválida")
+        values = (self.first_intermission, self.intermission, self.spawn_interval,
+                  self.min_spawn_distance, self.enemy_growth, self.health_per_round,
+                  self.speed_per_round, self.max_speed_multiplier, self.red_chance_per_round,
+                  self.max_red_chance, self.boss_escort_fraction, self.boss_health_per_boss)
+        if any(not isfinite(v) or v < 0 for v in values) or self.spawn_interval == 0:
+            raise ValueError("tempos e multiplicadores de ronda inválidos")
+        if not 0 <= self.max_red_chance <= 1 or not 0 <= self.boss_escort_fraction <= 1:
+            raise ValueError("probabilidade/fração fora de 0..1")
+        if isinstance(self.boss_every, bool) or not isinstance(self.boss_every, int) or self.boss_every < 0:
+            raise ValueError("intervalo de bosses inválido")
+
     def enemy_budget(self, round_number: int) -> int:
-        return max(1, round(self.base_enemies * self.enemy_growth ** (round_number - 1)))
+        if self.enemy_growth == 1:
+            return self.base_enemies
+        exponent_limit = ceil(log(self.max_budget / self.base_enemies) / log(self.enemy_growth))
+        exponent = min(max(0, round_number - 1), exponent_limit)
+        return min(self.max_budget, max(1, round(self.base_enemies * self.enemy_growth ** exponent)))
 
     def health_multiplier(self, round_number: int) -> float:
         return 1.0 + self.health_per_round * (round_number - 1)
@@ -108,7 +131,7 @@ class RoundDirector:
             if self.pending == 0:
                 self.phase = Phase.CLEARING
         elif self.phase is Phase.CLEARING and world.alive_enemy_count == 0:
-            world.events.publish(RoundEnded(self.round_number))
+            world.events.publish(RoundCompleted(self.round_number))
             self.phase = Phase.INTERMISSION
             self.intermission_left = self.config.intermission
 
@@ -123,34 +146,29 @@ class RoundDirector:
 
     def _spawn_one(self, world: World) -> None:
         cfg, n = self.config, self.round_number
-        if self._boss_pending:
-            self._boss_pending = False
-            world.spawn_enemy(
-                BOSS,
-                self._pick_spawn_point(world),
-                health_multiplier=cfg.boss_health_multiplier(n),
-            )
-        else:
-            world.spawn_enemy(
-                self._pick_definition(world),
-                self._pick_spawn_point(world),
-                health_multiplier=cfg.health_multiplier(n),
-                speed_multiplier=cfg.speed_multiplier(n),
-            )
-        self.pending -= 1
+        definition = BOSS if self._boss_pending else self._pick_definition(world)
+        position = self._pick_spawn_point(world, definition)
         self._spawn_cooldown = cfg.spawn_interval
+        if position is None:
+            # Sem posição segura agora: mantém o orçamento e volta a tentar depois.
+            return
+        world.spawn_enemy(
+            definition, position, jitter=0,
+            health_multiplier=(cfg.boss_health_multiplier(n) if self._boss_pending
+                               else cfg.health_multiplier(n)),
+            speed_multiplier=(1.0 if self._boss_pending else cfg.speed_multiplier(n)),
+        )
+        self._boss_pending = False
+        self.pending -= 1
 
     def _pick_definition(self, world: World) -> EnemyDef:
         chance = self.config.red_chance(self.round_number)
-        # Só consome o RNG quando há escolha: rondas só com normais mantêm a sequência.
         if chance > 0 and world.rng.random() < chance:
             return RED
         return BASIC
 
-    def _pick_spawn_point(self, world: World) -> Vector2:
-        points = world.map.spawn_points
-        player = world.player.position
-        far = [p for p in points if p.distance_to(player) >= self.config.min_spawn_distance]
-        if far:
-            return world.rng.choice(far)
-        return max(points, key=lambda p: p.distance_to(player))
+    def _pick_spawn_point(self, world: World, definition: EnemyDef) -> Vector2 | None:
+        far = [point for point in world.map.spawn_points
+               if point.distance_to(world.player.position) >= self.config.min_spawn_distance
+               and world.can_spawn_at(point, definition.radius)]
+        return Vector2(world.rng.choice(far)) if far else None

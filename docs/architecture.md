@@ -146,3 +146,19 @@ opção para formas convexas, não uma obrigação para todas as colisões.
   cacheia transformações; os assets do bundle e o manifest também acompanham o wheel.
   Os adaptadores existentes ainda usam o catálogo global; passar essa dependência
   explicitamente permanece uma melhoria opcional.
+
+
+## Armas, rondas e escolha de augments
+
+`World.apply(Shoot)` pede a autorização a `Player.try_fire`, que consome o cooldown
+uma só vez. O resultado booleano é usado pelo adaptador visual. Definições de armas
+são imutáveis e validadas; o estado temporal permanece por instância de jogador.
+
+`RoundDirector` gere orçamento e fases; `World.can_spawn_at` verifica geometria e
+ocupação. Um spawn adiado não consome orçamento. As curvas e limites de carga estão
+em `RoundConfig`; o número de rondas é independente do limite de ativos/orçamento.
+
+O catálogo valida IDs, alvos, efeitos, limites e grafo de dependências. A oferta é
+um valor imutável cacheado em `World`; o estado das cartas apenas o apresenta. Só
+um augment dessa oferta pode ser adquirido. O domínio recalcula os modificadores;
+a interface gere foco, teclas mantidas, confirmação única e pausa.

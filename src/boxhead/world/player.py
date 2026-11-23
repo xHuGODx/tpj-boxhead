@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 
 from pygame import Vector2
 
-from boxhead.core.commands import Command, Move, Shoot, SwitchWeapon
+from boxhead.core.commands import Command, Move, SwitchWeapon
 from boxhead.world.attributes import Modifiers, derive_weapon
 from boxhead.world.weapons import WEAPONS, WeaponDef
 
@@ -59,7 +59,7 @@ class Player:
 
     @property
     def speed(self) -> float:
-        return SPEED * self.modifiers.speed_multiplier
+        return SPEED * max(0.1, min(3.0, self.modifiers.speed_multiplier))
 
     @property
     def weapon(self) -> WeaponDef:
@@ -86,10 +86,15 @@ class Player:
             direction = command.direction.normalize()
             self.position += direction * self.speed * dt
             self.orientation = direction
-        elif isinstance(command, Shoot) and self.can_fire:
-            self._cooldowns[self.weapon_slot] = self.weapon.cooldown
         elif isinstance(command, SwitchWeapon) and 0 <= command.slot < len(self.weapons):
             self.weapon_slot = command.slot
+
+    def try_fire(self) -> WeaponDef | None:
+        if not self.alive or not self.can_fire:
+            return None
+        weapon = self.weapon
+        self._cooldowns[self.weapon_slot] = weapon.cooldown
+        return weapon
 
     def update(self, dt: float) -> None:
         self._cooldowns = [max(0.0, c - dt) for c in self._cooldowns]

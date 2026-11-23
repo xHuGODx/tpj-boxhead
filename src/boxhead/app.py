@@ -152,10 +152,12 @@ class App:
                         world,
                         offer,
                         on_choose=lambda augment: self._augment_chosen(playing, augment),
+                        on_pause=self._pause,
                     )
                 )
                 return
             world.progression.consume_choice()
+            world.clear_offer()
         if self._machine.current is not playing:
             self._machine.change(playing)
 

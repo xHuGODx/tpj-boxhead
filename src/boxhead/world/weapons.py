@@ -8,6 +8,7 @@ objeto sem risco.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import isfinite
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,16 @@ class WeaponDef:
     projectile_range: float = 700.0
     projectile_radius: float = 4.0
     color: tuple[int, int, int] = (255, 220, 120)
+
+    def __post_init__(self) -> None:
+        values = (self.damage, self.cooldown, self.projectile_speed,
+                  self.projectile_range, self.projectile_radius)
+        if any(not isfinite(v) or v <= 0 for v in values):
+            raise ValueError("atributos de arma devem ser positivos e finitos")
+        if isinstance(self.pellets, bool) or not isinstance(self.pellets, int) or self.pellets < 1:
+            raise ValueError("pellets deve ser um inteiro positivo")
+        if not isfinite(self.spread_degrees) or not 0 <= self.spread_degrees <= 360:
+            raise ValueError("dispersão inválida")
 
 
 PISTOL = WeaponDef(
