@@ -157,7 +157,7 @@ class App:
             on_game_over=self._game_over,
             viewport=self.config.window_size,
             world=world,
-            on_level_up=self._level_up,
+            on_augment_choice=self._open_augment_choices,
         )
         self._machine.change(playing)
 
@@ -169,11 +169,11 @@ class App:
         assert self._machine is not None
         self._machine.change(target)
 
-    def _level_up(self, playing: PlayingState) -> None:
+    def _open_augment_choices(self, playing: PlayingState) -> None:
         self._next_selection_or_resume(playing)
 
     def _next_selection_or_resume(self, playing: PlayingState) -> None:
-        """Abre a próxima escolha pendente (uma por nível) ou retoma a partida.
+        """Abre a próxima escolha pendente (nível ou bónus de ronda) ou retoma.
 
         Se não houver nenhum augment elegível, a escolha é dispensada: nunca se
         apresenta uma escolha impossível nem se bloqueia a partida.

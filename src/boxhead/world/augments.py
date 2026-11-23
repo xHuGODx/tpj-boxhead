@@ -288,8 +288,9 @@ class AugmentInventory:
         """Por ordem de aquisição."""
         yield from self._owned.values()
 
-    def is_eligible(self, augment: Augment, available_weapons: Iterable[str]) -> bool:
-        if self.stacks(augment.id) >= augment.max_stacks:
+    def is_eligible(self, augment: Augment, available_weapons: Iterable[str], *,
+                    ignore_stack_limit: bool = False) -> bool:
+        if not ignore_stack_limit and self.stacks(augment.id) >= augment.max_stacks:
             return False
         if augment.weapon is not None and augment.weapon not in set(available_weapons):
             return False
@@ -299,8 +300,9 @@ class AugmentInventory:
             return False
         return not any(augment.id in owned.incompatible_with for owned, _ in self.owned())
 
-    def add(self, augment: Augment, available_weapons: Iterable[str]) -> None:
-        if not self.is_eligible(augment, available_weapons):
+    def add(self, augment: Augment, available_weapons: Iterable[str], *,
+            ignore_stack_limit: bool = False) -> None:
+        if not self.is_eligible(augment, available_weapons, ignore_stack_limit=ignore_stack_limit):
             raise ValueError(f"ineligible augment: {augment.id}")
         candidate = dict(self._owned)
         candidate[augment.id] = (augment, self.stacks(augment.id) + 1)
@@ -367,6 +369,22 @@ class Offer:
     used: Rarity | None  # raridade realmente usada; None = oferta mista (fallback final)
 
 
+def draw_weapon_offer(
+    catalog: Sequence[Augment], inventory: AugmentInventory,
+    available_weapons: Iterable[str], weapon: str, rng: random.Random,
+) -> Offer:
+    """Bónus de ronda: só a arma do golpe final, mesmo depois do limite normal.
+
+    Os limites derivados de dano/cadência/pellets continuam a proteger a simulação.
+    O bypass aplica-se apenas a estas recompensas, nunca aos level-ups.
+    """
+    weapons = tuple(available_weapons)
+    pool = [augment for augment in catalog
+            if augment.weapon == weapon and augment.rarity is Rarity.GRAY
+            and inventory.is_eligible(augment, weapons, ignore_stack_limit=True)]
+    return Offer(tuple(rng.sample(pool, min(3, len(pool)))), Rarity.GRAY, Rarity.GRAY)
+
+
 def draw_offer(
     catalog: Sequence[Augment],
     inventory: AugmentInventory,
@@ -421,4 +439,5 @@ __all__ = [
     "OfferConfig",
     "Rarity",
     "draw_offer",
+    "draw_weapon_offer",
 ]

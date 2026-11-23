@@ -46,13 +46,13 @@ class PlayingState(State):
         on_game_over: Callable[[World], None],
         viewport: tuple[int, int] = (1100, 700),
         world: World | None = None,
-        on_level_up: Callable[[State], None] | None = None,
+        on_augment_choice: Callable[[State], None] | None = None,
     ) -> None:
         self._machine = machine
         self._events = events
         self._on_pause = on_pause
         self._on_game_over = on_game_over
-        self._on_level_up = on_level_up or (lambda state: None)
+        self._on_augment_choice = on_augment_choice or (lambda state: None)
 
         self._world = world if world is not None else World(events=events)
         self._camera = Camera(viewport)
@@ -145,7 +145,7 @@ class PlayingState(State):
         if not self._world.player.alive:
             self._on_game_over(self._world)
         elif self._world.progression.pending_choices > 0:
-            self._on_level_up(self)  
+            self._on_augment_choice(self)
 
     def _update_animations(self, dt: float, direction: Vector2, fired: bool) -> None:
         shooting = self._shooting_timer > 0
@@ -207,12 +207,32 @@ class PlayingState(State):
                     surface, (90, 60, 140), self._camera.world_to_screen(spawn), 6, 1
                 )
 
+        self._draw_ammo_pickups(surface, top_left, bottom_right)
         self._draw_entities(surface, top_left, bottom_right)
         self._draw_bodies_and_fx(surface)
         self._draw_projectiles(surface)
         if self._show_debug:
             self._draw_hitboxes(surface)
         self._hud.draw(surface, self._world)
+
+    def _draw_ammo_pickups(self, surface, top_left, bottom_right) -> None:
+        for pickup in self._world.ammo_drops.pickups:
+            if not self._in_view(pickup.position, top_left, bottom_right, 32):
+                continue
+            if pickup.ttl < 5 and int(self._world.elapsed * 6) % 2:
+                continue
+            point = self._camera.world_to_screen(pickup.position)
+            rect = pygame.Rect(0, 0, 30, 26)
+            rect.center = (round(point.x), round(point.y))
+            pygame.draw.circle(surface, (100, 85, 40), rect.center, 22, 2)
+            pygame.draw.rect(surface, (30, 35, 24), rect, border_radius=4)
+            pygame.draw.rect(surface, (225, 193, 92), rect, 2, border_radius=4)
+            for dx in (-7, 0, 7):
+                bullet = pygame.Rect(rect.centerx + dx - 2, rect.y + 8, 5, 12)
+                pygame.draw.rect(surface, (255, 213, 100), bullet)
+                pygame.draw.polygon(surface, (255, 235, 165),
+                                    [(bullet.left, bullet.top), (bullet.centerx, bullet.top-4),
+                                     (bullet.right-1, bullet.top)])
 
     def _draw_entities(self, surface: pygame.Surface, top_left: Vector2, bottom_right: Vector2):
         """Obstáculos, inimigos e jogador ordenados por profundidade (y maior = mais à frente)."""

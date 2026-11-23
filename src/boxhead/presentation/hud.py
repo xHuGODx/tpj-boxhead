@@ -91,11 +91,32 @@ class HUD:
         self._draw_boss_bar(surface)
 
         player = world.player
-        cursor_x = surface.get_width() // 2 - 250
+        ammo_color = _ACCENT if player.ammo > 0 else (255, 110, 100)
+        ammo = self._font.render(
+            f"{player.weapon.name} · AMMO {player.ammo}/{player.weapon.max_ammo}", True, ammo_color
+        )
+        surface.blit(ammo, ammo.get_rect(center=(width // 2, surface.get_height() - 80)))
+        if player.ammo == 0:
+            hint = "OUT OF AMMO · Collect ammo crates or switch weapons"
+        elif world.ammo_notice_left > 0:
+            hint = "Ammo collected"
+        else:
+            hint = ""
+        if hint:
+            text = self._font.render(hint, True, ammo_color)
+            surface.blit(text, text.get_rect(center=(width // 2, surface.get_height() - 111)))
+        if world.unlock_notice_left > 0:
+            text = self._font_big.render("Unlocked: " + ", ".join(world.recent_unlocks), True, _ACCENT)
+            surface.blit(text, text.get_rect(center=(width // 2, surface.get_height() - 145)))
+
+        slot_width = 240
+        cursor_x = (width - len(player.weapons) * slot_width) // 2 + 30
         for slot, weapon in enumerate(player.weapons):
             active = slot == player.weapon_slot
-            color = _ACCENT if active else _MUTED
-            label = self._font.render(f"{slot + 1} {weapon.name}", True, color)
+            unlocked = player.arsenal.is_unlocked(weapon.name)
+            color = _ACCENT if active else (_MUTED if unlocked else (95, 100, 110))
+            suffix = str(player.arsenal.ammo(weapon.name)) if unlocked else f"R{weapon.unlock_round}"
+            label = self._font.render(f"{slot + 1} {weapon.name} · {suffix}", True, color)
             surface.blit(self._scale(self._weapon_icons[slot], (28,28)), (cursor_x-30, surface.get_height()-40))
             surface.blit(label, (cursor_x, surface.get_height() - 36))
             if active:
@@ -106,7 +127,7 @@ class HUD:
                     (cursor_x + label.get_width(), surface.get_height() - 12),
                     2,
                 )
-            cursor_x += label.get_width() + 72
+            cursor_x += slot_width
 
     def _draw_boss_bar(self, surface: pygame.Surface) -> None:
         boss = next((e for e in self._world.enemies if e.is_boss and e.alive), None)

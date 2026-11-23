@@ -39,7 +39,8 @@ class Behavior:
         """Um projétil do jogador acertou. Devolve True se o projétil continua em voo."""
         return False
 
-    def on_kill(self, world: World, enemy: Enemy, depth: int) -> None:
+    def on_kill(self, world: World, enemy: Enemy, depth: int,
+                weapon_name: str | None = None) -> None:
         """Um inimigo morreu; `depth` conta as mortes encadeadas por efeitos."""
 
     def update(self, world: World, dt: float) -> None:
@@ -98,13 +99,15 @@ class ChainReaction(Behavior):
     def damage(self) -> float:
         return 35.0 + 20.0 * (self.level - 1)
 
-    def on_kill(self, world: World, enemy: Enemy, depth: int) -> None:
+    def on_kill(self, world: World, enemy: Enemy, depth: int,
+                weapon_name: str | None = None) -> None:
         if depth >= self.MAX_DEPTH:
             return
         world.add_fx("explosion", enemy.position, self.radius, 0.35)
         for target in world.enemies_near(enemy.position, self.radius):
             if target is not enemy:
-                world.damage_enemy(target, self.damage, chain_depth=depth + 1)
+                world.damage_enemy(target, self.damage, chain_depth=depth + 1,
+                                   weapon_name=weapon_name)
 
 
 class Orbitals(Behavior):

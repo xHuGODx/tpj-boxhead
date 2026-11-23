@@ -1,12 +1,14 @@
-"""XP, níveis e fila de escolhas de augment.
+"""XP, níveis e fila de escolhas de augment (níveis e recompensas de ronda).
 
 O XP chega por eventos (`EnemyKilled`); cada nível ganho enfileira uma escolha, por isso
 XP excedente que dê vários níveis gera várias escolhas, resolvidas uma de cada vez.
+O bónus de ronda guarda a arma alvo sem alterar XP nem nível.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from collections import deque
 from dataclasses import dataclass
 
 from boxhead.core.events import EnemyKilled, EventQueue, LevelUp
@@ -26,6 +28,13 @@ class LevelCurve:
 DEFAULT_CURVE = LevelCurve()
 
 
+@dataclass(frozen=True)
+class AugmentChoice:
+    level: int
+    weapon: str | None = None
+    round_number: int | None = None
+
+
 class Progression:
     def __init__(
         self,
@@ -37,8 +46,19 @@ class Progression:
         self.level = 1
         self.total_xp = 0.0
         self.xp = 0.0  # XP acumulado dentro do nível atual
-        self.pending_choices = 0
+        self._choices: deque[AugmentChoice] = deque()
         self._events: EventQueue | None = None
+
+    @property
+    def pending_choices(self) -> int:
+        return len(self._choices)
+
+    @property
+    def next_choice(self) -> AugmentChoice | None:
+        return self._choices[0] if self._choices else None
+
+    def reward_round(self, round_number: int, weapon: str) -> None:
+        self._choices.append(AugmentChoice(self.level, weapon, round_number))
 
     @property
     def xp_needed(self) -> int:
@@ -59,7 +79,7 @@ class Progression:
         while self.xp >= self.xp_needed:
             self.xp -= self.xp_needed
             self.level += 1
-            self.pending_choices += 1
+            self._choices.append(AugmentChoice(self.level))
             gained += 1
             if self._events is not None:
                 self._events.publish(LevelUp(self.level))
@@ -68,7 +88,7 @@ class Progression:
     def consume_choice(self) -> None:
         if self.pending_choices <= 0:
             raise ValueError("no pending choices")
-        self.pending_choices -= 1
+        self._choices.popleft()
 
     # --- subscrição a eventos (Observer), como `RunStats` -----------------------------
 

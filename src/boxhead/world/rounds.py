@@ -136,7 +136,7 @@ class RoundDirector:
             if self.pending == 0:
                 self.phase = Phase.CLEARING
         elif self.phase is Phase.CLEARING and world.alive_enemy_count == 0:
-            world.events.publish(RoundCompleted(self.round_number))
+            world.events.publish(RoundCompleted(self.round_number, world.last_kill_weapon))
             self.phase = Phase.INTERMISSION
             self.intermission_left = self.config.intermission
 

@@ -18,7 +18,9 @@ from boxhead.world.result import RunReason, RunResult
 from pygame import Rect, Vector2
 
 from boxhead.core.commands import Command, Shoot
-from boxhead.core.events import EnemyKilled, EventQueue, PlayerDied, RunFinished, make_counter
+from boxhead.core.events import (
+    EnemyKilled, EventQueue, PlayerDied, RoundCompleted, RoundStarted, RunFinished, make_counter,
+)
 from boxhead.core.geometry import (
     SpatialGrid,
     circle_aabb,
@@ -35,12 +37,14 @@ from boxhead.world.augments import (
     Offer,
     OfferConfig,
     draw_offer,
+    draw_weapon_offer,
 )
 from boxhead.world.behaviors import BEHAVIOR_TYPES, Behavior
 from boxhead.world.enemy import Enemy, EnemyDef
 from boxhead.world.fx import Body, Fx
 from boxhead.world.map import ARENA, MapDefinition, ObstacleDef
 from boxhead.world.player import Player
+from boxhead.world.loot import AmmoDropConfig, AmmoDrops
 from boxhead.world.progression import Progression
 from boxhead.world.projectile import Projectile
 from boxhead.world.rounds import DEFAULT_ROUNDS, RoundConfig, RoundDirector
@@ -67,6 +71,7 @@ class World:
         rounds: RoundConfig | None = DEFAULT_ROUNDS,
         base_modifiers: Modifiers | None = None,
         viewport: tuple[int, int] = (1100, 700),
+        ammo_drops: AmmoDropConfig = AmmoDropConfig(),
     ) -> None:
         self.viewport = viewport
         self.rng = rng if rng is not None else random.Random()
@@ -79,6 +84,12 @@ class World:
         self.elapsed = 0.0
         self.result: RunResult | None = None
         self._death_published = False
+        self._listening = False
+        self.last_kill_weapon: str | None = None
+        self.recent_unlocks: tuple[str, ...] = ()
+        self.unlock_notice_left = 0.0
+        self.ammo_notice_left = 0.0
+        self.ammo_drops = AmmoDrops(ammo_drops)
         # `base_modifiers`: a base da partida (melhorias permanentes do perfil). Os augments
         # somam-se a ela e tudo é recalculado do zero, nunca por cima de valores já alterados.
         self.inventory = AugmentInventory(base_modifiers)
@@ -107,20 +118,46 @@ class World:
         return sum(1 for e in self.enemies if e.alive)
 
     def start_listening(self) -> None:
+        if self._listening:
+            return
         self.stats.attach(self.events)
         self.progression.attach(self.events)
+        self.events.subscribe(RoundStarted, self._on_round_started)
+        self.events.subscribe(RoundCompleted, self._on_round_completed)
+        self._listening = True
 
     def stop_listening(self) -> None:
+        if not self._listening:
+            return
         self.stats.detach()
         self.progression.detach()
+        self.events.unsubscribe(RoundStarted, self._on_round_started)
+        self.events.unsubscribe(RoundCompleted, self._on_round_completed)
+        self._listening = False
+
+    def _on_round_started(self, event: RoundStarted) -> None:
+        self.last_kill_weapon = None
+        unlocked = self.player.arsenal.unlock_for_round(event.round_number)
+        if unlocked:
+            self.recent_unlocks = tuple(weapon.name for weapon in unlocked)
+            self.unlock_notice_left = 5.0
+
+    def _on_round_completed(self, event: RoundCompleted) -> None:
+        weapon = event.weapon_name or self.player.weapon.name
+        if self.player.arsenal.is_unlocked(weapon):
+            self.progression.reward_round(event.round_number, weapon)
 
     # ------------------------------------------------------------------ augments
 
     def draw_offer(self, config: OfferConfig = DEFAULT_OFFER) -> Offer:
         """Oferta para a próxima escolha pendente; respeita o que já foi adquirido."""
         if self._offer is None:
-            weapons = [w.name for w in self.player.weapons]
-            self._offer = draw_offer(AUGMENTS, self.inventory, weapons, self.rng, config)
+            weapons = [w.name for w in self.player.available_weapons]
+            choice = self.progression.next_choice
+            if choice is not None and choice.weapon is not None:
+                self._offer = draw_weapon_offer(AUGMENTS, self.inventory, weapons, choice.weapon, self.rng)
+            else:
+                self._offer = draw_offer(AUGMENTS, self.inventory, weapons, self.rng, config)
         return self._offer
 
     def clear_offer(self) -> None:
@@ -136,8 +173,10 @@ class World:
             raise ValueError("no pending choices")
         if self._offer is None or augment not in self._offer.choices:
             raise ValueError("augment does not belong to the current offer")
-        weapons = [w.name for w in self.player.weapons]
-        self.inventory.add(augment, weapons)
+        weapons = [w.name for w in self.player.available_weapons]
+        choice = self.progression.next_choice
+        is_round_reward = choice is not None and choice.weapon is not None
+        self.inventory.add(augment, weapons, ignore_stack_limit=is_round_reward)
         self.player.set_modifiers(self.inventory.modifiers)
         self._sync_behaviors()
         self.progression.consume_choice()
@@ -183,6 +222,7 @@ class World:
                 color=weapon.color,
                 sprite_key=("projectiles/player_pellet.png" if weapon.name == "Shotgun"
                             else "projectiles/player_bullet.png"),
+                weapon_name=weapon.name,
             )
             for behavior in self.behaviors.values():
                 behavior.on_fire(self, projectile)
@@ -230,13 +270,16 @@ class World:
 
     # ------------------------------------------------------------------ serviços de comportamentos
 
-    def damage_enemy(self, enemy: Enemy, amount: float, chain_depth: int = 0) -> bool:
+    def damage_enemy(self, enemy: Enemy, amount: float, chain_depth: int = 0, *,
+                     weapon_name: str | None = None) -> bool:
         """Único caminho de dano a inimigos: a morte publica o evento e chama os ganchos.
 
         `chain_depth` conta mortes encadeadas por efeitos (explosões), para as limitar.
         """
         if not enemy.take_damage(amount):
             return False
+        weapon_name = weapon_name or self.player.weapon.name
+        self.last_kill_weapon = weapon_name
         d = enemy.definition
         if enemy.is_boss:
             for projectile in self.projectiles:
@@ -244,9 +287,11 @@ class World:
                     projectile.alive = False
         self.corpses.append(enemy)
         self.events.publish(EnemyKilled(enemy.id, round(d.xp_reward*enemy.reward_multiplier),
-                                        round(d.coin_reward*enemy.reward_multiplier), d.is_boss))
+                                        round(d.coin_reward*enemy.reward_multiplier), d.is_boss,
+                                        weapon_name))
+        self.ammo_drops.drop(enemy.position, self.rng)
         for behavior in tuple(self.behaviors.values()):
-            behavior.on_kill(self, enemy, chain_depth)
+            behavior.on_kill(self, enemy, chain_depth, weapon_name)
         return True
 
     def enemies_near(self, position: Vector2, radius: float) -> list[Enemy]:
@@ -348,7 +393,7 @@ class World:
             if isinstance(best_target, Enemy):
                 hit_point = start + (end - start) * best_t
                 proj.hit_ids.add(best_target.id)
-                self.damage_enemy(best_target, proj.damage)
+                self.damage_enemy(best_target, proj.damage, weapon_name=proj.weapon_name)
                 continues = False  # um comportamento (Ricochet) pode manter o projétil em voo
                 for behavior in tuple(self.behaviors.values()):
                     continues = behavior.on_hit(self, proj, best_target, hit_point) or continues
@@ -381,6 +426,8 @@ class World:
         self.navigator.begin_frame()
         self.elapsed += dt
         self.player.update(dt)
+        self.unlock_notice_left = max(0.0, self.unlock_notice_left - dt)
+        self.ammo_notice_left = max(0.0, self.ammo_notice_left - dt)
 
         self._rebuild_grid()
         for enemy in self.enemies:
@@ -404,6 +451,10 @@ class World:
         self.corpses = [e for e in self.corpses if e.death_age < 1.0]
         self.navigator.retain({e.id for e in self.enemies})
         self.projectiles = [p for p in self.projectiles if p.alive]
+        if self.player.alive and self.ammo_drops.update(
+            dt, self.player.position, self.player.radius, self.player.arsenal
+        ):
+            self.ammo_notice_left = 1.5
 
         if self.director is not None and self.player.alive:
             self.director.update(dt, self)
@@ -430,6 +481,7 @@ class World:
         self.projectiles = [p for p in self.projectiles if area.collidepoint(p.position)]
         self.corpses = [e for e in self.corpses if area.collidepoint(e.position)]
         self.fx = [f for f in self.fx if area.collidepoint(f.position)]
+        self.ammo_drops.pickups = [p for p in self.ammo_drops.pickups if area.collidepoint(p.position)]
 
     # ------------------------------------------------------------------ colisões com o mapa
 

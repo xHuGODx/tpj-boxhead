@@ -21,3 +21,4 @@ class Projectile:
     alive: bool = True
     bounces_left: int = 0  # saltos que ainda pode dar (augment Ricochet)
     hit_ids: set[int] = field(default_factory=set)  # alvos já acertados: não repete o mesmo
+    weapon_name: str | None = None  # arma de origem; trocar de arma não muda a autoria

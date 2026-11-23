@@ -22,6 +22,7 @@ class EnemyKilled(Event):
     xp_reward: int
     coin_reward: int
     is_boss: bool = False
+    weapon_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,7 @@ class RoundStarted(Event):
 @dataclass(frozen=True)
 class RoundCompleted(Event):
     round_number: int
+    weapon_name: str | None = None
 
 
 # Nome antigo mantido para consumidores existentes; é o mesmo tipo de evento.

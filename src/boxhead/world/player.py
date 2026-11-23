@@ -13,6 +13,7 @@ from pygame import Vector2
 from boxhead.core.commands import Command, Move, SwitchWeapon
 from boxhead.world.attributes import Modifiers, derive_weapon
 from boxhead.world.weapons import WEAPONS, WeaponDef
+from boxhead.world.arsenal import Arsenal
 
 SPEED = 220.0
 RADIUS = 24
@@ -29,11 +30,16 @@ class Player:
     modifiers: Modifiers = field(default_factory=Modifiers)
     _cooldowns: list[float] = field(init=False, repr=False)
     _effective_weapons: tuple[WeaponDef, ...] = field(init=False, repr=False)
+    arsenal: Arsenal = field(init=False)
 
     def __post_init__(self) -> None:
         # Um cooldown por arma: trocar de arma não permite contornar a cadência.
         self._cooldowns = [0.0] * len(self.weapons)
         self._effective_weapons = self._derive_weapons()
+        self.arsenal = Arsenal(self.weapons)
+        if not self.arsenal.is_unlocked(self.weapons[self.weapon_slot].name):
+            self.weapon_slot = next(i for i, w in enumerate(self.weapons)
+                                    if self.arsenal.is_unlocked(w.name))
         self.health = min(self.health, self.max_health)
 
     def _derive_weapons(self) -> tuple[WeaponDef, ...]:
@@ -68,7 +74,15 @@ class Player:
 
     @property
     def can_fire(self) -> bool:
-        return self._cooldowns[self.weapon_slot] <= 0.0
+        return self._cooldowns[self.weapon_slot] <= 0.0 and self.ammo > 0
+
+    @property
+    def ammo(self) -> int:
+        return self.arsenal.ammo(self.weapon.name)
+
+    @property
+    def available_weapons(self) -> tuple[WeaponDef, ...]:
+        return tuple(w for w in self.weapons if self.arsenal.is_unlocked(w.name))
 
     @property
     def cooldown_ratio(self) -> float:
@@ -86,13 +100,16 @@ class Player:
             direction = command.direction.normalize()
             self.position += direction * self.speed * dt
             self.orientation = direction
-        elif isinstance(command, SwitchWeapon) and 0 <= command.slot < len(self.weapons):
+        elif (isinstance(command, SwitchWeapon) and 0 <= command.slot < len(self.weapons)
+              and self.arsenal.is_unlocked(self.weapons[command.slot].name)):
             self.weapon_slot = command.slot
 
     def try_fire(self) -> WeaponDef | None:
         if not self.alive or not self.can_fire:
             return None
         weapon = self.weapon
+        if not self.arsenal.consume(weapon.name):
+            return None
         self._cooldowns[self.weapon_slot] = weapon.cooldown
         return weapon
 

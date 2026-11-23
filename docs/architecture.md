@@ -73,10 +73,12 @@ descrita como Decorator se não implementar esse contrato.
 ## Fluxo de uma morte
 
 1. O combate reduz a vida a zero e marca a morte uma única vez.
-2. Publica `EnemyKilled` com identificador e recompensas.
+2. Publica `EnemyKilled` com identificador, recompensas e arma de origem; `AmmoDrops`
+   sorteia uma caixa na posição da morte.
 3. Uma fila processa os eventos num ponto definido do tick, por ordem documentada.
 4. XP e moeda reagem por subscritores; o diretor consulta os vivos. Áudio pendente.
-5. Se houver level-up, a escolha interrompe a simulação antes do tick seguinte.
+5. Level-ups e recompensas de ronda enfileiram escolhas e interrompem a simulação
+   antes do tick seguinte. A recompensa de ronda guarda a arma do golpe final.
 6. A morte do jogador tem prioridade sobre abrir uma seleção de augments.
 
 Eventos produzidos durante o despacho ficam para a geração seguinte do mesmo
@@ -96,9 +98,9 @@ stateDiagram-v2
     Playing --> Paused: Esc
     Paused --> Playing: continuar
     Paused --> Menu: abandonar
-    Playing --> AugmentSelection: nível ganho
-    AugmentSelection --> AugmentSelection: escolher / há níveis pendentes
-    AugmentSelection --> Playing: escolher / sem níveis pendentes
+    Playing --> AugmentSelection: nível ganho ou ronda concluída
+    AugmentSelection --> AugmentSelection: escolher / há escolhas pendentes
+    AugmentSelection --> Playing: escolher / sem escolhas pendentes
     Playing --> GameOver: jogador morreu
     GameOver --> Playing: repetir com nova partida
     GameOver --> Menu: voltar
@@ -152,9 +154,23 @@ opção para formas convexas, não uma obrigação para todas as colisões.
 
 ## Armas, rondas e escolha de augments
 
-`World.apply(Shoot)` pede a autorização a `Player.try_fire`, que consome o cooldown
-uma só vez. O resultado booleano é usado pelo adaptador visual. Definições de armas
-são imutáveis e validadas; o estado temporal permanece por instância de jogador.
+`World.apply(Shoot)` pede a autorização a `Player.try_fire`, que verifica vida,
+cooldown e munições e consome uma bala/cartucho por disparo aceite. `Arsenal`,
+composto no jogador, guarda desbloqueios e reservas por arma; `WeaponDef` contém
+os valores imutáveis de desbloqueio, capacidade e abastecimento. O resultado
+booleano é usado pelo adaptador visual. O cooldown permanece por instância.
+
+`AmmoDrops` gere sorteio, limite de ativos, duração e recolha de caixas através
+da geometria partilhada, sem desenho nem input. `PlayingState` desenha caixas e
+o HUD lê reservas/armas bloqueadas. O mundo coordena estes componentes, sem
+incorporar a lógica de inventário ou de recolha.
+
+`World` subscreve `RoundStarted` e `RoundCompleted` pelo mesmo ciclo de entrada/saída
+dos outros observadores. O primeiro desbloqueia armas; o segundo enfileira uma
+`AugmentChoice` para a arma do golpe final. A fila de `Progression` guarda metadados
+em vez de apenas contar escolhas. A App reutiliza o estado de seleção para os dois
+tipos; o catálogo limita as ofertas de ronda à arma indicada. Projéteis e ganchos
+de morte transportam a origem do dano, preservada por ricochetes e explosões.
 
 `RoundDirector` gere orçamento e fases; `World.can_spawn_at` verifica geometria e
 ocupação. Um spawn adiado não consome orçamento. As curvas e limites de carga estão

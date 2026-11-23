@@ -6,7 +6,9 @@
 - Movimento com WASD; Espaço dispara na orientação da personagem.
 - Mapas limitados e um modo de mapa infinito.
 - Rondas infinitas com dificuldade crescente e bosses periódicos, inicialmente a cada 10 rondas.
-- Três armas iniciais: pistola, shotgun e metralhadora.
+- Três armas: pistola desde o início, SMG ao começar a ronda 5 e shotgun ao começar a ronda 10.
+- Munições finitas por arma e 35% de probabilidade de cada inimigo largar uma caixa de munições.
+- Cada ronda concluída concede uma escolha adicional de augment para a arma do golpe final.
 - Dois inimigos iniciais: normal e vermelho inspirado no original.
 - XP e níveis durante a partida; cada level-up pausa o jogo e apresenta três augments.
 - Cinzento: atributos de uma arma. Dourado: atributos mais fortes da personagem.
@@ -25,11 +27,13 @@ As regras seguintes permitem avançar, mas são ajustáveis durante implementaç
 | Tema | Proposta inicial |
 | --- | --- |
 | Orientação | Oito direções; diagonais normalizadas; ao parar mantém a última orientação; começa virado para baixo. |
-| Disparo | Segurar Espaço repete disparos respeitando o cooldown; munições ilimitadas na primeira versão. |
+| Disparo | Segurar Espaço repete disparos respeitando cooldown e munições; cada disparo consome uma bala/cartucho, independentemente dos pellets. |
 | Troca de arma | Teclas 1/2/3, com cooldown por arma para impedir contornar a cadência. |
-| Disponibilidade de armas | As três armas disponíveis na partida inicial; desbloqueios ficam para expansão. |
+| Disponibilidade de armas | Pistola na ronda 1; SMG no início da 5; shotgun no início da 10. Teclas fixas 1=pistola, 2=shotgun, 3=SMG. |
+| Munições | Reserva inicial/máxima/por caixa: pistola 60/180/18, SMG 120/360/60, shotgun 24/72/8. Sem carregadores/recarga. |
+| Drops | Cada morte tem 35% de chance de largar uma caixa na posição do inimigo; recolha por contacto abastece todas as armas desbloqueadas. |
 | Rondas | Orçamento finito de inimigos por ronda; termina quando não há spawns pendentes nem inimigos vivos. |
-| Entre rondas | Intervalo curto configurável; o relógio da partida também pausa em menus e escolhas. |
+| Entre rondas | Escolha adicional de três augments cinzentos da arma do golpe final, seguida de intervalo curto; menus e escolhas pausam a simulação. |
 | Dificuldade | Quantidade, composição e atributos crescem por curvas configuráveis; limites de ativos controlam carga sem terminar as rondas. |
 | Vermelho | Mais resistente, com ataque à distância e preparação visível; confirmar o comportamento pretendido ao implementar. |
 | Boss | Um boss inicial com fases de perseguição, preparação, ataque e recuperação, nas rondas 10, 20, 30… |
@@ -75,7 +79,7 @@ o jogador ou a arma num conjunto crescente de `if augment_id == ...`.
 | --- | --- |
 | XP, nível e augments | Saldo de moeda |
 | Ronda e entidades | Níveis comprados na loja |
-| Vida atual e cooldowns | Versão do formato de save |
+| Vida, cooldowns, munições e desbloqueios | Versão do formato de save |
 | Efeitos temporários | Preferências, quando existirem |
 
 Criar uma partida aplica as melhorias do perfil a uma nova base. Nunca voltar a
@@ -95,7 +99,8 @@ dependências reais; algumas tarefas podem avançar independentemente.
 
 ## Regras implementadas de armas, rondas e augments
 
-- Disparo: `Player.try_fire()` é a única autoridade do cooldown. O mundo cria os
+- Disparo: `Player.try_fire()` verifica vida, cooldown e reserva em `Arsenal`, consumindo
+  uma munição apenas por disparo aceite. O mundo cria os
   projéteis apenas quando aceita o comando; a animação usa esse resultado. Cada arma
   conserva o seu cooldown ao trocar. Input e simulação usam passos variáveis, pelo
   que o instante do disparo fica quantizado ao frame (no máximo um tiro por frame).
@@ -108,7 +113,19 @@ dependências reais; algumas tarefas podem avançar independentemente.
 - A base permanente é copiada ao criar a partida. Recalcular atributos começa
   sempre nessa base, sem reaplicar multiplicadores anteriores.
 - Uma oferta sorteada pertence ao mundo e mantém-se até ser consumida. Cada
-  aquisição limpa a oferta, consome um nível pendente e recalcula elegibilidade.
+  aquisição limpa a oferta, consome uma escolha pendente e recalcula elegibilidade.
+- A fila `AugmentChoice` distingue level-ups de recompensas de ronda, guardando nível,
+  número de ronda e arma alvo. A morte final pode gerar ambas sem perder nenhuma.
+  Armas bloqueadas não aparecem nas escolhas de level-up. Bónus de ronda só oferecem
+  os cinzentos da arma alvo e podem ultrapassar os limites de acumulação normais para
+  continuarem disponíveis nas rondas infinitas; os limites derivados mantêm-se.
+- Projéteis guardam a arma de origem. Ricochetes e explosões encadeadas preservam
+  essa autoria, mesmo com troca de arma. Mortes por satélites independentes usam a
+  arma ativa. `RoundCompleted` transporta a arma do último inimigo morto.
+- Caixas de munições vivem até 60 segundos de simulação (máximo de 100 ativas),
+  piscam nos últimos 5 segundos e desaparecem ao sair da área simulada no infinito.
+  Uma caixa não é consumida se todas as reservas estiverem cheias. Pausa/seleção
+  preservam reservas, caixas e tempos; repetir a partida reinicia tudo.
 - Pesos, IDs, alvos, referências e ciclos de pré-requisitos são validados. As
   incompatibilidades são respeitadas nos dois sentidos. Fallback pode apresentar
   menos de três cartas se não houver suficientes; um pool vazio dispensa o nível.

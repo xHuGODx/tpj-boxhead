@@ -1,8 +1,8 @@
-"""Escolha de augment ao subir de nível: o mundo fica parado por baixo.
+"""Escolha de augment por nível ou ronda: o mundo fica parado por baixo.
 
 Este estado só desenha a partida congelada (nada avança aqui: nem movimento, tiros,
 spawns, cooldowns ou relógio) e devolve a escolha ao `App`, que aplica o augment e
-abre a escolha seguinte, se houver mais níveis na fila, ou retoma a partida.
+abre a escolha seguinte, se houver mais recompensas na fila, ou retoma a partida.
 """
 
 from __future__ import annotations

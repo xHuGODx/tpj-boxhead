@@ -59,6 +59,31 @@ Fullscreen can also be toggled in the main menu or enabled at startup with
 canvas keeps its aspect ratio and play area; some monitors may show black bars.
 Mouse coordinates are mapped back to the canvas for augment selection.
 
+## Weapons, ammo and round rewards
+
+Each run starts with the pistol. Other weapons unlock automatically at the start
+of their round and arrive with their own ammo supply. Their keys stay fixed.
+
+| Weapon | Key | Unlock round | Starting ammo | Capacity | Ammo per crate |
+| --- | --- | --- | --- | --- | --- |
+| Pistol | 1 | 1 | 60 | 180 | 18 |
+| SMG | 3 | 5 | 120 | 360 | 60 |
+| Shotgun | 2 | 10 | 24 | 72 | 8 |
+
+A successful trigger pull consumes one bullet or shell; shotgun pellets share a
+single shell. There are no magazines or reload controls. Each killed enemy has a
+35% chance to drop an ammo crate at its position. Walk over it to replenish all
+unlocked weapons, up to their capacities. Crates remain on the ground if every
+reserve is full, expire after 60 seconds of gameplay, and pause with the game.
+
+Completing a round pauses the game for one additional augment choice: three gray
+augments for the weapon that killed the final enemy. This reward is separate from
+XP level-ups; simultaneous rewards are queued and resolved one at a time. Bullets
+and ricochets retain their firing weapon after switching, and chain explosions
+inherit their triggering weapon. Independent orbital kills credit the active weapon.
+Round bonuses can exceed normal augment stack limits, while derived stat caps
+still apply. All ammo, unlocks and round rewards reset with each new run.
+
 ## Development
 
 The course prioritizes code organization and design patterns. This project uses

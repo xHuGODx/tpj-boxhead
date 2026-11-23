@@ -97,6 +97,8 @@ class AugmentCards:
 
     def _header(self, world, offer, compact):
         center=SIZE[0]//2
+        choice = world.progression.next_choice
+        round_reward = choice is not None and choice.weapon is not None
         points=[(center-264,42),(center+264,42),(center+264,62),(center+290,90),
                 (center+264,118),(center+264,136),(center-264,136),(center-264,118),
                 (center-290,90),(center-264,62)]
@@ -104,10 +106,13 @@ class AugmentCards:
             points=[(x,round(y*.75-10)) for x,y in points]
         pygame.draw.polygon(self._canvas,(43,22,61),points)
         pygame.draw.polygon(self._canvas,(236,169,38),points,5)
-        self._text(f"LEVEL {world.progression.level}",(center,58 if compact else 88),64 if compact else 76,bold=True)
+        title = (f"ROUND {choice.round_number}" if round_reward
+                 else f"LEVEL {choice.level if choice else world.progression.level}")
+        self._text(title,(center,58 if compact else 88),64 if compact else 76,bold=True)
         self._diamond((center-185,58 if compact else 88),(255,202,45),11)
         self._diamond((center+185,58 if compact else 88),(255,202,45),11)
-        self._text("Choose an augment",(center,131 if compact else 181),44,bold=True)
+        subtitle = f"{choice.weapon} round reward" if round_reward else "Choose an augment"
+        self._text(subtitle,(center,131 if compact else 181),44,bold=True)
         pygame.draw.line(self._canvas,(175,113,38),(center-310,131 if compact else 181),(center-215,131 if compact else 181),3)
         pygame.draw.line(self._canvas,(175,113,38),(center+215,131 if compact else 181),(center+310,131 if compact else 181),3)
         queued=world.progression.pending_choices-1
@@ -153,7 +158,9 @@ class AugmentCards:
         self._paragraph(augment.description,effect.inflate(-24,-14),42,True)
         self._divider(rect,rect.y+434,color)
         have=world.inventory.stacks(augment.id)
-        self._paragraph(f"Stacks: {have} -> {have+1} (max. {augment.max_stacks})",
+        choice = world.progression.next_choice
+        limit = "round bonus" if choice and choice.weapon else f"max. {augment.max_stacks}"
+        self._paragraph(f"Stacks: {have} -> {have+1} ({limit})",
                         pygame.Rect(rect.x+40,rect.y+452,rect.width-80,38),30,color=(200,190,189))
 
     def draw(self, surface, world, offer, cursor, locked):
