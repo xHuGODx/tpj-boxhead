@@ -8,7 +8,9 @@ import pygame
 
 from boxhead.core.state import State
 from boxhead.profile import Profile
-from boxhead.shop import UPGRADES, PurchaseResult, UpgradeDef, buy
+from boxhead.core.catalog import catalog
+from boxhead.presentation.sprites import SpritePainter
+from boxhead.shop import UPGRADES, PurchaseResult, UpgradeDef
 
 HINT = "W/S ou setas para escolher · ENTER compra · ESC volta"
 MESSAGES = {
@@ -16,8 +18,8 @@ MESSAGES = {
     PurchaseResult.INSUFFICIENT_FUNDS: "Moeda insuficiente.",
     PurchaseResult.MAX_LEVEL: "Já está no nível máximo.",
     PurchaseResult.UNKNOWN: "Melhoria desconhecida.",
+    PurchaseResult.SAVE_FAILED: "Não foi possível guardar. Compra cancelada.",
 }
-SAVE_FAILED = "Comprado, mas não foi possível guardar o perfil."
 
 
 def cost_label(upgrade: UpgradeDef, level: int) -> str:
@@ -33,12 +35,12 @@ class ShopState(State):
         self,
         profile: Profile,
         on_back: Callable[[], None],
-        save: Callable[[], bool],
+        purchase: Callable[[str], PurchaseResult],
         upgrades: tuple[UpgradeDef, ...] = UPGRADES,
     ) -> None:
         self._profile = profile
         self._on_back = on_back
-        self._save = save  # devolve False se não conseguiu guardar
+        self._purchase_upgrade = purchase
         self._upgrades = upgrades
         self._cursor = 0
         self._message = ""
@@ -56,6 +58,8 @@ class ShopState(State):
         self._title = pygame.font.Font(None, 72)
         self._body = pygame.font.Font(None, 34)
         self._small = pygame.font.Font(None, 24)
+        self._painter = SpritePainter(catalog())
+        self._painter.prepare(["shop/shop_upgrades.png"])
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type != pygame.KEYDOWN:
@@ -71,11 +75,9 @@ class ShopState(State):
             self._purchase(self._upgrades[self._cursor])
 
     def _purchase(self, upgrade: UpgradeDef) -> None:
-        result = buy(self._profile, upgrade.id, self._upgrades)
+        result = self._purchase_upgrade(upgrade.id)
         self._message_ok = result is PurchaseResult.BOUGHT
         self._message = MESSAGES[result]
-        if result is PurchaseResult.BOUGHT and not self._save():
-            self._message, self._message_ok = SAVE_FAILED, False
 
     def update(self, dt: float) -> None:
         pass
@@ -98,6 +100,7 @@ class ShopState(State):
             pygame.draw.rect(surface, (28, 32, 42), rect, border_radius=10)
             border = (255, 220, 120) if selected else (70, 78, 92)
             pygame.draw.rect(surface, border, rect, 3 if selected else 1, border_radius=10)
+            self._painter.blit(surface, "shop/shop_upgrades.png", (rect.x-32, rect.centery), (48,48), index)
             name = self._body.render(upgrade.name, True, (255, 255, 255))
             surface.blit(name, (rect.x + 18, rect.y + 12))
             desc = self._small.render(upgrade.description, True, (180, 188, 200))

@@ -5,6 +5,10 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from boxhead.world.result import RunResult
 
 
 @dataclass(frozen=True)
@@ -31,8 +35,22 @@ class RoundStarted(Event):
 
 
 @dataclass(frozen=True)
-class RoundEnded(Event):
+class RoundCompleted(Event):
     round_number: int
+
+
+# Nome antigo mantido para consumidores existentes; é o mesmo tipo de evento.
+RoundEnded = RoundCompleted
+
+
+@dataclass(frozen=True)
+class PlayerDied(Event):
+    run_id: str
+
+
+@dataclass(frozen=True)
+class RunFinished(Event):
+    result: "RunResult"
 
 
 Handler = Callable[[Event], None]

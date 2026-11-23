@@ -12,9 +12,10 @@ O mesmo objeto não volta a entrar ao pedir uma transição para si próprio.
 As transições são imediatas; ao criar estados sobrepostos será necessário definir
 explicitamente quem recebe input e quem atualiza.
 
-O setup contém apenas `MenuState`. Não há partida, loja ou sistema de augments implementados.
-O delta temporal do ecrã inicial é variável e limitado a 100 ms. A simulação de
-combate deverá escolher e documentar o seu passo temporal ao ser introduzida.
+Menu, partida, pausa, game over, loja e seleção estão implementados. Apenas o estado
+ativo recebe input e update; pausa e seleção desenham a partida sem a atualizar.
+O passo é variável, em segundos, limitado a 100 ms. O relógio continua a ser lido
+durante a pausa para não acumular um delta ao retomar.
 
 ## Direção de dependências proposta
 
@@ -54,14 +55,14 @@ Os materiais da cadeira não são copiados para este repositório.
 | Padrão/técnica | Problema concreto | Situação |
 | --- | --- | --- |
 | Game Loop | Separar eventos, atualização e desenho. | Implementado em `App`. |
-| State / FSM | Trocar comportamento por estado e centralizar transições. | Gestor e menu implementados; estados de partida e IA planeados. |
-| Command | Traduzir WASD/Espaço em intenções, sem entidades conhecerem teclas SDL. | Planeado para controlos. |
-| Update Method | Atualizar entidades com contrato uniforme e tempo explícito. | Planeado para o mundo. |
-| Observer + Event Queue | Uma morte desencadeia XP, ronda, moeda e som sem chamadas cruzadas entre sistemas. | Planeado; publicar e processar são momentos distintos. |
-| Component | Combinar vida, arma e efeitos sem uma hierarquia para cada combinação de augments. | Planeado, com componentes pequenos. |
-| Type Object | Separar a definição de arma/inimigo/augment do estado de cada instância. | Planeado para catálogos. |
-| Flyweight | Partilhar definições e assets imutáveis entre muitos inimigos. | Aplicar ao carregar conteúdo; vida/cooldown nunca partilhados. |
-| Broad/narrow phase | Reduzir pares candidatos e confirmar contacto pela geometria apropriada. | Planeado para colisões e mapa infinito. |
+| State / FSM | Trocar comportamento por estado e centralizar transições. | Implementado nos ecrãs e IA; rondas usam estados enumerados. |
+| Command | Traduzir WASD/Espaço em intenções, sem entidades conhecerem teclas SDL. | Mensagens de intenção interpretadas pelo mundo/jogador. |
+| Update Method | Atualizar entidades com contrato uniforme e tempo explícito. | Implementado no mundo e entidades. |
+| Observer + Event Queue | Uma morte desencadeia XP, ronda, moeda e som sem chamadas cruzadas entre sistemas. | Implementado para mortes, XP, rondas e resultados; áudio pendente. |
+| Component | Combinar vida, arma e efeitos sem uma hierarquia para cada combinação de augments. | Composição de atributos e comportamentos; sem framework ECS. |
+| Type Object | Separar a definição de arma/inimigo/augment do estado de cada instância. | Definições de armas, inimigos e augments implementadas. |
+| Flyweight | Partilhar definições e assets imutáveis entre muitos inimigos. | Frames partilhados; vida, cooldown e animação são por instância. |
+| Broad/narrow phase | Reduzir pares candidatos e confirmar contacto pela geometria apropriada. | Grelha e geometria implementadas; mapa infinito pendente. |
 
 Não é necessário implementar todos os padrões dos slides. Prototype, Singleton,
 Service Locator e Bytecode não têm, neste momento, um problema que justifique a
@@ -72,14 +73,14 @@ descrita como Decorator se não implementar esse contrato.
 ## Fluxo de uma morte
 
 1. O combate reduz a vida a zero e marca a morte uma única vez.
-2. Publica `EnemyKilled` com identificador, origem e recompensas.
+2. Publica `EnemyKilled` com identificador e recompensas.
 3. Uma fila processa os eventos num ponto definido do tick, por ordem documentada.
-4. Rondas, XP, moeda de partida e áudio reagem através de subscritores próprios.
+4. XP e moeda reagem por subscritores; o diretor consulta os vivos. Áudio pendente.
 5. Se houver level-up, a escolha interrompe a simulação antes do tick seguinte.
 6. A morte do jogador tem prioridade sobre abrir uma seleção de augments.
 
-Eventos produzidos durante o despacho precisam de uma política explícita: por
-exemplo, ficam para o próximo despacho. Efeitos em cadeia devem ter limites.
+Eventos produzidos durante o despacho ficam para a geração seguinte do mesmo
+despacho, com limite de profundidade. Efeitos em cadeia têm limites próprios.
 Subscritores da partida deixam de existir ao sair; repetir partidas não duplica recompensas.
 
 ## Estados propostos
@@ -120,3 +121,28 @@ Estes contratos orientam a implementação e a verificação manual durante o jo
 Os algoritmos específicos ficam a cargo das issues e devem ser escolhidos segundo
 as formas e necessidades reais; GJK é uma
 opção para formas convexas, não uma obrigação para todas as colisões.
+
+
+## Implementação: colisões, eventos, resultados e sprites
+
+- `core/geometry.py` inclui tangência nos contactos e separa deteção de resposta.
+  Projéteis usam percurso varrido com o seu raio: círculo/círculo e soma de Minkowski
+  com faixas/cantos circulares para AABBs. Coordenadas float, sem tolerância extra;
+  objetos móveis além dos projéteis continuam a usar contactos discretos.
+- `World` coordena a simulação. Eventos são publicados durante o tick e despachados
+  por gerações depois dele; eventos produzidos no despacho são processados na geração
+  seguinte, no mesmo despacho, com limite de 32 gerações. `PlayerDied` é emitido uma
+  vez; `RoundCompleted` mantém `RoundEnded` como alias de compatibilidade.
+- `RunResult` é um snapshot imutável com UUID, motivo (death/abandoned/quit), ronda,
+  mortes, nível, XP efetivo total, moeda e tempo de simulação. `World.finish()` é
+  idempotente e publica `RunFinished` uma única vez. A morte tem prioridade sobre
+  abrir uma seleção de augments.
+- `ProfileStore.commit()` guarda uma cópia antes de publicar o estado em memória.
+  Compras usam esse caminho; recompensas guardam também os IDs das partidas creditadas.
+  Se a escrita falhar, os resultados ficam pendentes na aplicação, com aviso e nova
+  tentativa no menu, nova partida e saída. Se o processo terminar sem nunca conseguir
+  escrever, as recompensas pendentes em memória não sobrevivem ao reinício.
+- `presentation/HUD` lê os modelos sem os alterar. `SpritePainter` prepara frames e
+  cacheia transformações; os assets do bundle e o manifest também acompanham o wheel.
+  Os adaptadores existentes ainda usam o catálogo global; passar essa dependência
+  explicitamente permanece uma melhoria opcional.

@@ -12,16 +12,18 @@ Os eventos publicados são despachados pelo estado de partida depois do tick.
 from __future__ import annotations
 
 import random
+from uuid import uuid4
+from boxhead.world.result import RunReason, RunResult
 
 from pygame import Rect, Vector2
 
 from boxhead.core.commands import Command, Shoot
-from boxhead.core.events import EnemyKilled, EventQueue, make_counter
+from boxhead.core.events import EnemyKilled, EventQueue, PlayerDied, RunFinished, make_counter
 from boxhead.core.geometry import (
     SpatialGrid,
     circle_aabb,
     circle_circle,
-    segment_aabb_hit,
+    swept_circle_aabb_hit,
     segment_circle_hit,
 )
 from boxhead.world.attributes import Modifiers
@@ -67,6 +69,10 @@ class World:
         self.events = events if events is not None else EventQueue()
         self.rng = rng if rng is not None else random.Random()
         self.stats = RunStats()
+        self.run_id = uuid4().hex
+        self.elapsed = 0.0
+        self.result: RunResult | None = None
+        self._death_published = False
         # `base_modifiers`: a base da partida (melhorias permanentes do perfil). Os augments
         # somam-se a ela e tudo é recalculado do zero, nunca por cima de valores já alterados.
         self.inventory = AugmentInventory(base_modifiers)
@@ -133,6 +139,8 @@ class World:
     # ------------------------------------------------------------------ comandos
 
     def apply(self, command: Command, dt: float) -> None:
+        if self.result is not None or not self.player.alive:
+            return
         # Ler can_fire ANTES: o jogador ativa o cooldown ao aplicar o comando.
         if isinstance(command, Shoot) and self.player.can_fire:
             self._fire_weapon()
@@ -154,6 +162,8 @@ class World:
                 radius=weapon.projectile_radius,
                 range_left=weapon.projectile_range,
                 color=weapon.color,
+                sprite_key=("projectiles/player_pellet.png" if weapon.name == "Shotgun"
+                            else "projectiles/player_bullet.png"),
             )
             for behavior in self.behaviors.values():
                 behavior.on_fire(self, projectile)
@@ -266,7 +276,7 @@ class World:
 
         best_t, best_target = 2.0, None  # 2.0 = "ainda sem acerto"; None = obstáculo
         for obstacle in self.map.obstacles:
-            t = self._segment_obstacle_hit(start, end, obstacle)
+            t = self._segment_obstacle_hit(start, end, obstacle, proj.radius)
             if t is not None and t < best_t:
                 best_t, best_target = t, None
         if proj.hostile:  # projétil de inimigo: só pode acertar no jogador
@@ -311,16 +321,19 @@ class World:
             proj.alive = False
 
     @staticmethod
-    def _segment_obstacle_hit(start: Vector2, end: Vector2, obstacle: ObstacleDef) -> float | None:
+    def _segment_obstacle_hit(start: Vector2, end: Vector2, obstacle: ObstacleDef, radius: float = 0) -> float | None:
         if obstacle.circular:
             return segment_circle_hit(
-                start, end, Vector2(obstacle.rect.center), obstacle.rect.width / 2
+                start, end, Vector2(obstacle.rect.center), obstacle.rect.width / 2 + radius
             )
-        return segment_aabb_hit(start, end, obstacle.rect)
+        return swept_circle_aabb_hit(start, end, radius, obstacle.rect)
 
     # ------------------------------------------------------------------ tick
 
     def update(self, dt: float) -> None:
+        if self.result is not None:
+            return
+        self.elapsed += dt
         self.player.update(dt)
 
         self._rebuild_grid()
@@ -342,8 +355,11 @@ class World:
         self.enemies = [e for e in self.enemies if e.alive]
         self.projectiles = [p for p in self.projectiles if p.alive]
 
-        if self.director is not None:
+        if self.director is not None and self.player.alive:
             self.director.update(dt, self)
+        if not self.player.alive and not self._death_published:
+            self._death_published = True
+            self.events.publish(PlayerDied(self.run_id))
 
     # ------------------------------------------------------------------ colisões com o mapa
 
@@ -356,7 +372,7 @@ class World:
     def _obstacle_contact(position: Vector2, radius: float, obstacle: ObstacleDef):
         if obstacle.circular:
             return circle_circle(
-                position, radius, Vector2(obstacle.rect.center), obstacle.rect.width / 2
+                position, radius, Vector2(obstacle.rect.center), obstacle.rect.width / 2 + radius
             )
         return circle_aabb(position, radius, obstacle.rect)
 
@@ -374,3 +390,13 @@ class World:
                 break
         # Um empurrão de obstáculo não pode lançar o círculo para fora da arena.
         self._clamp_to_arena(position, radius)
+
+
+    def finish(self, reason: RunReason) -> RunResult:
+        """Congela um único resultado; chamadas repetidas devolvem o mesmo objeto."""
+        if self.result is None:
+            self.result = RunResult(self.run_id, reason, self.stats.round,
+                                    self.stats.kills, self.progression.level,
+                                    self.progression.total_xp, self.stats.coins, self.elapsed)
+            self.events.publish(RunFinished(self.result))
+        return self.result

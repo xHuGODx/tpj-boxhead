@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from boxhead.profile import Profile
+from boxhead.profile import Profile, ProfileStore
 from boxhead.world.attributes import Modifiers
 from boxhead.world.augments import Effect, MaxHealth, MoveSpeed, XpGain
 
@@ -44,6 +44,7 @@ class PurchaseResult(Enum):
     INSUFFICIENT_FUNDS = "insufficient_funds"
     MAX_LEVEL = "max_level"
     UNKNOWN = "unknown"
+    SAVE_FAILED = "save_failed"
 
 
 def buy(
@@ -74,3 +75,17 @@ def profile_modifiers(profile: Profile, upgrades: tuple[UpgradeDef, ...] = UPGRA
         for _ in range(min(profile.level(upgrade.id), upgrade.max_level)):
             upgrade.effect.apply(modifiers)
     return modifiers
+
+
+def purchase(profile: Profile, store: ProfileStore, upgrade_id: str,
+             upgrades: tuple[UpgradeDef, ...] = UPGRADES) -> PurchaseResult:
+    """Valida, guarda uma cópia e confirma. Uma falha mantém saldo e níveis."""
+    from copy import deepcopy
+    candidate = deepcopy(profile)
+    result = buy(candidate, upgrade_id, upgrades)
+    if result is PurchaseResult.BOUGHT:
+        try:
+            store.commit(profile, candidate)
+        except OSError:
+            return PurchaseResult.SAVE_FAILED
+    return result

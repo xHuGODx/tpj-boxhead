@@ -12,6 +12,8 @@ from collections.abc import Callable
 import pygame
 
 from boxhead.core.state import State
+from boxhead.core.catalog import catalog
+from boxhead.presentation.sprites import SpritePainter
 from boxhead.world.augments import Augment, Offer, Rarity
 from boxhead.world.world import World
 
@@ -80,6 +82,8 @@ class AugmentSelectState(State):
         self._name = pygame.font.Font(None, 32)
         self._body = pygame.font.Font(None, 26)
         self._small = pygame.font.Font(None, 22)
+        self._painter = SpritePainter(catalog())
+        self._painter.prepare(["cards/card_frames.png", "augments/augment_icons.png"])
 
     # ------------------------------------------------------------------ layout / input
 
@@ -154,7 +158,8 @@ class AugmentSelectState(State):
         color = RARITY_COLOR[augment.rarity]
         selected = index == self._cursor
         dim = self.locked
-        pygame.draw.rect(surface, (28, 32, 42), rect, border_radius=10)
+        rarity_index = {Rarity.GRAY: 0, Rarity.GOLD: 1, Rarity.PRISMATIC: 2}[augment.rarity]
+        self._painter.blit(surface, "cards/card_frames.png", rect.center, rect.size, rarity_index)
         border = color if not dim else tuple(c // 2 for c in color)
         pygame.draw.rect(surface, border, rect, 4 if selected else 2, border_radius=10)
 
@@ -163,6 +168,9 @@ class AugmentSelectState(State):
         tag = self._small.render(RARITY_LABEL[augment.rarity], True, color)
         surface.blit(tag, tag.get_rect(topright=(rect.right - 16, rect.y + 20)))
 
+        from boxhead.world.augments import AUGMENTS
+        icon = next((i for i, a in enumerate(AUGMENTS) if a.id == augment.id), 0)
+        self._painter.blit(surface, "augments/augment_icons.png", (rect.right-42, rect.top+58), (42,42), icon)
         y = rect.y + 80
         for line in wrap_text(self._name, augment.name, rect.width - 32):
             surface.blit(self._name.render(line, True, (255, 255, 255)), (rect.x + 16, y))
@@ -174,4 +182,4 @@ class AugmentSelectState(State):
 
         have = self._world.inventory.stacks(augment.id)
         text = self._small.render(stacks_label(have, augment.max_stacks), True, (153, 163, 176))
-        surface.blit(text, (rect.x + 16, rect.bottom - 32))
+        surface.blit(text, (rect.x + 16, rect.bottom - 58))

@@ -87,6 +87,11 @@ class SpriteCatalog:
     def has(self, key: str) -> bool:
         return key in self._entries
 
+    def preload(self) -> None:
+        """Carrega o manifest uma vez, depois de o SDL estar pronto."""
+        for key in self._entries:
+            self.sheet(key)
+
     def sheet(self, key: str) -> SpriteSheet:
         if key in self._sheets:
             return self._sheets[key]

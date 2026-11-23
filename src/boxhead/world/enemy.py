@@ -228,6 +228,8 @@ class RangedAttackState(EnemyState):
                             range_left=ranged.projectile_range,
                             color=ranged.color,
                             hostile=True,
+                            sprite_key=("projectiles/boss_projectile.png" if ranged.ring
+                                        else "projectiles/enemy_fireball.png"),
                         )
                     )
         if self._fired and self._elapsed >= d.windup + d.recovery:

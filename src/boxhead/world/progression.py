@@ -35,6 +35,7 @@ class Progression:
         self.curve = curve
         self._xp_multiplier = xp_multiplier
         self.level = 1
+        self.total_xp = 0.0
         self.xp = 0.0  # XP acumulado dentro do nível atual
         self.pending_choices = 0
         self._events: EventQueue | None = None
@@ -51,7 +52,9 @@ class Progression:
         """Soma XP (com o multiplicador atual); devolve quantos níveis foram ganhos."""
         if amount <= 0:
             return 0
-        self.xp += amount * self._xp_multiplier()
+        earned = amount * self._xp_multiplier()
+        self.total_xp += earned
+        self.xp += earned
         gained = 0
         while self.xp >= self.xp_needed:
             self.xp -= self.xp_needed

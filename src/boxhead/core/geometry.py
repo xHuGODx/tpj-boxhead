@@ -25,7 +25,8 @@ class Contact:
 
 
 def aabb_overlap(a: Rect, b: Rect) -> bool:
-    return a.colliderect(b)
+    return (a.left <= b.right and a.right >= b.left
+            and a.top <= b.bottom and a.bottom >= b.top)
 
 
 def circle_circle(
@@ -34,7 +35,7 @@ def circle_circle(
     delta = center_b - center_a
     distance = delta.length()
     radii = radius_a + radius_b
-    if distance >= radii:
+    if distance > radii:
         return None
     # Centros coincidentes: não há direção natural, escolhe-se uma estável.
     normal = delta / distance if distance else Vector2(0, -1)
@@ -48,7 +49,7 @@ def circle_aabb(center: Vector2, radius: float, rect: Rect) -> Contact | None:
     )
     delta = closest - center
     distance_sq = delta.length_squared()
-    if distance_sq >= radius * radius:
+    if distance_sq > radius * radius:
         return None
     if distance_sq > 0:
         distance = distance_sq**0.5
@@ -145,3 +146,34 @@ class SpatialGrid[T]:
             for item in self._cells.get(cell, ()):
                 found.setdefault(id(item), item)
         return list(found.values())
+
+
+def swept_circle_aabb_hit(start: Vector2, end: Vector2, radius: float, rect: Rect) -> float | None:
+    """Primeiro contacto de um círculo em movimento com uma AABB.
+
+    Soma de Minkowski: duas faixas e quatro cantos circulares. Ao contrário de
+    inflacionar só a caixa, respeita os cantos arredondados. Tangência conta.
+    """
+    if radius == 0:
+        return segment_aabb_hit(start, end, rect)
+    # Rect só aceita inteiros; as faixas são calculadas em coordenadas float.
+    def slab(left, top, right, bottom):
+        enter, leave = 0.0, 1.0
+        for origin, delta, low, high in (
+            (start.x, end.x-start.x, left, right),
+            (start.y, end.y-start.y, top, bottom),
+        ):
+            if delta == 0:
+                if origin < low or origin > high:
+                    return None
+            else:
+                a, b = sorted(((low-origin)/delta, (high-origin)/delta))
+                enter, leave = max(enter, a), min(leave, b)
+                if enter > leave:
+                    return None
+        return enter
+    hits = [slab(rect.left-radius, rect.top, rect.right+radius, rect.bottom),
+            slab(rect.left, rect.top-radius, rect.right, rect.bottom+radius)]
+    hits += [segment_circle_hit(start, end, Vector2(corner), radius)
+             for corner in (rect.topleft, rect.topright, rect.bottomleft, rect.bottomright)]
+    return min((t for t in hits if t is not None), default=None)

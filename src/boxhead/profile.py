@@ -37,6 +37,8 @@ class Profile:
     upgrades: dict[str, int] = field(default_factory=dict)  # id da melhoria → nível comprado
     preferences: dict[str, Any] = field(default_factory=dict)  # reservado para o futuro
 
+    credited_runs: list[str] = field(default_factory=list)
+
     def credit(self, amount: int) -> None:
         if amount < 0:
             raise ValueError("não se credita moeda negativa")
@@ -51,6 +53,7 @@ class Profile:
             "balance": self.balance,
             "upgrades": dict(self.upgrades),
             "preferences": dict(self.preferences),
+            "credited_runs": list(self.credited_runs),
         }
 
     @classmethod
@@ -66,7 +69,11 @@ class Profile:
             raise ProfileFormatError("melhorias inválidas")
         if not isinstance(preferences, dict):
             raise ProfileFormatError("preferências inválidas")
-        return cls(balance=balance, upgrades=dict(upgrades), preferences=dict(preferences))
+        credited_runs = data.get("credited_runs", [])
+        if not isinstance(credited_runs, list) or not all(isinstance(i, str) for i in credited_runs):
+            raise ProfileFormatError("registo de partidas inválido")
+        return cls(balance=balance, upgrades=dict(upgrades), preferences=dict(preferences),
+                   credited_runs=list(dict.fromkeys(credited_runs)))
 
 
 def _is_count(value: object) -> bool:
@@ -160,3 +167,21 @@ class ProfileStore:
         except BaseException:
             temporary.unlink(missing_ok=True)
             raise
+
+
+    def commit(self, profile: Profile, candidate: Profile) -> None:
+        """Só publica o novo estado em memória depois de o guardar com sucesso."""
+        self.save(candidate)
+        profile.balance = candidate.balance
+        profile.upgrades = candidate.upgrades
+        profile.preferences = candidate.preferences
+        profile.credited_runs = candidate.credited_runs
+
+    def credit_run(self, profile: Profile, run_id: str, coins: int) -> None:
+        from copy import deepcopy
+        if run_id in profile.credited_runs:
+            return
+        candidate = deepcopy(profile)
+        candidate.credit(coins)
+        candidate.credited_runs.append(run_id)
+        self.commit(profile, candidate)

@@ -6,16 +6,18 @@ import random
 import pygame
 
 from boxhead.config import AppConfig
+from boxhead.core.catalog import catalog
 from boxhead.core.events import EventQueue
 from boxhead.core.state import State, StateMachine
 from boxhead.profile import LoadStatus, Profile, ProfileStore, default_profile_path
-from boxhead.shop import profile_modifiers
+from boxhead.shop import profile_modifiers, purchase
 from boxhead.states.augment_select import AugmentSelectState
 from boxhead.states.game_over import GameOverState
 from boxhead.states.menu import MenuState
 from boxhead.states.paused import PausedState
 from boxhead.states.playing import PlayingState
 from boxhead.states.shop import ShopState
+from boxhead.world.result import RunReason, RunResult
 from boxhead.world.world import World
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,7 @@ class App:
         loaded = self.profile_store.load()
         self.profile: Profile = loaded.profile
         self._profile_notice = loaded.detail if loaded.status in _WARN_STATUSES else None
+        self._pending_results: dict[str, RunResult] = {}
         self._active_world: World | None = None  # partida em curso, ainda por creditar
 
     def stop(self) -> None:
@@ -42,32 +45,35 @@ class App:
 
     # ------------------------------------------------------------------ perfil
 
-    def _save_profile(self) -> bool:
-        """Guarda o perfil; um erro de disco nunca derruba o jogo."""
-        try:
-            self.profile_store.save(self.profile)
-        except OSError as error:
-            logger.warning("não foi possível guardar o perfil: %s", error)
-            return False
-        return True
+    def _retry_rewards(self) -> None:
+        for run_id, result in list(self._pending_results.items()):
+            try:
+                self.profile_store.credit_run(self.profile, run_id, result.coins)
+            except OSError as error:
+                logger.warning("Recompensa %s pendente: %s", run_id, error)
+                self._profile_notice = "Recompensa por guardar; nova tentativa no menu."
+                return
+            del self._pending_results[run_id]
+        self._profile_notice = None
 
-    def _finish_run(self, world: World | None = None) -> None:
-        """Credita a moeda da partida ao perfil, uma única vez.
-
-        Chamado quando a partida acaba, seja por morte, por abandonar para o menu ou por
-        fechar a janela a meio. A marca `credited` impede qualquer segundo crédito.
-        """
+    def _finish_run(self, world: World | None = None, reason: RunReason = "quit") -> RunResult | None:
         world = world if world is not None else self._active_world
-        if world is None or world.stats.credited:
-            return
-        world.stats.credited = True
+        if world is None:
+            return None
+        # Recompensas já publicadas são contabilizadas antes do snapshot.
+        self._events.dispatch()
+        result = world.finish(reason)
+        self._events.dispatch()
+        world.stop_listening()
+        self._pending_results[result.run_id] = result
+        self._retry_rewards()
+        world.stats.credited = result.run_id in self.profile.credited_runs
         if world is self._active_world:
             self._active_world = None
-        self.profile.credit(world.stats.coins)
-        self._save_profile()
+        return result
 
     def _abandon_run(self) -> None:
-        self._finish_run()
+        self._finish_run(reason="abandoned")
         self._to_menu()
 
     # ------------------------------------------------------------------ navegação
@@ -82,14 +88,24 @@ class App:
         )
 
     def _to_menu(self) -> None:
+        self._retry_rewards()
         assert self._machine is not None
         self._machine.change(self._make_menu())
 
     def _to_shop(self) -> None:
         assert self._machine is not None
-        self._machine.change(ShopState(self.profile, self._to_menu, self._save_profile))
+        self._machine.change(
+            ShopState(
+                self.profile,
+                self._to_menu,
+                lambda upgrade_id: purchase(self.profile, self.profile_store, upgrade_id),
+            )
+        )
 
     def _start(self) -> None:
+        self._retry_rewards()
+        self._events.clear()
+        self._events.clear_subscribers()
         assert self._machine is not None
         world = World(
             events=self._events,
@@ -147,16 +163,16 @@ class App:
         playing.world.choose_augment(augment)
         self._next_selection_or_resume(playing)
 
-    def _game_over(self, world, elapsed: float) -> None:
+    def _game_over(self, world: World) -> None:
         assert self._machine is not None
-        self._finish_run(world)
+        result = self._finish_run(world, "death")
         self._machine.change(
             GameOverState(
-                world,
-                elapsed,
+                result,
                 on_retry=self._start,
                 on_menu=self._to_menu,
                 balance=self.profile.balance,
+                notice=self._profile_notice,
             )
         )
 
@@ -169,6 +185,7 @@ class App:
             pygame.font.init()
             screen = pygame.display.set_mode(self.config.window_size)
             pygame.display.set_caption(self.config.title)
+            catalog().preload()
             clock = pygame.time.Clock()
             machine = StateMachine(self._make_menu())
             self._machine = machine
@@ -192,7 +209,8 @@ class App:
         finally:
             self._running = False
             try:
-                self._finish_run()  
+                self._finish_run()
+                self._retry_rewards()
                 if machine is not None:
                     machine.close()
                 self._events.clear()

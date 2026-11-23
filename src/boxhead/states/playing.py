@@ -2,23 +2,22 @@
 
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 
 import pygame
 from pygame import Vector2
 
 from boxhead.core.catalog import Animation, catalog
+from boxhead.presentation.hud import HUD
+from boxhead.presentation.sprites import SpritePainter
 from boxhead.core.commands import Move, Shoot, SwitchWeapon
 from boxhead.core.events import EventQueue
 from boxhead.core.state import State, StateMachine
-from boxhead.world.augments import Rarity
 from boxhead.world.camera import Camera
 from boxhead.world.enemy import Enemy, EnemyDef
 from boxhead.world.enemy_sprite import EnemyAnimator, EnemySprite
 from boxhead.world.environment_sprite import EnvironmentSprite
 from boxhead.world.player_sprite import PlayerSprite
-from boxhead.world.rounds import Phase
 from boxhead.world.world import World
 
 SPRITE_RENDER_SIZE = (64, 64)
@@ -30,21 +29,6 @@ SHOOT_ANIMATION_SECONDS = 3 / 12
 CAMERA_SPEED = 8.0
 
 _CONTROL_KEYS = (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_SPACE)
-_TEXT = (225, 230, 237)
-_MUTED = (153, 163, 176)
-_ACCENT = (255, 220, 120)
-RARITY_COLORS = {
-    Rarity.GRAY: (170, 176, 186),
-    Rarity.GOLD: (235, 190, 70),
-    Rarity.PRISMATIC: (190, 120, 255),
-}
-
-
-def round_label(director) -> str:
-    """Texto do HUD durante uma ronda; assinala as rondas de boss."""
-    base = f"RONDA {director.round_number}"
-    return f"{base} · BOSS" if director.is_boss_round else base
-
 
 class PlayingState(State):
     """A partida (`World`) pertence a esta instância e sobrevive a pausas.
@@ -59,7 +43,7 @@ class PlayingState(State):
         machine: StateMachine,
         events: EventQueue,
         on_pause: Callable[[State], None],
-        on_game_over: Callable[[World, float], None],
+        on_game_over: Callable[[World], None],
         viewport: tuple[int, int] = (1100, 700),
         world: World | None = None,
         on_level_up: Callable[[State], None] | None = None,
@@ -73,7 +57,6 @@ class PlayingState(State):
         self._world = world if world is not None else World(events=events)
         self._camera = Camera(viewport)
         self._camera.snap(self._world.player.position)
-        self._elapsed = 0.0
         self._pressed: set[int] = set()
         self._shooting_timer = 0.0
         self._active_anim: Animation | None = None
@@ -109,10 +92,14 @@ class PlayingState(State):
             moving=False, shooting=False, orientation=self._world.player.orientation
         )
 
-        icons = catalog().sheet("ui/ui_icons_main.png").animation().frames
-        self._icon_heart, self._icon_coin, self._icon_gem = icons[0], icons[1], icons[2]
-        self._font = pygame.font.Font(None, 28)
-        self._font_big = pygame.font.Font(None, 44)
+        self._hud = HUD()
+        self._painter = SpritePainter(catalog())
+        self._painter.prepare([
+            "weapons/pistol.png", "weapons/shotgun.png", "weapons/smg.png",
+            "projectiles/player_bullet.png", "projectiles/player_pellet.png",
+            "projectiles/enemy_fireball.png", "projectiles/boss_projectile.png",
+            "projectiles/orbital_satellite.png", "effects/chain_explosion.png",
+        ])
 
     def _enemy_sprite_for(self, definition: EnemyDef) -> EnemySprite:
         sprite = self._enemy_sprites.get(definition.name)
@@ -137,7 +124,6 @@ class PlayingState(State):
             self._pressed.clear()
 
     def update(self, dt: float) -> None:
-        self._elapsed += dt
         direction = Vector2(
             (pygame.K_d in self._pressed) - (pygame.K_a in self._pressed),
             (pygame.K_s in self._pressed) - (pygame.K_w in self._pressed),
@@ -158,7 +144,7 @@ class PlayingState(State):
         self._update_animations(dt, direction, fired)
 
         if not self._world.player.alive:
-            self._on_game_over(self._world, self._elapsed)
+            self._on_game_over(self._world)
         elif self._world.progression.pending_choices > 0:
             self._on_level_up(self)  
 
@@ -227,7 +213,7 @@ class PlayingState(State):
         self._draw_projectiles(surface)
         if self._show_debug:
             self._draw_hitboxes(surface)
-        self._draw_hud(surface)
+        self._hud.draw(surface, self._world)
 
     def _draw_entities(self, surface: pygame.Surface, top_left: Vector2, bottom_right: Vector2):
         """Obstáculos, inimigos e jogador ordenados por profundidade (y maior = mais à frente)."""
@@ -252,7 +238,7 @@ class PlayingState(State):
         key = (id(image), size)
         cached = self._scaled.get(key)
         if cached is None:
-            cached = pygame.transform.smoothscale(image, size)
+            cached = pygame.transform.scale(image, size)
             self._scaled[key] = cached
         return cached
 
@@ -269,6 +255,10 @@ class PlayingState(State):
         self._blit_shadow(surface, screen_pos)
         frame = self._scale(self._active_anim.current, SPRITE_RENDER_SIZE)
         surface.blit(frame, frame.get_rect(center=screen_pos))
+        player = self._world.player
+        key = ("weapons/pistol.png", "weapons/shotgun.png", "weapons/smg.png")[player.weapon_slot]
+        center = screen_pos + player.orientation * 24
+        self._painter.blit(surface, key, center, (42, 24), angle=player.orientation.angle_to(Vector2(1, 0)))
 
     def _draw_enemy(self, surface: pygame.Surface, enemy: Enemy) -> None:
         animator = self._animators.get(enemy.id)
@@ -310,35 +300,24 @@ class PlayingState(State):
         surface.blit(sprite, (int(tl.x), int(tl.y)))
 
     def _draw_bodies_and_fx(self, surface: pygame.Surface) -> None:
-        for fx in self._world.fx:  
-            radius = max(2, int(fx.radius * (0.4 + 0.6 * fx.progress)))
-            layer = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
-            alpha = int(170 * (1 - fx.progress))
-            pygame.draw.circle(layer, (255, 150, 60, alpha), (radius, radius), radius)
-            pygame.draw.circle(
-                layer, (255, 230, 150, min(255, alpha + 60)), (radius, radius), radius, 3
-            )
-            center = self._camera.world_to_screen(fx.position)
-            surface.blit(layer, layer.get_rect(center=(int(center.x), int(center.y))))
-        for body in self._world.bodies:  
-            center = self._camera.world_to_screen(body.position)
-            pygame.draw.circle(surface, (20, 40, 60), center, body.radius + 3)
-            pygame.draw.circle(surface, body.color, center, body.radius)
-            pygame.draw.circle(surface, (255, 255, 255), center, max(2, body.radius // 3))
+        for fx in self._world.fx:
+            frames = range(self._painter.frame_count("effects/chain_explosion.png"))
+            index = min(len(frames)-1, int(fx.progress * len(frames)))
+            side = max(8, round(fx.radius * 2))
+            self._painter.blit(surface, "effects/chain_explosion.png",
+                               self._camera.world_to_screen(fx.position), (side, side), index)
+        for body in self._world.bodies:
+            self._painter.blit(surface, "projectiles/orbital_satellite.png",
+                               self._camera.world_to_screen(body.position), (32, 32),
+                               int(self._world.elapsed * 10))
 
     def _draw_projectiles(self, surface: pygame.Surface) -> None:
         for proj in self._world.projectiles:
-            head = self._camera.world_to_screen(proj.position)
-            if (
-                proj.hostile
-            ):  
-                pygame.draw.circle(surface, (90, 20, 10), head, int(proj.radius) + 3)
-                pygame.draw.circle(surface, proj.color, head, int(proj.radius) + 1)
-                pygame.draw.circle(surface, (255, 235, 180), head, max(2, int(proj.radius) - 3))
-                continue
-            tail = head - proj.velocity.normalize() * 14  
-            pygame.draw.line(surface, proj.color, tail, head, max(2, int(proj.radius)))
-            pygame.draw.circle(surface, (255, 255, 255), head, max(2, int(proj.radius) - 1))
+            side = max(14, round(proj.radius * 4))
+            self._painter.blit(surface, proj.sprite_key,
+                               self._camera.world_to_screen(proj.position), (side, side),
+                               int(self._world.elapsed * 10),
+                               proj.velocity.angle_to(Vector2(1, 0)))
 
     def _draw_hitboxes(self, surface: pygame.Surface) -> None:
         world, cam = self._world, self._camera
@@ -355,101 +334,6 @@ class PlayingState(State):
             pygame.draw.circle(
                 surface, (255, 90, 90), cam.world_to_screen(enemy.position), enemy.radius, 1
             )
-
-    def _icon(self, image: pygame.Surface) -> pygame.Surface:
-        return self._scale(image, (36, 36))
-
-    def _draw_bar(
-        self,
-        surface: pygame.Surface,
-        rect: pygame.Rect,
-        ratio: float,
-        color: tuple[int, int, int],
-    ) -> None:
-        ratio = max(0.0, min(1.0, ratio))
-        pygame.draw.rect(surface, (24, 28, 36), rect, border_radius=4)
-        if ratio > 0:
-            fill = pygame.Rect(rect.x, rect.y, max(4, int(rect.width * ratio)), rect.height)
-            pygame.draw.rect(surface, color, fill, border_radius=4)
-        pygame.draw.rect(surface, (90, 100, 115), rect, 1, border_radius=4)
-
-    def _draw_hud(self, surface: pygame.Surface) -> None:
-        world = self._world
-        player, progression = world.player, world.progression
-        bar_x = 16 + 36 + 10
-
-        surface.blit(self._icon(self._icon_heart), (16, 14))
-        health_bar = pygame.Rect(bar_x, 20, 190, 22)
-        self._draw_bar(surface, health_bar, player.health / player.max_health, (220, 70, 70))
-        hp_text = f"{math.ceil(player.health)}/{math.ceil(player.max_health)}"
-        label = self._font.render(hp_text, True, (255, 255, 255))
-        surface.blit(label, label.get_rect(center=health_bar.center))
-
-        surface.blit(self._icon(self._icon_gem), (16, 58))
-        xp_bar = pygame.Rect(bar_x, 64, 190, 22)
-        self._draw_bar(surface, xp_bar, progression.xp_ratio, (110, 190, 255))
-        label = self._font.render(f"NV {progression.level}", True, (255, 255, 255))
-        surface.blit(label, label.get_rect(center=xp_bar.center))
-
-        surface.blit(self._icon(self._icon_coin), (16, 102))
-        coins = self._font.render(str(world.stats.coins), True, _TEXT)
-        surface.blit(coins, (bar_x, 108))
-
-        self._draw_owned_augments(surface)
-
-        width = surface.get_width()
-        director = world.director
-        if director is not None:
-            if director.phase is Phase.INTERMISSION:
-                label = (
-                    f"RONDA {director.round_number + 1} EM {max(0, director.intermission_left):.0f}"
-                )
-            else:
-                label = round_label(director)
-            text = self._font_big.render(label, True, _TEXT)
-            surface.blit(text, text.get_rect(topright=(width - 16, 16)))
-            remaining = world.alive_enemy_count + director.pending
-            info = f"INIMIGOS {remaining}   MORTES {world.stats.kills}"
-            line = self._font.render(info, True, _MUTED)
-            surface.blit(line, line.get_rect(topright=(width - 16, 64)))
-
-        self._draw_boss_bar(surface)
-
-        player = world.player
-        cursor_x = surface.get_width() // 2 - 170
-        for slot, weapon in enumerate(player.weapons):
-            active = slot == player.weapon_slot
-            color = _ACCENT if active else _MUTED
-            label = self._font.render(f"{slot + 1} {weapon.name}", True, color)
-            surface.blit(label, (cursor_x, surface.get_height() - 36))
-            if active:
-                pygame.draw.line(
-                    surface,
-                    color,
-                    (cursor_x, surface.get_height() - 12),
-                    (cursor_x + label.get_width(), surface.get_height() - 12),
-                    2,
-                )
-            cursor_x += label.get_width() + 36
-
-    def _draw_boss_bar(self, surface: pygame.Surface) -> None:
-        boss = next((e for e in self._world.enemies if e.is_boss and e.alive), None)
-        if boss is None:
-            return
-        rect = pygame.Rect(0, 0, 460, 20)
-        rect.midtop = (surface.get_width() // 2, 18)
-        self._draw_bar(surface, rect, boss.health / boss.max_health, (190, 90, 255))
-        label = self._font.render("BOSS", True, (255, 255, 255))
-        surface.blit(label, label.get_rect(midtop=(rect.centerx, rect.bottom + 4)))
-
-    def _draw_owned_augments(self, surface: pygame.Surface) -> None:
-        owned = list(self._world.inventory.owned())[-8:] 
-        y = surface.get_height() - 18 - 22 * len(owned)
-        for augment, stacks in owned:
-            suffix = f" x{stacks}" if stacks > 1 else ""
-            text = self._font.render(f"{augment.name}{suffix}", True, RARITY_COLORS[augment.rarity])
-            surface.blit(text, (16, y))
-            y += 22
 
     @staticmethod
     def _in_view(point: Vector2, top_left: Vector2, bottom_right: Vector2, margin: int) -> bool:

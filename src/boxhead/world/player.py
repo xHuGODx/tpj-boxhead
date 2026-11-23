@@ -71,6 +71,10 @@ class Player:
         return self._cooldowns[self.weapon_slot] <= 0.0
 
     @property
+    def cooldown_ratio(self) -> float:
+        return min(1.0, self._cooldowns[self.weapon_slot] / self.weapon.cooldown)
+
+    @property
     def alive(self) -> bool:
         return self.health > 0
 

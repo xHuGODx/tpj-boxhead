@@ -12,9 +12,11 @@ e padrões de desenho aplicados a problemas concretos.
 
 ## Estado atual
 
-Setup inicial: pacote Python instalável, janela com ecrã inicial, Game Loop
-e State/StateMachine.
-O combate, os mapas e a progressão estão planeados nas issues; ainda não são jogáveis.
+Há uma arena limitada com jogador animado, três armas, dois inimigos, boss,
+rondas, XP, augments e loja permanente. Menu, pausa, seleção e game over estão
+ligados; o resultado da partida é imutável e as recompensas são gravadas uma vez.
+Os sprites fornecidos estão integrados e incluídos no pacote instalável.
+Mapa infinito, seleção de mapas e áudio continuam pendentes.
 
 ## Executar
 
@@ -51,16 +53,18 @@ a funcionalidade correspondente.
 
 ```text
 src/boxhead/
-├── __main__.py       # CLI e arranque
-├── app.py            # Composição, eventos SDL e Game Loop
-├── config.py         # Configuração imutável da janela
-├── core/state.py     # Contrato State e gestor do ciclo de vida
-└── states/menu.py    # Ecrã inicial
-docs/                # Design, arquitetura e backlog
-.github/             # Templates de issues e PRs
+├── app.py            # Composição e navegação
+├── core/             # FSM, comandos, eventos, geometria e catálogo
+├── world/            # Partida, combate, rondas, progressão e resultado
+├── presentation/     # HUD e desenho de sprites adicionais
+├── states/           # Input e ecrãs
+├── profile.py        # JSON e confirmação atómica de alterações
+└── shop.py           # Compras e melhorias permanentes
+assets/               # Manifest, spritesheets e recortes
 ```
 
-Os módulos de gameplay serão criados quando as respetivas issues forem implementadas.
+Controlos: WASD move, Espaço dispara, 1/2/3 troca de arma, Esc pausa,
+M abandona a partir da pausa, F3 mostra hitboxes. Menu/loja usam W/S e Enter.
 
 ## Design e desenvolvimento
 
