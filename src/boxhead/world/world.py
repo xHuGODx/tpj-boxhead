@@ -66,7 +66,9 @@ class World:
         rng: random.Random | None = None,
         rounds: RoundConfig | None = DEFAULT_ROUNDS,
         base_modifiers: Modifiers | None = None,
+        viewport: tuple[int, int] = (1100, 700),
     ) -> None:
+        self.viewport = viewport
         self.rng = rng if rng is not None else random.Random()
         self.map = create_terrain(map, self.rng.getrandbits(64))
         self.navigator = Navigator(self.map)
@@ -418,7 +420,7 @@ class World:
             self.navigator.clear()
         for enemy in self.enemies:
             if enemy.alive and enemy.position.distance_to(self.player.position) > 1450:
-                candidates = self.map.spawn_candidates(self.player.position, 900)
+                candidates = self.map.spawn_candidates(self.player.position, 900, self.viewport, 100+enemy.radius)
                 point = next((p for p in candidates if self.can_spawn_at(p, enemy.radius)), None)
                 if point is not None:
                     enemy.position = Vector2(point)

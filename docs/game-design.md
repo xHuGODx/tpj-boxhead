@@ -137,8 +137,8 @@ dependências reais; algumas tarefas podem avançar independentemente.
 - Terras infinitas usa chunks de 768 unidades, com vizinhança 5×5 (25 chunks).
   A geração deriva da seed e coordenada, incluindo negativas; descarregar/regressar
   reproduz os mesmos obstáculos e decorações, sem histórico crescente de chunks.
-- A câmara acompanha o jogador sem fronteiras. Spawns usam um anel de pelo menos
-  1000 unidades, fora da zona segura e dentro da vizinhança simulada.
+- A câmara acompanha o jogador sem fronteiras. Spawns usam um anel junto às margens da vista, fora da zona
+  segura de 400 unidades e dentro da vizinhança simulada.
 - Um inimigo a mais de 1450 unidades é reposicionado para uma posição válida no
   anel: preserva ID, vida, escala e contagens. O ataque em preparação é cancelado
   ao recolocar, para não disparar imediatamente junto da área visível. Não há XP,
@@ -157,3 +157,14 @@ dependências reais; algumas tarefas podem avançar independentemente.
 - Bosses nas rondas 10, 20, 30… acompanham metade do orçamento normal. Por boss
   adicional: +50% vida, +15% dano e +25% recompensas. A ronda só termina depois
   de acabar o orçamento e morrerem todos os inimigos, incluindo as escoltas.
+
+
+### Ritmo de chegada dos inimigos
+
+A primeira ronda começa após 0,5 s e o intervalo entre rondas é de 2 s. Nas três
+primeiras rondas os spawns têm intervalo de 0,25 s; depois passam para 0,45 s.
+Todos os mapas procuram posições junto das margens da vista lógica, com folga
+para o raio do inimigo e distância mínima de 400 unidades. No início, dão
+preferência aos pontos mais próximos com linha de visão, evitando uma longa
+viagem por trás de obstáculos. Validam sempre limites, obstáculos e ocupação;
+pontos fixos da arena são apenas fallback quando o anel não tem posições livres.

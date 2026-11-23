@@ -25,14 +25,16 @@ if TYPE_CHECKING:
 class RoundConfig:
     """Curvas de dificuldade configuráveis; imutáveis e partilhadas."""
 
-    first_intermission: float = 2.0
-    intermission: float = 4.0
+    first_intermission: float = 0.5
+    intermission: float = 2.0
     base_enemies: int = 6
     max_budget: int = 300  # carga total por ronda; número de rondas não tem limite
     enemy_growth: float = 1.25
-    spawn_interval: float = 0.6
+    spawn_interval: float = 0.45
+    opening_spawn_interval: float = 0.25
+    opening_rounds: int = 3
     max_alive: int = 25  # limita a carga; o resto do orçamento espera
-    min_spawn_distance: float = 700.0
+    min_spawn_distance: float = 400.0
     health_per_round: float = 0.08
     speed_per_round: float = 0.03
     max_speed_multiplier: float = 1.5
@@ -46,17 +48,17 @@ class RoundConfig:
     boss_health_per_boss: float = 0.5  # +50% de vida por cada boss já derrotado/aparecido
 
     def __post_init__(self) -> None:
-        counts = (self.base_enemies, self.max_budget, self.max_alive, self.red_start_round)
+        counts = (self.base_enemies, self.max_budget, self.max_alive, self.red_start_round, self.opening_rounds)
         if any(isinstance(v, bool) or not isinstance(v, int) or v < 1 for v in counts):
             raise ValueError("contagens de ronda devem ser inteiros positivos")
         if self.max_budget < self.base_enemies or self.enemy_growth < 1:
             raise ValueError("curva de inimigos inválida")
         values = (self.first_intermission, self.intermission, self.spawn_interval,
-                  self.min_spawn_distance, self.enemy_growth, self.health_per_round,
+                  self.min_spawn_distance, self.opening_spawn_interval, self.enemy_growth, self.health_per_round,
                   self.speed_per_round, self.max_speed_multiplier, self.red_chance_per_round,
                   self.max_red_chance, self.boss_escort_fraction, self.boss_health_per_boss,
                   self.boss_damage_per_boss, self.boss_reward_per_boss)
-        if any(not isfinite(v) or v < 0 for v in values) or self.spawn_interval == 0:
+        if any(not isfinite(v) or v < 0 for v in values) or self.spawn_interval == 0 or self.opening_spawn_interval == 0:
             raise ValueError("tempos e multiplicadores de ronda inválidos")
         if not 0 <= self.max_red_chance <= 1 or not 0 <= self.boss_escort_fraction <= 1:
             raise ValueError("probabilidade/fração fora de 0..1")
@@ -151,7 +153,8 @@ class RoundDirector:
         cfg, n = self.config, self.round_number
         definition = BOSS if self._boss_pending else self._pick_definition(world)
         position = self._pick_spawn_point(world, definition)
-        self._spawn_cooldown = cfg.spawn_interval
+        self._spawn_cooldown = (cfg.opening_spawn_interval if n <= cfg.opening_rounds
+                                else cfg.spawn_interval)
         if position is None:
             # Sem posição segura agora: mantém o orçamento e volta a tentar depois.
             return
@@ -175,7 +178,25 @@ class RoundDirector:
         return BASIC
 
     def _pick_spawn_point(self, world: World, definition: EnemyDef) -> Vector2 | None:
-        far = [point for point in world.map.spawn_candidates(world.player.position, self.config.min_spawn_distance)
-               if point.distance_to(world.player.position) >= self.config.min_spawn_distance
-               and world.can_spawn_at(point, definition.radius)]
-        return Vector2(world.rng.choice(far)) if far else None
+        opening = self.round_number <= self.config.opening_rounds
+        margin = (64 if opening else 96)+definition.radius
+        candidates = world.map.spawn_candidates(world.player.position,
+                                                self.config.min_spawn_distance,
+                                                world.viewport, margin)
+        def valid(points):
+            return [point for point in points
+                    if point.distance_to(world.player.position) >= self.config.min_spawn_distance
+                    and world.can_spawn_at(point, definition.radius)]
+        nearby = valid(candidates)
+        if not nearby:
+            # Junto de limites/obstáculos pode ser necessário um ponto fixo da arena.
+            nearby = valid(world.map.spawn_points)
+        if not nearby:
+            return None
+        if opening:
+            direct = [point for point in nearby if world.line_of_sight(point, world.player.position)]
+            nearby = direct or nearby
+        closest = min(point.distance_to(world.player.position) for point in nearby)
+        band = 120 if opening else 220
+        close = [point for point in nearby if point.distance_to(world.player.position) <= closest+band]
+        return Vector2(world.rng.choice(close))

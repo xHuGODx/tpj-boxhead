@@ -30,8 +30,18 @@ class Terrain:
     def update(self, center: Vector2) -> None:
         pass
 
-    def spawn_candidates(self, center: Vector2, distance: float) -> tuple[Vector2, ...]:
-        return self.definition.spawn_points
+    def spawn_candidates(self, center: Vector2, distance: float,
+                         viewport=(1100, 700), margin: float = 100) -> tuple[Vector2, ...]:
+        """Anel junto às margens da vista, independente de estar numa arena ou chunks."""
+        half_width, half_height = viewport[0]/2+margin, viewport[1]/2+margin
+        points = []
+        for i in range(24):
+            direction = Vector2(cos(i*tau/24), sin(i*tau/24))
+            horizontal = half_width/abs(direction.x) if abs(direction.x) > 1e-8 else float('inf')
+            vertical = half_height/abs(direction.y) if abs(direction.y) > 1e-8 else float('inf')
+            radius = max(distance, min(horizontal, vertical))
+            points.append(center+direction*radius)
+        return tuple(points)
 
 
 class InfiniteTerrain(Terrain):
@@ -78,9 +88,6 @@ class InfiniteTerrain(Terrain):
                            (cell[1]-CHUNK_RADIUS)*CHUNK_SIZE,side,side)
         self.playable_bounds = self.bounds
 
-    def spawn_candidates(self, center: Vector2, distance: float) -> tuple[Vector2, ...]:
-        radius = max(1000.0, distance + 100)
-        return tuple(center + Vector2(cos(i*tau/24), sin(i*tau/24))*radius for i in range(24))
 
 
 def create_terrain(definition: MapDefinition, seed: int) -> Terrain:

@@ -144,6 +144,7 @@ class App:
         assert self._machine is not None
         world = World(
             map=MAPS[self._selected_map],
+            viewport=self.config.window_size,
             events=self._events,
             rng=random.Random(self.config.seed),
             base_modifiers=profile_modifiers(self.profile),
