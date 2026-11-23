@@ -97,3 +97,33 @@ usado é o centro do frame. Todas as entradas abaixo constam do manifest.
 | `maps/map_01_thumb.png` | 256 × 256 | 1 × 1 | 8 |
 | `maps/map_02_thumb.png` | 256 × 256 | 1 × 1 | 8 |
 | `maps/map_03_thumb.png` | 256 × 256 | 1 × 1 | 8 |
+
+
+## Revisão de recortes
+
+Todas as 56 folhas (326 frames) correspondem às dimensões declaradas. O problema
+não era o tamanho da grelha: alguns elementos estavam desalinhados dentro do atlas.
+O manifest suporta agora `source_rects`, `anchor`, `frame_cleanup` e `tile_border`.
+Os recortes explícitos são colocados em frames do mesmo tamanho lógico, sem alterar
+os PNGs de origem. As âncoras centram o conteúdo ou alinham-no pelo chão.
+
+- Obstáculos: removidos fragmentos entre caixas/rochas/colunas. Ordem real registada
+  como caixa, caixa, barril, rocha, rocha grande, coluna. Corrigidos os índices dos
+  mapas e a identificação do barril circular nas arenas e nos chunks.
+- Decorações: preservados os grupos completos de pedras, relva, sangue, grelha e
+  ossos; excluída a linha residual da margem direita. A grelha antes atravessava
+  duas células e aparecia partida.
+- Augments: regiões dos símbolos explicitadas e centradas em molduras uniformes.
+  `labels` associa IDs aos símbolos de dano, alcance, XP, vida, etc., independentemente
+  da ordem do catálogo. A apresentação deixou de tentar adivinhar os recortes.
+- Limpeza limitada a ilhas desconectadas confirmadas no boss/SMG/projéteis e a
+  fragmentos brancos nas explosões/spawns. Partículas legítimas dos outros efeitos
+  mantêm-se; os critérios são definidos por folha/frame, sem filtro global de cores.
+- Sombra: o adaptador usa o conteúdo alfa da imagem e coloca-o junto dos pés, sem
+  duplicar a margem transparente com o deslocamento no renderer.
+
+Limitações encontradas nos originais: há halos amarelos/magentas junto de alguns
+personagens e zonas residuais de fundo junto do boss, da SMG e da coluna. Elementos
+já fundidos com o desenho não são corrigíveis apenas mudando retângulos de corte;
+precisam de retoque da arte ou de fontes com transparência mais limpa. A limpeza
+por componentes preserva o desenho principal e não reconstrói partes da ilustração.

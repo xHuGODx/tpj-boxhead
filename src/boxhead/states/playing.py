@@ -21,7 +21,7 @@ from boxhead.world.player_sprite import PlayerSprite
 from boxhead.world.world import World
 
 SPRITE_RENDER_SIZE = (64, 64)
-SHADOW_RENDER_SIZE = (64, 32)
+SHADOW_RENDER_SIZE = (48, 14)
 SHADOW_OFFSET_Y = 26
 SPRITE_PER_RADIUS = 2.9 
 

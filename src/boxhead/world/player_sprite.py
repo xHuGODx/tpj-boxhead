@@ -27,7 +27,8 @@ class PlayerSprite:
         self._walk = {d: self._walk_sheet.animation(d) for d in ("down", "left", "right", "up")}
         self._idle = {d: self._idle_sheet.animation(d) for d in ("down", "left", "right", "up")}
         self._shoot = {d: self._shoot_sheet.animation(d) for d in ("down", "left", "right", "up")}
-        self._shadow = self._shadow_sheet.animation().current
+        shadow = self._shadow_sheet.animation().current
+        self._shadow = shadow.subsurface(shadow.get_bounding_rect()).copy()
 
     @staticmethod
     def direction(orientation: pygame.Vector2) -> str:

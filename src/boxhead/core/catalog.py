@@ -87,6 +87,9 @@ class SpriteCatalog:
     def has(self, key: str) -> bool:
         return key in self._entries
 
+    def indices(self, key: str) -> dict[str, int]:
+        return dict(self._entries[key].get("labels", {}))
+
     def preload(self) -> None:
         """Carrega o manifest uma vez, depois de o SDL estar pronto."""
         for key in self._entries:
@@ -112,6 +115,10 @@ class SpriteCatalog:
             frame_size,
             rows=entry.get("rows", 1),
             columns=entry.get("columns", 1),
+            source_rects=entry.get("source_rects"),
+            anchor=entry.get("anchor", "center"),
+            frame_cleanup=entry.get("frame_cleanup"),
+            tile_border=entry.get("tile_border", False),
         )
         sheet = SpriteSheet(
             rows=entry.get("rows", 1),

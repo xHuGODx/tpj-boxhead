@@ -49,39 +49,38 @@ class MapDefinition:
         return self.bounds.inflate(inset, inset)
 
 
-def _obstacle(cx: int, cy: int, sprite_index: int, *, circular: bool = False) -> ObstacleDef:
+def _obstacle(cx: int, cy: int, sprite_index: int, *, circular: bool | None = None) -> ObstacleDef:
     """Obstáculo de 80×80 centrado em (cx, cy)."""
     half = OBSTACLE_SIZE // 2
     return ObstacleDef(
         rect=Rect(cx - half, cy - half, OBSTACLE_SIZE, OBSTACLE_SIZE),
         sprite_index=sprite_index,
-        circular=circular,
+        circular=(sprite_index == 2 if circular is None else circular),
     )
 
 
 # Índices de environment/obstacles.png (80×80, 6 frames):
-#   0 = crate, 1 = barril, 2 = rocha grande,
-#   3 = rocha, 4 = rocha pequena, 5 = coluna
+#   0/1 = crates, 2 = barril, 3 = rocha, 4 = rocha grande, 5 = coluna
 _OBSTACLES: tuple[ObstacleDef, ...] = (
     # centro da arena — coluna
     _obstacle(0, 0, 5),
     # noroeste — rochas e crate
-    _obstacle(-600, -400, 2),
+    _obstacle(-600, -400, 4),
     _obstacle(-500, -400, 0),
     _obstacle(-600, -300, 3),
     # sudeste — crates
     _obstacle(400, 400, 0),
-    _obstacle(500, 500, 1, circular=True),
+    _obstacle(500, 500, 2, circular=True),
     # norte — rochas
-    _obstacle(-200, -800, 2),
+    _obstacle(-200, -800, 4),
     _obstacle(200, -800, 3),
     # sul — barril
-    _obstacle(0, 700, 1, circular=True),
+    _obstacle(0, 700, 2, circular=True),
     # leste — rochas
-    _obstacle(800, 0, 4),
-    _obstacle(900, 100, 4),
+    _obstacle(800, 0, 3),
+    _obstacle(900, 100, 3),
     # oeste — barril
-    _obstacle(-900, 0, 1, circular=True),
+    _obstacle(-900, 0, 2, circular=True),
 )
 
 _DECORATIONS: tuple[DecorationDef, ...] = (

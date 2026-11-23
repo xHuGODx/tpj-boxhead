@@ -307,7 +307,57 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador",
+    "frame_cleanup": {
+      "0": {
+        "min_area": 40
+      },
+      "1": {
+        "min_area": 40
+      },
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "min_area": 40
+      },
+      "4": {
+        "min_area": 40
+      },
+      "5": {
+        "min_area": 40
+      },
+      "6": {
+        "min_area": 40
+      },
+      "7": {
+        "min_area": 40
+      },
+      "8": {
+        "min_area": 40
+      },
+      "9": {
+        "min_area": 40
+      },
+      "10": {
+        "min_area": 40
+      },
+      "11": {
+        "min_area": 40
+      },
+      "12": {
+        "min_area": 40
+      },
+      "13": {
+        "min_area": 40
+      },
+      "14": {
+        "min_area": 40
+      },
+      "15": {
+        "min_area": 40
+      }
+    }
   },
   "bosses/boss_01_idle.png": {
     "frame_size": [
@@ -324,7 +374,21 @@
       "up"
     ],
     "fps": 3,
-    "loop": true
+    "loop": true,
+    "frame_cleanup": {
+      "0": {
+        "min_area": 40
+      },
+      "1": {
+        "min_area": 40
+      },
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "min_area": 40
+      }
+    }
   },
   "bosses/boss_01_hurt.png": {
     "frame_size": [
@@ -342,7 +406,33 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Dano sintetizado com flash vermelho"
+    "notes": "Dano sintetizado com flash vermelho",
+    "frame_cleanup": {
+      "0": {
+        "min_area": 40
+      },
+      "1": {
+        "min_area": 40
+      },
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "min_area": 40
+      },
+      "4": {
+        "min_area": 40
+      },
+      "5": {
+        "min_area": 40
+      },
+      "6": {
+        "min_area": 40
+      },
+      "7": {
+        "min_area": 40
+      }
+    }
   },
   "bosses/boss_01_death.png": {
     "frame_size": [
@@ -354,7 +444,33 @@
     "frames": 8,
     "fps": 9,
     "loop": false,
-    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+    "notes": "Dissolve de morte sintetizado a partir do sprite base",
+    "frame_cleanup": {
+      "0": {
+        "min_area": 40
+      },
+      "1": {
+        "min_area": 40
+      },
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "min_area": 40
+      },
+      "4": {
+        "min_area": 40
+      },
+      "5": {
+        "min_area": 40
+      },
+      "6": {
+        "min_area": 40
+      },
+      "7": {
+        "min_area": 40
+      }
+    }
   },
   "bosses/boss_01_shadow.png": {
     "frame_size": [
@@ -381,7 +497,45 @@
     ],
     "fps": 7,
     "loop": false,
-    "notes": "Cristal a carregar, efeito sintético"
+    "notes": "Cristal a carregar, efeito sintético",
+    "frame_cleanup": {
+      "0": {
+        "min_area": 40
+      },
+      "1": {
+        "min_area": 40
+      },
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "min_area": 40
+      },
+      "4": {
+        "min_area": 40
+      },
+      "5": {
+        "min_area": 40
+      },
+      "6": {
+        "min_area": 40
+      },
+      "7": {
+        "min_area": 40
+      },
+      "8": {
+        "min_area": 40
+      },
+      "9": {
+        "min_area": 40
+      },
+      "10": {
+        "min_area": 40
+      },
+      "11": {
+        "min_area": 40
+      }
+    }
   },
   "bosses/boss_01_attack.png": {
     "frame_size": [
@@ -399,7 +553,57 @@
     ],
     "fps": 10,
     "loop": false,
-    "notes": "Golpe e bola de fogo sobreposta"
+    "notes": "Golpe e bola de fogo sobreposta",
+    "frame_cleanup": {
+      "0": {
+        "min_area": 40
+      },
+      "1": {
+        "min_area": 40
+      },
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "min_area": 40
+      },
+      "4": {
+        "min_area": 40
+      },
+      "5": {
+        "min_area": 40
+      },
+      "6": {
+        "min_area": 40
+      },
+      "7": {
+        "min_area": 40
+      },
+      "8": {
+        "min_area": 40
+      },
+      "9": {
+        "min_area": 40
+      },
+      "10": {
+        "min_area": 40
+      },
+      "11": {
+        "min_area": 40
+      },
+      "12": {
+        "min_area": 40
+      },
+      "13": {
+        "min_area": 40
+      },
+      "14": {
+        "min_area": 40
+      },
+      "15": {
+        "min_area": 40
+      }
+    }
   },
   "weapons/pistol.png": {
     "frame_size": [
@@ -426,7 +630,12 @@
     ],
     "columns": 1,
     "rows": 1,
-    "frames": 1
+    "frames": 1,
+    "frame_cleanup": {
+      "0": {
+        "min_area": 16
+      }
+    }
   },
   "weapons/weapon_icons.png": {
     "frame_size": [
@@ -477,7 +686,21 @@
     "rows": 1,
     "frames": 4,
     "fps": 10,
-    "loop": true
+    "loop": true,
+    "frame_cleanup": {
+      "0": {
+        "min_area": 6
+      },
+      "1": {
+        "min_area": 6
+      },
+      "2": {
+        "min_area": 6
+      },
+      "3": {
+        "min_area": 6
+      }
+    }
   },
   "projectiles/orbital_satellite.png": {
     "frame_size": [
@@ -488,7 +711,12 @@
     "rows": 1,
     "frames": 4,
     "fps": 10,
-    "loop": true
+    "loop": true,
+    "frame_cleanup": {
+      "0": {
+        "min_area": 20
+      }
+    }
   },
   "effects/muzzle_flash.png": {
     "frame_size": [
@@ -554,7 +782,12 @@
     "rows": 1,
     "frames": 6,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "frame_cleanup": {
+      "3": {
+        "keep_largest": true
+      }
+    }
   },
   "effects/charge_effect.png": {
     "frame_size": [
@@ -576,7 +809,15 @@
     "rows": 1,
     "frames": 4,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "frame_cleanup": {
+      "2": {
+        "min_area": 40
+      },
+      "3": {
+        "keep_largest": true
+      }
+    }
   },
   "environment/floor_tiles.png": {
     "frame_size": [
@@ -605,7 +846,47 @@
     ],
     "columns": 6,
     "rows": 1,
-    "frames": 6
+    "frames": 6,
+    "source_rects": [
+      [
+        2,
+        3,
+        71,
+        73
+      ],
+      [
+        88,
+        4,
+        68,
+        72
+      ],
+      [
+        165,
+        1,
+        56,
+        77
+      ],
+      [
+        241,
+        11,
+        60,
+        57
+      ],
+      [
+        321,
+        6,
+        58,
+        65
+      ],
+      [
+        417,
+        1,
+        45,
+        77
+      ]
+    ],
+    "anchor": "bottom",
+    "notes": "Ordem real: caixa, caixa, barril, rocha, rocha grande, coluna. Recortes excluem fragmentos entre objetos."
   },
   "environment/decorations.png": {
     "frame_size": [
@@ -614,7 +895,41 @@
     ],
     "columns": 5,
     "rows": 1,
-    "frames": 5
+    "frames": 5,
+    "source_rects": [
+      [
+        2,
+        6,
+        59,
+        52
+      ],
+      [
+        66,
+        18,
+        40,
+        31
+      ],
+      [
+        130,
+        15,
+        40,
+        34
+      ],
+      [
+        177,
+        16,
+        51,
+        32
+      ],
+      [
+        236,
+        15,
+        56,
+        35
+      ]
+    ],
+    "anchor": "bottom",
+    "notes": "Grupos completos: pedras, relva, sangue, grelha, ossos; exclui linha residual na margem direita."
   },
   "ui/ui_icons_main.png": {
     "frame_size": [
@@ -650,7 +965,103 @@
     ],
     "columns": 6,
     "rows": 2,
-    "frames": 12
+    "frames": 12,
+    "source_rects": [
+      [
+        15,
+        12,
+        47,
+        47
+      ],
+      [
+        94,
+        11,
+        51,
+        47
+      ],
+      [
+        175,
+        11,
+        54,
+        48
+      ],
+      [
+        254,
+        14,
+        54,
+        47
+      ],
+      [
+        334,
+        17,
+        51,
+        35
+      ],
+      [
+        408,
+        12,
+        53,
+        47
+      ],
+      [
+        10,
+        105,
+        58,
+        55
+      ],
+      [
+        102,
+        115,
+        47,
+        38
+      ],
+      [
+        182,
+        112,
+        46,
+        47
+      ],
+      [
+        265,
+        111,
+        44,
+        48
+      ],
+      [
+        339,
+        108,
+        53,
+        52
+      ],
+      [
+        419,
+        112,
+        47,
+        45
+      ]
+    ],
+    "tile_border": true,
+    "notes": "Símbolos centrados; o atlas original tem molduras desalinhadas/cortadas.",
+    "labels": {
+      "pistol_damage": 0,
+      "pistol_rate": 9,
+      "pistol_range": 10,
+      "shotgun_damage": 0,
+      "shotgun_rate": 9,
+      "shotgun_pellets": 2,
+      "smg_damage": 0,
+      "smg_rate": 9,
+      "smg_range": 10,
+      "vitality": 3,
+      "swift": 1,
+      "regeneration": 11,
+      "quick_learner": 4,
+      "juggernaut": 3,
+      "sprinter": 1,
+      "ricochet": 5,
+      "chain_reaction": 6,
+      "orbitals": 7
+    }
   },
   "shop/shop_upgrades.png": {
     "frame_size": [

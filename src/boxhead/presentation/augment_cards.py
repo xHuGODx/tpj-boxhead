@@ -7,7 +7,7 @@ import pygame
 
 from boxhead.core.catalog import catalog
 from boxhead.presentation.sprites import SpritePainter
-from boxhead.world.augments import AUGMENTS, Rarity
+from boxhead.world.augments import Rarity
 
 SIZE = (1536, 1024)
 CARD_SIZE = (420, 560)
@@ -38,26 +38,7 @@ class AugmentCards:
         self._fonts = {}
         self._painter = SpritePainter(catalog())
         self._painter.prepare(["cards/card_frames.png", "augments/augment_icons.png"])
-        self._icons = {augment.id: i for i, augment in enumerate(AUGMENTS)}
-        self._glyphs = []
-        for index in range(self._painter.frame_count("augments/augment_icons.png")):
-            frame = self._painter.frame("augments/augment_icons.png", index)
-            # O atlas tem molduras ligeiramente desalinhadas entre células. Isolar
-            # o símbolo colorido permite centrá-lo numa moldura uniforme da UI.
-            pixels = [(x,y) for y in range(frame.get_height()) for x in range(frame.get_width())
-                      if frame.get_at((x,y)).a > 64
-                      and max(frame.get_at((x,y))[:3])-min(frame.get_at((x,y))[:3]) > 60
-                      and max(frame.get_at((x,y))[:3]) > 90]
-            if pixels:
-                xs,ys=zip(*pixels)
-                bounds=pygame.Rect(min(xs),min(ys),max(xs)-min(xs)+1,max(ys)-min(ys)+1)
-                bounds=bounds.inflate(6,6).clip(frame.get_rect())
-                glyph=frame.subsurface(bounds)
-                scale=min(82/glyph.get_width(),82/glyph.get_height())
-                glyph=pygame.transform.scale(glyph,(round(glyph.get_width()*scale),round(glyph.get_height()*scale)))
-            else:
-                glyph=pygame.transform.scale(frame,(82,82))
-            self._glyphs.append(glyph)
+        self._icons = catalog().indices("augments/augment_icons.png")
 
     @staticmethod
     def _transform(size):
@@ -152,12 +133,8 @@ class AugmentCards:
         self._text(str(index+1),(x+27,y+38),52,(255,224,154),True)
         label=self._font(32,True).render(LABELS[augment.rarity],True,color)
         self._canvas.blit(label,label.get_rect(topright=(rect.right-38,rect.y+39)))
-        icon_rect=pygame.Rect(0,0,112,112)
-        icon_rect.center=(rect.centerx,rect.y+138)
-        pygame.draw.rect(self._canvas,(23,19,34),icon_rect,border_radius=12)
-        pygame.draw.rect(self._canvas,(190,186,202),icon_rect,3,border_radius=12)
-        glyph=self._glyphs[self._icons.get(augment.id,0)%len(self._glyphs)]
-        self._canvas.blit(glyph,glyph.get_rect(center=icon_rect.center))
+        self._painter.blit(self._canvas,"augments/augment_icons.png",
+                           (rect.centerx,rect.y+138),(112,112),self._icons.get(augment.id,0))
         self._paragraph(augment.name,pygame.Rect(rect.x+40,rect.y+205,rect.width-80,68),44,True)
         prefix="Arma:" if augment.weapon else "Alvo:"
         target=augment.weapon or "personagem"

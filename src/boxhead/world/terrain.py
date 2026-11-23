@@ -66,7 +66,7 @@ class InfiniteTerrain(Terrain):
             if center.length() < 240:
                 continue
             index = rng.randrange(6)
-            obstacles.append(ObstacleDef(Rect(round(center.x)-40, round(center.y)-40, 80, 80), index, index == 1))
+            obstacles.append(ObstacleDef(Rect(round(center.x)-40, round(center.y)-40, 80, 80), index, index == 2))
         for _ in range(2):
             point = Vector2(cx*CHUNK_SIZE+rng.randrange(96,672), cy*CHUNK_SIZE+rng.randrange(96,672))
             decorations.append(DecorationDef(point, rng.randrange(5)))
