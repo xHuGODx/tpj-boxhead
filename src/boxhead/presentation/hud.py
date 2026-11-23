@@ -84,7 +84,7 @@ class HUD:
             line = self._font.render(info, True, _MUTED)
             surface.blit(line, line.get_rect(topright=(width - 16, 64)))
 
-        timer = self._font.render(f"TEMPO {world.elapsed:.1f}s", True, _TEXT)
+        timer = self._font.render(f"{world.map.name} · {world.elapsed:.1f}s", True, _TEXT)
         surface.blit(timer, timer.get_rect(topright=(width - 16, 96)))
         cooldown = pygame.Rect(width // 2 - 100, surface.get_height() - 56, 200, 7)
         self._draw_bar(surface, cooldown, 1 - player.cooldown_ratio, (255, 220, 120))

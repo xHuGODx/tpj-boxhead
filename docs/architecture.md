@@ -62,7 +62,7 @@ Os materiais da cadeira não são copiados para este repositório.
 | Component | Combinar vida, arma e efeitos sem uma hierarquia para cada combinação de augments. | Composição de atributos e comportamentos; sem framework ECS. |
 | Type Object | Separar a definição de arma/inimigo/augment do estado de cada instância. | Definições de armas, inimigos e augments implementadas. |
 | Flyweight | Partilhar definições e assets imutáveis entre muitos inimigos. | Frames partilhados; vida, cooldown e animação são por instância. |
-| Broad/narrow phase | Reduzir pares candidatos e confirmar contacto pela geometria apropriada. | Grelha e geometria implementadas; mapa infinito pendente. |
+| Broad/narrow phase | Reduzir pares candidatos e confirmar contacto pela geometria apropriada. | Grelha, geometria varrida e vizinhança de chunks implementadas. |
 
 Não é necessário implementar todos os padrões dos slides. Prototype, Singleton,
 Service Locator e Bytecode não têm, neste momento, um problema que justifique a
@@ -88,7 +88,9 @@ Subscritores da partida deixam de existir ao sair; repetir partidas não duplica
 ```mermaid
 stateDiagram-v2
     [*] --> Menu
-    Menu --> Playing: iniciar / mapa escolhido
+    Menu --> MapSelect: jogar
+    MapSelect --> Playing: confirmar mapa
+    MapSelect --> Menu: voltar
     Menu --> Shop: abrir loja
     Shop --> Menu: voltar
     Playing --> Paused: Esc
@@ -162,3 +164,24 @@ O catálogo valida IDs, alvos, efeitos, limites e grafo de dependências. A ofer
 um valor imutável cacheado em `World`; o estado das cartas apenas o apresenta. Só
 um augment dessa oferta pode ser adquirido. O domínio recalcula os modificadores;
 a interface gere foco, teclas mantidas, confirmação única e pausa.
+
+
+## Terreno, navegação e IA
+
+`MapDefinition` é configuração partilhada; `Terrain` fornece a instância finita e
+`InfiniteTerrain` acrescenta o estado de carga. `Chunk` guarda dados geométricos e
+visuais determinísticos, sem entidades ou Pygame Surfaces. O mundo atualiza a
+vizinhança antes de simular inimigos/projéteis e preserva inimigos distantes através
+de recolocação, sem emitir mortes ou alterar o orçamento.
+
+`Navigator` decide direções a partir do terreno e geometria. O inimigo recebe a
+direção e linha de visão como dados, mantendo a FSM independente do mundo. A* tem
+limite de exploração, orçamento de novos planos e caches que são limpas quando
+muda a vizinhança. Caches de atores são removidas ao morrerem.
+
+`Enemy.change_state` centraliza exit/enter; as classes Chase, Attack, Prepare,
+RangedAttack, Recovery e Dead representam os comportamentos. Vida e escalas são
+por instância, definições permanecem imutáveis. Ao morrer, o inimigo sai da lista
+ativa/grelha e passa temporariamente a `corpses`, só para desenhar a animação.
+`MapSelectState` conhece definições e callbacks; a App guarda o mapa escolhido e
+cria cada World novo, com o mesmo contrato de combate/progressão.

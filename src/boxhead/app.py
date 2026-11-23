@@ -14,6 +14,8 @@ from boxhead.shop import profile_modifiers, purchase
 from boxhead.states.augment_select import AugmentSelectState
 from boxhead.states.game_over import GameOverState
 from boxhead.states.menu import MenuState
+from boxhead.states.map_select import MapSelectState
+from boxhead.world.map import MAPS
 from boxhead.states.paused import PausedState
 from boxhead.states.playing import PlayingState
 from boxhead.states.shop import ShopState
@@ -37,6 +39,7 @@ class App:
         loaded = self.profile_store.load()
         self.profile: Profile = loaded.profile
         self._profile_notice = loaded.detail if loaded.status in _WARN_STATUSES else None
+        self._selected_map = "arena"
         self._pending_results: dict[str, RunResult] = {}
         self._active_world: World | None = None  # partida em curso, ainda por creditar
 
@@ -80,7 +83,7 @@ class App:
 
     def _make_menu(self) -> MenuState:
         return MenuState(
-            self._start,
+            self._to_map_select,
             self.stop,
             on_shop=self._to_shop,
             balance=self.profile.balance,
@@ -102,12 +105,23 @@ class App:
             )
         )
 
+    def _to_map_select(self) -> None:
+        assert self._machine is not None
+        self._machine.change(MapSelectState(self._select_map, self._to_menu, self._selected_map))
+
+    def _select_map(self, map_id: str) -> None:
+        if map_id not in MAPS:
+            raise ValueError("mapa desconhecido")
+        self._selected_map = map_id
+        self._start()
+
     def _start(self) -> None:
         self._retry_rewards()
         self._events.clear()
         self._events.clear_subscribers()
         assert self._machine is not None
         world = World(
+            map=MAPS[self._selected_map],
             events=self._events,
             rng=random.Random(self.config.seed),
             base_modifiers=profile_modifiers(self.profile),

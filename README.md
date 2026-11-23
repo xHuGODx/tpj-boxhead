@@ -12,11 +12,12 @@ e padrões de desenho aplicados a problemas concretos.
 
 ## Estado atual
 
-Há uma arena limitada com jogador animado, três armas, dois inimigos, boss,
+Há duas arenas limitadas e um mapa infinito com jogador animado, três armas, dois inimigos, boss,
 rondas, XP, augments e loja permanente. Menu, pausa, seleção e game over estão
 ligados; o resultado da partida é imutável e as recompensas são gravadas uma vez.
 Os sprites fornecidos estão integrados e incluídos no pacote instalável.
-Mapa infinito, seleção de mapas e áudio continuam pendentes.
+O menu permite escolher o mapa. Inimigos usam navegação local e estados explícitos
+de ataque/recuperação/morte. Áudio e playtest final continuam pendentes.
 
 ## Executar
 
@@ -63,6 +64,7 @@ src/boxhead/
 assets/               # Manifest, spritesheets e recortes
 ```
 
+Na seleção de mapa: A/D ou setas e Enter. Repetir conserva o mapa escolhido.
 Controlos: WASD move, Espaço dispara, 1/2/3 troca de arma, Esc pausa,
 M abandona a partir da pausa, F3 mostra hitboxes. Menu/loja usam W/S e Enter.
 

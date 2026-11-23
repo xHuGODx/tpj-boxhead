@@ -16,6 +16,7 @@ class Projectile:
     range_left: float
     color: tuple[int, int, int] = (255, 220, 120)
     sprite_key: str = "projectiles/player_bullet.png"
+    owner_id: int | None = None
     hostile: bool = False  # True: disparado por inimigos; só acerta no jogador
     alive: bool = True
     bounces_left: int = 0  # saltos que ainda pode dar (augment Ricochet)

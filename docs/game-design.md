@@ -123,5 +123,37 @@ dependências reais; algumas tarefas podem avançar independentemente.
   Layouts novos precisam de pontos de spawn suficientes para essa distância.
 - Na arena limitada não se removem inimigos por distância: todos continuam vivos
   na contagem até serem mortos, mesmo fora do ecrã. Não há despawn com recompensa
-  ou conclusão artificial de ronda. Uma política de reposicionamento para chunks
-  será definida com o mapa infinito (#19).
+  ou conclusão artificial de ronda. No infinito, inimigos distantes são
+  reposicionados vivos, preservando ID, vida e a contagem da ronda.
+
+
+## Mapas e inimigos implementados
+
+- O menu oferece Arena, Ruínas e Terras infinitas, com miniaturas. As duas arenas
+  têm layouts abertos distintos, limites e zonas de spawn alcançáveis. O mesmo
+  World gere combate, rondas, XP e augments em todos os mapas.
+- Repetir cria um mundo novo no mapa selecionado. Voltar ao menu permite escolher
+  outro mapa. O resumo identifica o mapa da partida.
+- Terras infinitas usa chunks de 768 unidades, com vizinhança 5×5 (25 chunks).
+  A geração deriva da seed e coordenada, incluindo negativas; descarregar/regressar
+  reproduz os mesmos obstáculos e decorações, sem histórico crescente de chunks.
+- A câmara acompanha o jogador sem fronteiras. Spawns usam um anel de pelo menos
+  1000 unidades, fora da zona segura e dentro da vizinhança simulada.
+- Um inimigo a mais de 1450 unidades é reposicionado para uma posição válida no
+  anel: preserva ID, vida, escala e contagens. O ataque em preparação é cancelado
+  ao recolocar, para não disparar imediatamente junto da área visível. Não há XP,
+  moeda nem evento de morte nessa operação. Projéteis/efeitos fora da vizinhança
+  são descartados; cadáveres duram até um segundo e não contam como vivos.
+- Navegação usa linha direta quando livre e A* local em grelha de 96 unidades
+  quando existe obstáculo. Segmentos consideram o raio para não cortar cantos.
+  As rotas/geometria têm cache e até três novos planos por frame. Não há formação
+  tática ou perseguição global através de chunks descarregados.
+- Normal: perseguição → preparação/golpe → recuperação; vermelho e boss:
+  perseguição → preparação → disparo → recuperação. Morte é um estado terminal,
+  cancela disparos pendentes e mantém apenas a animação, sem dano/colisão.
+  Matar o boss também desativa os projéteis que ele já tinha disparado.
+- O vermelho só prepara/dispara com linha de visão. O boss alterna a rotação
+  das rajadas em anel; ataques e projéteis ficam parados em pausa/seleção.
+- Bosses nas rondas 10, 20, 30… acompanham metade do orçamento normal. Por boss
+  adicional: +50% vida, +15% dano e +25% recompensas. A ronda só termina depois
+  de acabar o orçamento e morrerem todos os inimigos, incluindo as escoltas.

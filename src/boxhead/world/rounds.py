@@ -41,6 +41,8 @@ class RoundConfig:
     max_red_chance: float = 0.35
     boss_every: int = 10  # 0 desliga os bosses
     boss_escort_fraction: float = 0.5  # fração do orçamento normal que acompanha o boss
+    boss_damage_per_boss: float = 0.15
+    boss_reward_per_boss: float = 0.25
     boss_health_per_boss: float = 0.5  # +50% de vida por cada boss já derrotado/aparecido
 
     def __post_init__(self) -> None:
@@ -52,7 +54,8 @@ class RoundConfig:
         values = (self.first_intermission, self.intermission, self.spawn_interval,
                   self.min_spawn_distance, self.enemy_growth, self.health_per_round,
                   self.speed_per_round, self.max_speed_multiplier, self.red_chance_per_round,
-                  self.max_red_chance, self.boss_escort_fraction, self.boss_health_per_boss)
+                  self.max_red_chance, self.boss_escort_fraction, self.boss_health_per_boss,
+                  self.boss_damage_per_boss, self.boss_reward_per_boss)
         if any(not isfinite(v) or v < 0 for v in values) or self.spawn_interval == 0:
             raise ValueError("tempos e multiplicadores de ronda inválidos")
         if not 0 <= self.max_red_chance <= 1 or not 0 <= self.boss_escort_fraction <= 1:
@@ -157,6 +160,10 @@ class RoundDirector:
             health_multiplier=(cfg.boss_health_multiplier(n) if self._boss_pending
                                else cfg.health_multiplier(n)),
             speed_multiplier=(1.0 if self._boss_pending else cfg.speed_multiplier(n)),
+            damage_multiplier=(1+cfg.boss_damage_per_boss*(n//max(1,cfg.boss_every)-1)
+                               if self._boss_pending else 1.0),
+            reward_multiplier=(1+cfg.boss_reward_per_boss*(n//max(1,cfg.boss_every)-1)
+                               if self._boss_pending else 1.0),
         )
         self._boss_pending = False
         self.pending -= 1
@@ -168,7 +175,7 @@ class RoundDirector:
         return BASIC
 
     def _pick_spawn_point(self, world: World, definition: EnemyDef) -> Vector2 | None:
-        far = [point for point in world.map.spawn_points
+        far = [point for point in world.map.spawn_candidates(world.player.position, self.config.min_spawn_distance)
                if point.distance_to(world.player.position) >= self.config.min_spawn_distance
                and world.can_spawn_at(point, definition.radius)]
         return Vector2(world.rng.choice(far)) if far else None

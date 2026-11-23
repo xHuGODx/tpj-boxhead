@@ -16,3 +16,4 @@ class RunResult:
     xp: float
     coins: int
     elapsed: float
+    map_name: str = "Arena"

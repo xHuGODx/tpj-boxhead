@@ -51,7 +51,7 @@ class EnemyDef:
     strike_leeway: float = 10.0  # o golpe ainda acerta se o jogador recuar um pouco
     ranged: RangedAttack | None = None
     # Animação visual → sufixo do ficheiro (`<prefix>_<sufixo>.png`).
-    animations: tuple[tuple[str, str], ...] = (("walk", "walk"), ("attack", "attack"))
+    animations: tuple[tuple[str, str], ...] = (("walk", "walk"), ("attack", "attack"), ("recover", "idle"), ("death", "death"))
     is_boss: bool = False
 
 
@@ -88,7 +88,7 @@ RED = EnemyDef(
         projectile_radius=7,
         engage_range=420,
     ),
-    animations=(("walk", "walk"), ("prepare", "prepare"), ("shoot", "shoot")),
+    animations=(("walk", "walk"), ("prepare", "prepare"), ("shoot", "shoot"), ("recover", "idle"), ("death", "death")),
 )
 
 
@@ -114,7 +114,7 @@ BOSS = EnemyDef(
         projectiles=14,
         ring=True,
     ),
-    animations=(("walk", "walk"), ("prepare", "prepare"), ("shoot", "attack")),
+    animations=(("walk", "walk"), ("prepare", "prepare"), ("shoot", "attack"), ("recover", "idle"), ("death", "death")),
     is_boss=True,
 )
 
@@ -125,127 +125,139 @@ class Target(Protocol):
     position: Vector2
     radius: float
 
+    def change_state(self, state: EnemyState) -> None:
+        self._state.exit(self)
+        self._state = state
+        self._state.enter(self)
+
     def take_damage(self, amount: float) -> None: ...
 
 
 class EnemyState(ABC):
     name = "state"
-    visual = "walk"  # animação a mostrar
-    progress = 0.0  # 0..1 da preparação em curso (para telegrafar o ataque)
+    visual = "walk"
+    progress = 0.0
 
     def enter(self, enemy: Enemy) -> None:
-        return None
+        pass
+
+    def exit(self, enemy: Enemy) -> None:
+        pass
 
     @abstractmethod
     def update(self, enemy: Enemy, dt: float, target: Target) -> EnemyState | None:
-        """Devolve o próximo estado, ou None para continuar neste."""
+        """Devolve a transição, sem conhecer mundo, SDL ou sprites."""
 
 
 class ChaseState(EnemyState):
     name = "chase"
-    visual = "walk"
 
-    def update(self, enemy: Enemy, dt: float, target: Target) -> EnemyState | None:
-        offset = target.position - enemy.position
-        distance = offset.length()
-        if enemy.in_attack_range(target, distance):
+    def update(self, enemy, dt, target):
+        offset = target.position-enemy.position
+        if enemy.in_attack_range(target, offset.length()):
             return enemy.start_attack()
-        direction = offset / distance
-        # Pequeno desvio fixo por inimigo: sem ele, um inimigo alinhado de frente com
-        # o centro de um obstáculo fica preso para sempre (não há pathfinding ainda).
-        if distance > 150:
-            direction = direction.rotate(enemy.steer_degrees)
-        enemy.position += direction * enemy.speed * dt
-        enemy.orientation = direction
+        direction = enemy.steering
+        if direction is None:
+            direction = offset.normalize() if offset.length_squared() else Vector2()
+        enemy.position += direction*enemy.speed*dt
+        if direction.length_squared():
+            enemy.orientation = Vector2(direction)
         return None
+
+
+class RecoveryState(EnemyState):
+    name = "recovery"
+    visual = "recover"
+
+    def enter(self, enemy):
+        self.elapsed = 0.0
+
+    def update(self, enemy, dt, target):
+        self.elapsed += dt
+        return ChaseState() if self.elapsed >= enemy.definition.recovery else None
 
 
 class AttackState(EnemyState):
-    """Golpe corpo a corpo: preparação, golpe (uma vez), recuperação."""
-
     name = "attack"
     visual = "attack"
 
-    def __init__(self) -> None:
-        self._elapsed = 0.0
-        self._struck = False
+    def enter(self, enemy):
+        self.elapsed = 0.0
 
-    def update(self, enemy: Enemy, dt: float, target: Target) -> EnemyState | None:
-        offset = target.position - enemy.position
-        distance = offset.length()
-        if distance > 0:
-            enemy.orientation = offset / distance
-        self._elapsed += dt
-        d = enemy.definition
-        if not self._struck and self._elapsed >= d.windup:
-            self._struck = True
-            if distance <= enemy.reach(target) + d.strike_leeway:
-                target.take_damage(d.contact_damage)
-        if self._struck and self._elapsed >= d.windup + d.recovery:
-            return ChaseState()
+    def update(self, enemy, dt, target):
+        offset = target.position-enemy.position
+        if offset.length_squared():
+            enemy.orientation = offset.normalize()
+        self.elapsed += dt
+        if self.elapsed >= enemy.definition.windup:
+            if enemy.can_see and offset.length() <= enemy.reach(target)+enemy.definition.strike_leeway:
+                target.take_damage(enemy.definition.contact_damage*enemy.damage_multiplier)
+            return RecoveryState()
         return None
+
+
+class PrepareRangedState(EnemyState):
+    name = "prepare"
+    visual = "prepare"
+
+    def enter(self, enemy):
+        self.elapsed = 0.0
+        self.windup = enemy.definition.windup
+
+    @property
+    def progress(self):
+        return min(1.0,self.elapsed/self.windup)
+
+    def update(self, enemy, dt, target):
+        if not enemy.can_see:
+            return ChaseState()
+        offset=target.position-enemy.position
+        if offset.length_squared():
+            enemy.orientation=offset.normalize()
+        self.elapsed+=dt
+        return RangedAttackState() if self.elapsed >= self.windup else None
 
 
 class RangedAttackState(EnemyState):
-    """Disparo: fica parado a apontar (visível), dispara uma vez, recupera."""
+    name = "shoot"
+    visual = "shoot"
 
-    name = "attack"
+    def enter(self, enemy):
+        self.elapsed=0.0
+        attack=enemy.definition.ranged
+        if attack is None or not enemy.alive:
+            return
+        if attack.ring:
+            step=360/attack.projectiles
+            directions=[Vector2(1,0).rotate(enemy.pattern_phase+i*step) for i in range(attack.projectiles)]
+            enemy.pattern_phase+=step/2
+        else:
+            directions=[Vector2(enemy.orientation)]
+        for direction in directions:
+            enemy.outbox.append(Projectile(
+                position=enemy.position+direction*(enemy.radius+MUZZLE_GAP),
+                velocity=direction*attack.projectile_speed,
+                damage=attack.damage*enemy.damage_multiplier,
+                radius=attack.projectile_radius, range_left=attack.projectile_range,
+                color=attack.color, hostile=True, owner_id=enemy.id,
+                sprite_key=("projectiles/boss_projectile.png" if attack.ring
+                            else "projectiles/enemy_fireball.png"),
+            ))
 
-    def __init__(self) -> None:
-        self._elapsed = 0.0
-        self._fired = False
-        self._windup = 1.0
+    def update(self, enemy, dt, target):
+        self.elapsed+=dt
+        return RecoveryState() if self.elapsed >= 0.15 else None
 
-    @property
-    def visual(self) -> str:  # type: ignore[override]
-        return "shoot" if self._fired else "prepare"
 
-    @property
-    def progress(self) -> float:  # type: ignore[override]
-        return 0.0 if self._fired else min(1.0, self._elapsed / self._windup)
+class DeadState(EnemyState):
+    name = "dead"
+    visual = "death"
 
-    def enter(self, enemy: Enemy) -> None:
-        self._windup = enemy.definition.windup
+    def enter(self, enemy):
+        enemy.outbox.clear()
 
-    def update(self, enemy: Enemy, dt: float, target: Target) -> EnemyState | None:
-        d = enemy.definition
-        ranged = d.ranged
-        assert ranged is not None
-        self._elapsed += dt
-        if not self._fired:
-            offset = target.position - enemy.position
-            if offset.length_squared() > 0:
-                enemy.orientation = offset.normalize()  # acompanha o jogador até disparar
-            if self._elapsed >= d.windup:
-                self._fired = True
-                for direction in self._directions(enemy, ranged):
-                    enemy.outbox.append(
-                        Projectile(
-                            position=enemy.position + direction * (enemy.radius + MUZZLE_GAP),
-                            velocity=direction * ranged.projectile_speed,
-                            damage=ranged.damage,
-                            radius=ranged.projectile_radius,
-                            range_left=ranged.projectile_range,
-                            color=ranged.color,
-                            hostile=True,
-                            sprite_key=("projectiles/boss_projectile.png" if ranged.ring
-                                        else "projectiles/enemy_fireball.png"),
-                        )
-                    )
-        if self._fired and self._elapsed >= d.windup + d.recovery:
-            return ChaseState()
+    def update(self, enemy, dt, target):
         return None
-
-    @staticmethod
-    def _directions(enemy: Enemy, ranged: RangedAttack) -> list[Vector2]:
-        if not ranged.ring:
-            return [Vector2(enemy.orientation)]
-        step = 360 / ranged.projectiles
-        directions = [
-            Vector2(1, 0).rotate(enemy.pattern_phase + i * step) for i in range(ranged.projectiles)
-        ]
-        enemy.pattern_phase += step / 2  # a rajada seguinte encaixa nos intervalos da anterior
-        return directions
 
 
 @dataclass(eq=False)
@@ -258,6 +270,11 @@ class Enemy:
     steer_degrees: float = 0.0
     orientation: Vector2 = field(default_factory=lambda: Vector2(0, 1))
     alive: bool = True
+    damage_multiplier: float = 1.0
+    reward_multiplier: float = 1.0
+    death_age: float = 0.0
+    steering: Vector2 | None = field(default=None, repr=False)
+    can_see: bool = True
     pattern_phase: float = 0.0  # rotação (graus) da próxima rajada em anel
     # Projéteis acabados de disparar; o `World` recolhe-os (o inimigo não conhece o mundo).
     outbox: list[Projectile] = field(default_factory=list, init=False, repr=False)
@@ -297,18 +314,22 @@ class Enemy:
     def in_attack_range(self, target: Target, distance: float) -> bool:
         ranged = self.definition.ranged
         limit = ranged.engage_range if ranged else self.reach(target)
-        return distance <= limit
+        return self.can_see and distance <= limit
 
     def start_attack(self) -> EnemyState:
-        return RangedAttackState() if self.definition.ranged else AttackState()
+        return PrepareRangedState() if self.definition.ranged else AttackState()
 
     def update(self, dt: float, target: Target) -> None:
         if not self.alive:
             return
         next_state = self._state.update(self, dt, target)
         if next_state is not None:
-            self._state = next_state
-            self._state.enter(self)
+            self.change_state(next_state)
+
+    def change_state(self, state: EnemyState) -> None:
+        self._state.exit(self)
+        self._state = state
+        self._state.enter(self)
 
     def take_damage(self, amount: float) -> bool:
         """Aplica dano; devolve True apenas na transição vivo → morto (uma só vez)."""
@@ -317,5 +338,6 @@ class Enemy:
         self.health -= amount
         if self.health <= 0:
             self.alive = False
+            self.change_state(DeadState())
             return True
         return False

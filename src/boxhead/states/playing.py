@@ -160,7 +160,7 @@ class PlayingState(State):
         self._active_anim.update(dt)
 
         alive_ids = set()
-        for enemy in self._world.enemies:
+        for enemy in (*self._world.enemies, *self._world.corpses):
             alive_ids.add(enemy.id)
             animator = self._animators.get(enemy.id)
             if animator is None:
@@ -223,7 +223,7 @@ class PlayingState(State):
                 drawables.append(
                     (obstacle.rect.centery, 0, lambda o=obstacle: self._blit_obstacle(surface, o))
                 )
-        for enemy in world.enemies:
+        for enemy in (*world.enemies, *world.corpses):
             if self._in_view(enemy.position, top_left, bottom_right, 64):
                 drawables.append(
                     (enemy.position.y, 1, lambda e=enemy: self._draw_enemy(surface, e))
@@ -272,7 +272,7 @@ class PlayingState(State):
         surface.blit(frame, frame.get_rect(center=screen_pos))
         if enemy.visual == "prepare":  
             self._draw_telegraph(surface, enemy, screen_pos)
-        if enemy.health < enemy.max_health and not enemy.is_boss:  
+        if enemy.alive and enemy.health < enemy.max_health and not enemy.is_boss:
             width, ratio = 40, max(0.0, enemy.health / enemy.max_health)
             bar = pygame.Rect(0, 0, width, 5)
             bar.midbottom = (int(screen_pos.x), int(screen_pos.y - enemy.radius - 16))
@@ -345,6 +345,8 @@ class PlayingState(State):
         self, surface: pygame.Surface, top_left: Vector2, bottom_right: Vector2
     ) -> None:
         m = self._world.map
+        if m.infinite:
+            return
         tile = self._env.wall_for(0)  
         t = m.wall_thickness
         b = m.bounds

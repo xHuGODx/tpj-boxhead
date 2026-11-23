@@ -45,6 +45,9 @@ from boxhead.world.progression import Progression
 from boxhead.world.projectile import Projectile
 from boxhead.world.rounds import DEFAULT_ROUNDS, RoundConfig, RoundDirector
 from boxhead.world.stats import RunStats
+from boxhead.world.terrain import create_terrain
+from boxhead.world.navigation import Navigator
+from boxhead.world.enemy import ChaseState
 
 MUZZLE_GAP = 6  # distância da boca da arma ao contorno do jogador
 SPAWN_JITTER = 10  # evita inimigos criados no mesmo ponto ficarem empilhados
@@ -64,10 +67,11 @@ class World:
         rounds: RoundConfig | None = DEFAULT_ROUNDS,
         base_modifiers: Modifiers | None = None,
     ) -> None:
-        self.map = map
+        self.rng = rng if rng is not None else random.Random()
+        self.map = create_terrain(map, self.rng.getrandbits(64))
+        self.navigator = Navigator(self.map)
         self.player = player if player is not None else Player(position=Vector2(map.player_start))
         self.events = events if events is not None else EventQueue()
-        self.rng = rng if rng is not None else random.Random()
         self.stats = RunStats()
         self.run_id = uuid4().hex
         self.elapsed = 0.0
@@ -86,6 +90,7 @@ class World:
         self.fx: list[Fx] = []  # efeitos visuais de curta duração
         self._sync_behaviors()
         self.enemies: list[Enemy] = []
+        self.corpses: list[Enemy] = []
         self.projectiles: list[Projectile] = []
         self.director = RoundDirector(rounds) if rounds is not None else None
         self._next_enemy_id = make_counter()
@@ -191,6 +196,8 @@ class World:
         health_multiplier: float = 1.0,
         speed_multiplier: float = 1.0,
         jitter: float = SPAWN_JITTER,
+        damage_multiplier: float = 1.0,
+        reward_multiplier: float = 1.0,
     ) -> Enemy:
         offset = Vector2(
             self.rng.uniform(-jitter, jitter),
@@ -199,6 +206,8 @@ class World:
         enemy = Enemy(
             id=self._next_enemy_id(),
             definition=definition,
+            damage_multiplier=damage_multiplier,
+            reward_multiplier=reward_multiplier,
             position=Vector2(position) + offset,
             health=definition.max_health * health_multiplier,
             speed=definition.speed * speed_multiplier,
@@ -227,7 +236,13 @@ class World:
         if not enemy.take_damage(amount):
             return False
         d = enemy.definition
-        self.events.publish(EnemyKilled(enemy.id, d.xp_reward, d.coin_reward, d.is_boss))
+        if enemy.is_boss:
+            for projectile in self.projectiles:
+                if projectile.owner_id == enemy.id:
+                    projectile.alive = False
+        self.corpses.append(enemy)
+        self.events.publish(EnemyKilled(enemy.id, round(d.xp_reward*enemy.reward_multiplier),
+                                        round(d.coin_reward*enemy.reward_multiplier), d.is_boss))
         for behavior in tuple(self.behaviors.values()):
             behavior.on_kill(self, enemy, chain_depth)
         return True
@@ -264,6 +279,10 @@ class World:
                 self._grid.insert(enemy, Rect(x - r, y - r, 2 * r, 2 * r))
 
     def _update_enemy(self, enemy: Enemy, dt: float) -> None:
+        if not enemy.alive:
+            return
+        enemy.steering = self.navigator.direction(enemy.id, enemy.position, self.player.position, enemy.radius)
+        enemy.can_see = self.line_of_sight(enemy.position, self.player.position)
         enemy.update(dt, self.player)
         if enemy.outbox:  # disparos novos (inimigos à distância)
             self.projectiles.extend(enemy.outbox)
@@ -356,6 +375,8 @@ class World:
     def update(self, dt: float) -> None:
         if self.result is not None:
             return
+        self._refresh_terrain()
+        self.navigator.begin_frame()
         self.elapsed += dt
         self.player.update(dt)
 
@@ -376,6 +397,10 @@ class World:
         self.bodies = [body for b in self.behaviors.values() for body in b.bodies(self)]
 
         self.enemies = [e for e in self.enemies if e.alive]
+        for corpse in self.corpses:
+            corpse.death_age += dt
+        self.corpses = [e for e in self.corpses if e.death_age < 1.0]
+        self.navigator.retain({e.id for e in self.enemies})
         self.projectiles = [p for p in self.projectiles if p.alive]
 
         if self.director is not None and self.player.alive:
@@ -384,9 +409,31 @@ class World:
             self._death_published = True
             self.events.publish(PlayerDied(self.run_id))
 
+    def _refresh_terrain(self) -> None:
+        old_chunk = getattr(self.map, "_center_chunk", None)
+        self.map.update(self.player.position)
+        if not self.map.infinite:
+            return
+        if old_chunk != self.map._center_chunk:
+            self.navigator.clear()
+        for enemy in self.enemies:
+            if enemy.alive and enemy.position.distance_to(self.player.position) > 1450:
+                candidates = self.map.spawn_candidates(self.player.position, 900)
+                point = next((p for p in candidates if self.can_spawn_at(p, enemy.radius)), None)
+                if point is not None:
+                    enemy.position = Vector2(point)
+                    enemy.outbox.clear()
+                    enemy.change_state(ChaseState())
+        area = self.map.playable_bounds
+        self.projectiles = [p for p in self.projectiles if area.collidepoint(p.position)]
+        self.corpses = [e for e in self.corpses if area.collidepoint(e.position)]
+        self.fx = [f for f in self.fx if area.collidepoint(f.position)]
+
     # ------------------------------------------------------------------ colisões com o mapa
 
     def _clamp_to_arena(self, position: Vector2, radius: float) -> None:
+        if self.map.infinite:
+            return
         area = self.map.playable_bounds
         position.x = max(area.left + radius, min(position.x, area.right - radius))
         position.y = max(area.top + radius, min(position.y, area.bottom - radius))
@@ -420,6 +467,6 @@ class World:
         if self.result is None:
             self.result = RunResult(self.run_id, reason, self.stats.round,
                                     self.stats.kills, self.progression.level,
-                                    self.progression.total_xp, self.stats.coins, self.elapsed)
+                                    self.progression.total_xp, self.stats.coins, self.elapsed, self.map.name)
             self.events.publish(RunFinished(self.result))
         return self.result

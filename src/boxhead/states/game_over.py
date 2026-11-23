@@ -48,6 +48,7 @@ class GameOverState(State):
         surface.blit(title, title.get_rect(center=(w // 2, h // 2 - 110)))
         stats = self._result
         lines = [
+            f"Mapa: {stats.map_name}",
             f"Ronda: {stats.round}",
             f"Nível: {stats.level}",
             f"Mortes: {stats.kills}",

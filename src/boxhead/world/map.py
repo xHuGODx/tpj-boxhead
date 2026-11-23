@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from pygame import Rect, Vector2
 
@@ -38,6 +38,9 @@ class MapDefinition:
     border_color: tuple[int, int, int]
     wall_thickness: int
     player_start: Vector2
+    infinite: bool = False
+    description: str = "Arena limitada com obstáculos e rondas infinitas."
+    thumbnail: str = "maps/map_01_thumb.png"
 
     @property
     def playable_bounds(self) -> Rect:
@@ -116,4 +119,19 @@ ARENA: MapDefinition = MapDefinition(
 )
 
 
-MAPS: dict[str, MapDefinition] = {"arena": ARENA}
+RUINS = replace(
+    ARENA, name="Ruínas", floor_tiles=(2,3),
+    obstacles=tuple(_obstacle(x,y,(i%6)) for i,(x,y) in enumerate(
+        [(-720,-600),(-240,-600),(240,-600),(720,-600),
+         (-720,0),(-240,0),(240,0),(720,0),
+         (-720,600),(-240,600),(240,600),(720,600)])),
+    description="Arena limitada com colunas e corredores largos.",
+    thumbnail="maps/map_02_thumb.png",
+)
+INFINITE = replace(
+    ARENA, name="Terras infinitas", infinite=True, obstacles=(), decorations=(),
+    spawn_points=(), wall_thickness=0, player_start=Vector2(), floor_tiles=(0,1),
+    description="Exploração sem fronteiras; terreno por chunks e rondas infinitas.",
+    thumbnail="maps/map_03_thumb.png",
+)
+MAPS: dict[str, MapDefinition] = {"arena": ARENA, "ruins": RUINS, "infinite": INFINITE}
