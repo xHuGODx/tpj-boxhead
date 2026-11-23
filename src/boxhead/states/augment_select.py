@@ -12,45 +12,12 @@ from collections.abc import Callable
 import pygame
 
 from boxhead.core.state import State
-from boxhead.core.catalog import catalog
-from boxhead.presentation.sprites import SpritePainter
-from boxhead.world.augments import Augment, Offer, Rarity
+from boxhead.presentation.augment_cards import AugmentCards
+from boxhead.world.augments import Augment, Offer
 from boxhead.world.world import World
 
-CARD_SIZE = (290, 360)
-CARD_GAP = 28
-LOCKOUT_SECONDS = 0.4  
-RARITY_LABEL = {
-    Rarity.GRAY: "CINZENTO",
-    Rarity.GOLD: "DOURADO",
-    Rarity.PRISMATIC: "PRISMÁTICO",
-}
-RARITY_COLOR = {
-    Rarity.GRAY: (170, 176, 186),
-    Rarity.GOLD: (235, 190, 70),
-    Rarity.PRISMATIC: (190, 120, 255),
-}
+LOCKOUT_SECONDS = 0.4
 _NUMBER_KEYS = (pygame.K_1, pygame.K_2, pygame.K_3)
-HINT = "1/2/3 ou clique · setas e Enter · ESC pausa"
-
-
-def stacks_label(have: int, max_stacks: int) -> str:
-    return f"Acumulação: {have} -> {have + 1} (máx. {max_stacks})"
-
-
-def wrap_text(font: pygame.font.Font, text: str, width: int) -> list[str]:
-    lines: list[str] = []
-    line = ""
-    for word in text.split():
-        candidate = f"{line} {word}".strip()
-        if font.size(candidate)[0] <= width or not line:
-            line = candidate
-        else:
-            lines.append(line)
-            line = word
-    if line:
-        lines.append(line)
-    return lines
 
 
 class AugmentSelectState(State):
@@ -75,6 +42,7 @@ class AugmentSelectState(State):
         self._cursor = 0
         self._lockout = LOCKOUT_SECONDS
         self._overlay: pygame.Surface | None = None
+        self._cards: AugmentCards | None = None
 
     @property
     def offer(self) -> Offer:
@@ -89,24 +57,12 @@ class AugmentSelectState(State):
         self._down_keys = {key for key in (*_NUMBER_KEYS, pygame.K_RETURN, pygame.K_KP_ENTER) if held[key]}
         self._mouse_held = pygame.mouse.get_pressed()[0]
         self._lockout = LOCKOUT_SECONDS
-        self._title = pygame.font.Font(None, 56)
-        self._name = pygame.font.Font(None, 28)
-        self._body = pygame.font.Font(None, 24)
-        self._small = pygame.font.Font(None, 22)
-        self._painter = SpritePainter(catalog())
-        self._painter.prepare(["cards/card_frames.png", "augments/augment_icons.png"])
-
-    # ------------------------------------------------------------------ layout / input
+        if self._cards is None:
+            self._cards = AugmentCards()
 
     def _card_rects(self, surface_size: tuple[int, int]) -> list[pygame.Rect]:
-        count = len(self._offer.choices)
-        width, height = CARD_SIZE
-        total = count * width + (count - 1) * CARD_GAP
-        left = (surface_size[0] - total) // 2
-        top = (surface_size[1] - height) // 2 + 30
-        return [
-            pygame.Rect(left + i * (width + CARD_GAP), top, width, height) for i in range(count)
-        ]
+        assert self._cards is not None
+        return self._cards.rects(surface_size, len(self._offer.choices))
 
     def _choose(self, index: int) -> None:
         if self._chosen or self.locked or not 0 <= index < len(self._offer.choices):
@@ -159,52 +115,5 @@ class AugmentSelectState(State):
             self._overlay.fill((0, 0, 0, 170))
         surface.blit(self._overlay, (0, 0))
 
-        progression = self._world.progression
-        title = self._title.render(f"NÍVEL {progression.level}", True, (255, 255, 255))
-        rects = self._card_rects(size)
-        top = rects[0].top
-        surface.blit(title, title.get_rect(midbottom=(size[0] // 2, top - 40)))
-        queued = progression.pending_choices - 1
-        subtitle = "Escolhe um augment" + (
-            f"  ·  +{queued} escolha(s) em fila" if queued > 0 else ""
-        )
-        sub = self._body.render(subtitle, True, (200, 206, 216))
-        surface.blit(sub, sub.get_rect(midbottom=(size[0] // 2, top - 12)))
-
-        for index, (augment, rect) in enumerate(zip(self._offer.choices, rects, strict=True)):
-            self._draw_card(surface, augment, rect, index)
-
-        text = self._small.render(HINT, True, (153, 163, 176))
-        surface.blit(text, text.get_rect(midtop=(size[0] // 2, rects[0].bottom + 18)))
-
-    def _draw_card(self, surface: pygame.Surface, augment: Augment, rect: pygame.Rect, index: int):
-        color = RARITY_COLOR[augment.rarity]
-        selected = index == self._cursor
-        dim = self.locked
-        rarity_index = {Rarity.GRAY: 0, Rarity.GOLD: 1, Rarity.PRISMATIC: 2}[augment.rarity]
-        self._painter.blit(surface, "cards/card_frames.png", rect.center, rect.size, rarity_index)
-        border = color if not dim else tuple(c // 2 for c in color)
-        pygame.draw.rect(surface, border, rect, 4 if selected else 2, border_radius=10)
-
-        key = self._title.render(str(index + 1), True, color)
-        surface.blit(key, (rect.x + 16, rect.y + 12))
-        tag = self._small.render(RARITY_LABEL[augment.rarity], True, color)
-        surface.blit(tag, tag.get_rect(topright=(rect.right - 16, rect.y + 20)))
-
-        from boxhead.world.augments import AUGMENTS
-        icon = next((i for i, a in enumerate(AUGMENTS) if a.id == augment.id), 0)
-        self._painter.blit(surface, "augments/augment_icons.png", (rect.right-42, rect.top+58), (42,42), icon)
-        y = rect.y + 80
-        for line in wrap_text(self._name, augment.name, rect.width - 32):
-            surface.blit(self._name.render(line, True, (255, 255, 255)), (rect.x + 16, y))
-            y += 32
-        target = f"Arma: {augment.weapon}" if augment.weapon else "Alvo: personagem"
-        surface.blit(self._small.render(target, True, color), (rect.x + 16, y))
-        y += 28
-        for line in wrap_text(self._body, augment.description, rect.width - 32):
-            surface.blit(self._body.render(line, True, (205, 211, 221)), (rect.x + 16, y))
-            y += 26
-
-        have = self._world.inventory.stacks(augment.id)
-        text = self._small.render(stacks_label(have, augment.max_stacks), True, (153, 163, 176))
-        surface.blit(text, (rect.x + 16, rect.bottom - 58))
+        assert self._cards is not None
+        self._cards.draw(surface, self._world, self._offer, self._cursor, self.locked)

@@ -19,14 +19,16 @@ class SpritePainter:
     def frame(self, key, index=0):
         return self._frames[key][index % len(self._frames[key])]
 
-    def image(self, key, size, index=0, angle=0):
+    def image(self, key, size, index=0, angle=0, flip_x=False):
         source = self.frame(key, index)
-        cache_key = (key, index % len(self._frames[key]), size, round(angle / 5) * 5)
+        cache_key = (key, index % len(self._frames[key]), size, round(angle / 5) * 5, flip_x)
         if cache_key not in self._cache:
             scaled = pygame.transform.scale(source, size)
-            self._cache[cache_key] = pygame.transform.rotate(scaled, cache_key[-1])
+            if flip_x:
+                scaled = pygame.transform.flip(scaled, True, False)
+            self._cache[cache_key] = pygame.transform.rotate(scaled, cache_key[-2])
         return self._cache[cache_key]
 
-    def blit(self, surface, key, center, size, index=0, angle=0):
-        image = self.image(key, size, index, angle)
+    def blit(self, surface, key, center, size, index=0, angle=0, flip_x=False):
+        image = self.image(key, size, index, angle, flip_x)
         surface.blit(image, image.get_rect(center=center))

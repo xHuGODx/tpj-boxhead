@@ -257,7 +257,10 @@ class PlayingState(State):
         player = self._world.player
         key = ("weapons/pistol.png", "weapons/shotgun.png", "weapons/smg.png")[player.weapon_slot]
         center = screen_pos + player.orientation * 24
-        self._painter.blit(surface, key, center, (42, 24), angle=player.orientation.angle_to(Vector2(1, 0)))
+        facing_left = player.orientation.x < 0
+        baseline = Vector2(-1, 0) if facing_left else Vector2(1, 0)
+        self._painter.blit(surface, key, center, (42, 24),
+                           angle=player.orientation.angle_to(baseline), flip_x=facing_left)
 
     def _draw_enemy(self, surface: pygame.Surface, enemy: Enemy) -> None:
         animator = self._animators.get(enemy.id)
