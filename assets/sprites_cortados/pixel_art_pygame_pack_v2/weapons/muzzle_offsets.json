@@ -1,0 +1,33 @@
+{
+  "note": "Coordenadas de exemplo relativas ao sprite de arma 112x64 (validar visualmente em Pygame)",
+  "pistol": {
+    "grip": [
+      35,
+      40
+    ],
+    "muzzle": [
+      95,
+      25
+    ]
+  },
+  "shotgun": {
+    "grip": [
+      38,
+      42
+    ],
+    "muzzle": [
+      102,
+      30
+    ]
+  },
+  "smg": {
+    "grip": [
+      44,
+      43
+    ],
+    "muzzle": [
+      104,
+      28
+    ]
+  }
+}

@@ -1,0 +1,844 @@
+{
+  "player/player_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "player/player_walk_down_00.png",
+      "player/player_walk_down_01.png",
+      "player/player_walk_down_02.png",
+      "player/player_walk_down_03.png",
+      "player/player_walk_left_00.png",
+      "player/player_walk_left_01.png",
+      "player/player_walk_left_02.png",
+      "player/player_walk_left_03.png",
+      "player/player_walk_right_00.png",
+      "player/player_walk_right_01.png",
+      "player/player_walk_right_02.png",
+      "player/player_walk_right_03.png",
+      "player/player_walk_up_00.png",
+      "player/player_walk_up_01.png",
+      "player/player_walk_up_02.png",
+      "player/player_walk_up_03.png"
+    ],
+    "fps": 9,
+    "loop": true
+  },
+  "player/player_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "player/player_idle_down_00.png",
+      "player/player_idle_left_00.png",
+      "player/player_idle_right_00.png",
+      "player/player_idle_up_00.png"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "player/player_hurt.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "player/player_hurt_down_00.png",
+      "player/player_hurt_down_01.png",
+      "player/player_hurt_left_00.png",
+      "player/player_hurt_left_01.png",
+      "player/player_hurt_right_00.png",
+      "player/player_hurt_right_01.png",
+      "player/player_hurt_up_00.png",
+      "player/player_hurt_up_01.png"
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  "player/player_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "player/player_death_00.png",
+      "player/player_death_01.png",
+      "player/player_death_02.png",
+      "player/player_death_03.png",
+      "player/player_death_04.png",
+      "player/player_death_05.png"
+    ],
+    "fps": 9,
+    "loop": false
+  },
+  "player/player_shadow.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "player/player_shadow_00.png"
+    ]
+  },
+  "player/player_shoot.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "player/player_shoot_down_00.png",
+      "player/player_shoot_down_01.png",
+      "player/player_shoot_down_02.png",
+      "player/player_shoot_left_00.png",
+      "player/player_shoot_left_01.png",
+      "player/player_shoot_left_02.png",
+      "player/player_shoot_right_00.png",
+      "player/player_shoot_right_01.png",
+      "player/player_shoot_right_02.png",
+      "player/player_shoot_up_00.png",
+      "player/player_shoot_up_01.png",
+      "player/player_shoot_up_02.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "enemies/enemy_basic_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_basic_walk_down_00.png",
+      "enemies/enemy_basic_walk_down_01.png",
+      "enemies/enemy_basic_walk_down_02.png",
+      "enemies/enemy_basic_walk_down_03.png",
+      "enemies/enemy_basic_walk_left_00.png",
+      "enemies/enemy_basic_walk_left_01.png",
+      "enemies/enemy_basic_walk_left_02.png",
+      "enemies/enemy_basic_walk_left_03.png",
+      "enemies/enemy_basic_walk_right_00.png",
+      "enemies/enemy_basic_walk_right_01.png",
+      "enemies/enemy_basic_walk_right_02.png",
+      "enemies/enemy_basic_walk_right_03.png",
+      "enemies/enemy_basic_walk_up_00.png",
+      "enemies/enemy_basic_walk_up_01.png",
+      "enemies/enemy_basic_walk_up_02.png",
+      "enemies/enemy_basic_walk_up_03.png"
+    ],
+    "fps": 9,
+    "loop": true
+  },
+  "enemies/enemy_basic_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_basic_idle_down_00.png",
+      "enemies/enemy_basic_idle_left_00.png",
+      "enemies/enemy_basic_idle_right_00.png",
+      "enemies/enemy_basic_idle_up_00.png"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "enemies/enemy_basic_hurt.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_basic_hurt_down_00.png",
+      "enemies/enemy_basic_hurt_down_01.png",
+      "enemies/enemy_basic_hurt_left_00.png",
+      "enemies/enemy_basic_hurt_left_01.png",
+      "enemies/enemy_basic_hurt_right_00.png",
+      "enemies/enemy_basic_hurt_right_01.png",
+      "enemies/enemy_basic_hurt_up_00.png",
+      "enemies/enemy_basic_hurt_up_01.png"
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  "enemies/enemy_basic_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_basic_death_00.png",
+      "enemies/enemy_basic_death_01.png",
+      "enemies/enemy_basic_death_02.png",
+      "enemies/enemy_basic_death_03.png"
+    ],
+    "fps": 9,
+    "loop": false
+  },
+  "enemies/enemy_basic_shadow.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_basic_shadow_00.png"
+    ]
+  },
+  "enemies/enemy_basic_attack.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_basic_attack_down_00.png",
+      "enemies/enemy_basic_attack_down_01.png",
+      "enemies/enemy_basic_attack_down_02.png",
+      "enemies/enemy_basic_attack_left_00.png",
+      "enemies/enemy_basic_attack_left_01.png",
+      "enemies/enemy_basic_attack_left_02.png",
+      "enemies/enemy_basic_attack_right_00.png",
+      "enemies/enemy_basic_attack_right_01.png",
+      "enemies/enemy_basic_attack_right_02.png",
+      "enemies/enemy_basic_attack_up_00.png",
+      "enemies/enemy_basic_attack_up_01.png",
+      "enemies/enemy_basic_attack_up_02.png"
+    ],
+    "fps": 10,
+    "loop": false
+  },
+  "enemies/enemy_red_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_walk_down_00.png",
+      "enemies/enemy_red_walk_down_01.png",
+      "enemies/enemy_red_walk_down_02.png",
+      "enemies/enemy_red_walk_down_03.png",
+      "enemies/enemy_red_walk_left_00.png",
+      "enemies/enemy_red_walk_left_01.png",
+      "enemies/enemy_red_walk_left_02.png",
+      "enemies/enemy_red_walk_left_03.png",
+      "enemies/enemy_red_walk_right_00.png",
+      "enemies/enemy_red_walk_right_01.png",
+      "enemies/enemy_red_walk_right_02.png",
+      "enemies/enemy_red_walk_right_03.png",
+      "enemies/enemy_red_walk_up_00.png",
+      "enemies/enemy_red_walk_up_01.png",
+      "enemies/enemy_red_walk_up_02.png",
+      "enemies/enemy_red_walk_up_03.png"
+    ],
+    "fps": 9,
+    "loop": true
+  },
+  "enemies/enemy_red_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_idle_down_00.png",
+      "enemies/enemy_red_idle_left_00.png",
+      "enemies/enemy_red_idle_right_00.png",
+      "enemies/enemy_red_idle_up_00.png"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "enemies/enemy_red_hurt.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_hurt_down_00.png",
+      "enemies/enemy_red_hurt_down_01.png",
+      "enemies/enemy_red_hurt_left_00.png",
+      "enemies/enemy_red_hurt_left_01.png",
+      "enemies/enemy_red_hurt_right_00.png",
+      "enemies/enemy_red_hurt_right_01.png",
+      "enemies/enemy_red_hurt_up_00.png",
+      "enemies/enemy_red_hurt_up_01.png"
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  "enemies/enemy_red_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_death_00.png",
+      "enemies/enemy_red_death_01.png",
+      "enemies/enemy_red_death_02.png",
+      "enemies/enemy_red_death_03.png"
+    ],
+    "fps": 9,
+    "loop": false
+  },
+  "enemies/enemy_red_shadow.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_shadow_00.png"
+    ]
+  },
+  "enemies/enemy_red_prepare.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_prepare_down_00.png",
+      "enemies/enemy_red_prepare_down_01.png",
+      "enemies/enemy_red_prepare_down_02.png",
+      "enemies/enemy_red_prepare_left_00.png",
+      "enemies/enemy_red_prepare_left_01.png",
+      "enemies/enemy_red_prepare_left_02.png",
+      "enemies/enemy_red_prepare_right_00.png",
+      "enemies/enemy_red_prepare_right_01.png",
+      "enemies/enemy_red_prepare_right_02.png",
+      "enemies/enemy_red_prepare_up_00.png",
+      "enemies/enemy_red_prepare_up_01.png",
+      "enemies/enemy_red_prepare_up_02.png"
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  "enemies/enemy_red_shoot.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "enemies/enemy_red_shoot_down_00.png",
+      "enemies/enemy_red_shoot_down_01.png",
+      "enemies/enemy_red_shoot_down_02.png",
+      "enemies/enemy_red_shoot_left_00.png",
+      "enemies/enemy_red_shoot_left_01.png",
+      "enemies/enemy_red_shoot_left_02.png",
+      "enemies/enemy_red_shoot_right_00.png",
+      "enemies/enemy_red_shoot_right_01.png",
+      "enemies/enemy_red_shoot_right_02.png",
+      "enemies/enemy_red_shoot_up_00.png",
+      "enemies/enemy_red_shoot_up_01.png",
+      "enemies/enemy_red_shoot_up_02.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "bosses/boss_01_walk.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_walk_down_00.png",
+      "bosses/boss_01_walk_down_01.png",
+      "bosses/boss_01_walk_down_02.png",
+      "bosses/boss_01_walk_down_03.png",
+      "bosses/boss_01_walk_left_00.png",
+      "bosses/boss_01_walk_left_01.png",
+      "bosses/boss_01_walk_left_02.png",
+      "bosses/boss_01_walk_left_03.png",
+      "bosses/boss_01_walk_right_00.png",
+      "bosses/boss_01_walk_right_01.png",
+      "bosses/boss_01_walk_right_02.png",
+      "bosses/boss_01_walk_right_03.png",
+      "bosses/boss_01_walk_up_00.png",
+      "bosses/boss_01_walk_up_01.png",
+      "bosses/boss_01_walk_up_02.png",
+      "bosses/boss_01_walk_up_03.png"
+    ],
+    "fps": 9,
+    "loop": true
+  },
+  "bosses/boss_01_idle.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_idle_down_00.png",
+      "bosses/boss_01_idle_left_00.png",
+      "bosses/boss_01_idle_right_00.png",
+      "bosses/boss_01_idle_up_00.png"
+    ],
+    "fps": 3,
+    "loop": true
+  },
+  "bosses/boss_01_hurt.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_hurt_down_00.png",
+      "bosses/boss_01_hurt_down_01.png",
+      "bosses/boss_01_hurt_left_00.png",
+      "bosses/boss_01_hurt_left_01.png",
+      "bosses/boss_01_hurt_right_00.png",
+      "bosses/boss_01_hurt_right_01.png",
+      "bosses/boss_01_hurt_up_00.png",
+      "bosses/boss_01_hurt_up_01.png"
+    ],
+    "fps": 8,
+    "loop": false
+  },
+  "bosses/boss_01_death.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_death_00.png",
+      "bosses/boss_01_death_01.png",
+      "bosses/boss_01_death_02.png",
+      "bosses/boss_01_death_03.png",
+      "bosses/boss_01_death_04.png",
+      "bosses/boss_01_death_05.png",
+      "bosses/boss_01_death_06.png",
+      "bosses/boss_01_death_07.png"
+    ],
+    "fps": 9,
+    "loop": false
+  },
+  "bosses/boss_01_shadow.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_shadow_00.png"
+    ]
+  },
+  "bosses/boss_01_prepare.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_prepare_down_00.png",
+      "bosses/boss_01_prepare_down_01.png",
+      "bosses/boss_01_prepare_down_02.png",
+      "bosses/boss_01_prepare_left_00.png",
+      "bosses/boss_01_prepare_left_01.png",
+      "bosses/boss_01_prepare_left_02.png",
+      "bosses/boss_01_prepare_right_00.png",
+      "bosses/boss_01_prepare_right_01.png",
+      "bosses/boss_01_prepare_right_02.png",
+      "bosses/boss_01_prepare_up_00.png",
+      "bosses/boss_01_prepare_up_01.png",
+      "bosses/boss_01_prepare_up_02.png"
+    ],
+    "fps": 7,
+    "loop": false
+  },
+  "bosses/boss_01_attack.png": {
+    "frame_size": [
+      192,
+      192
+    ],
+    "files": [
+      "bosses/boss_01_attack_down_00.png",
+      "bosses/boss_01_attack_down_01.png",
+      "bosses/boss_01_attack_down_02.png",
+      "bosses/boss_01_attack_down_03.png",
+      "bosses/boss_01_attack_left_00.png",
+      "bosses/boss_01_attack_left_01.png",
+      "bosses/boss_01_attack_left_02.png",
+      "bosses/boss_01_attack_left_03.png",
+      "bosses/boss_01_attack_right_00.png",
+      "bosses/boss_01_attack_right_01.png",
+      "bosses/boss_01_attack_right_02.png",
+      "bosses/boss_01_attack_right_03.png",
+      "bosses/boss_01_attack_up_00.png",
+      "bosses/boss_01_attack_up_01.png",
+      "bosses/boss_01_attack_up_02.png",
+      "bosses/boss_01_attack_up_03.png"
+    ],
+    "fps": 10,
+    "loop": false
+  },
+  "weapons/pistol.png": {
+    "frame_size": [
+      112,
+      64
+    ],
+    "files": [
+      "weapons/pistol_00.png"
+    ]
+  },
+  "weapons/shotgun.png": {
+    "frame_size": [
+      112,
+      64
+    ],
+    "files": [
+      "weapons/shotgun_00.png"
+    ]
+  },
+  "weapons/smg.png": {
+    "frame_size": [
+      112,
+      64
+    ],
+    "files": [
+      "weapons/smg_00.png"
+    ]
+  },
+  "weapons/weapon_icons.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "weapons/weapon_icons_00.png",
+      "weapons/weapon_icons_01.png",
+      "weapons/weapon_icons_02.png"
+    ]
+  },
+  "projectiles/player_bullet.png": {
+    "frame_size": [
+      32,
+      32
+    ],
+    "files": [
+      "projectiles/player_bullet_00.png"
+    ],
+    "loop": false
+  },
+  "projectiles/player_pellet.png": {
+    "frame_size": [
+      32,
+      32
+    ],
+    "files": [
+      "projectiles/player_pellet_00.png"
+    ],
+    "loop": false
+  },
+  "projectiles/enemy_fireball.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "projectiles/enemy_fireball_00.png",
+      "projectiles/enemy_fireball_01.png",
+      "projectiles/enemy_fireball_02.png",
+      "projectiles/enemy_fireball_03.png"
+    ],
+    "fps": 10,
+    "loop": true
+  },
+  "projectiles/boss_projectile.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "projectiles/boss_projectile_00.png",
+      "projectiles/boss_projectile_01.png",
+      "projectiles/boss_projectile_02.png",
+      "projectiles/boss_projectile_03.png"
+    ],
+    "fps": 10,
+    "loop": true
+  },
+  "projectiles/orbital_satellite.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "files": [
+      "projectiles/orbital_satellite_00.png",
+      "projectiles/orbital_satellite_01.png",
+      "projectiles/orbital_satellite_02.png",
+      "projectiles/orbital_satellite_03.png"
+    ],
+    "fps": 10,
+    "loop": true
+  },
+  "effects/muzzle_flash.png": {
+    "frame_size": [
+      48,
+      48
+    ],
+    "files": [
+      "effects/muzzle_flash_00.png",
+      "effects/muzzle_flash_01.png",
+      "effects/muzzle_flash_02.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/impact_enemy.png": {
+    "frame_size": [
+      48,
+      48
+    ],
+    "files": [
+      "effects/impact_enemy_00.png",
+      "effects/impact_enemy_01.png",
+      "effects/impact_enemy_02.png",
+      "effects/impact_enemy_03.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/impact_wall.png": {
+    "frame_size": [
+      48,
+      48
+    ],
+    "files": [
+      "effects/impact_wall_00.png",
+      "effects/impact_wall_01.png",
+      "effects/impact_wall_02.png",
+      "effects/impact_wall_03.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/explosion_small.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "files": [
+      "effects/explosion_small_00.png",
+      "effects/explosion_small_01.png",
+      "effects/explosion_small_02.png",
+      "effects/explosion_small_03.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/explosion_large.png": {
+    "frame_size": [
+      128,
+      128
+    ],
+    "files": [
+      "effects/explosion_large_00.png",
+      "effects/explosion_large_01.png",
+      "effects/explosion_large_02.png",
+      "effects/explosion_large_03.png",
+      "effects/explosion_large_04.png",
+      "effects/explosion_large_05.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/chain_explosion.png": {
+    "frame_size": [
+      128,
+      128
+    ],
+    "files": [
+      "effects/chain_explosion_00.png",
+      "effects/chain_explosion_01.png",
+      "effects/chain_explosion_02.png",
+      "effects/chain_explosion_03.png",
+      "effects/chain_explosion_04.png",
+      "effects/chain_explosion_05.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/charge_effect.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "files": [
+      "effects/charge_effect_00.png",
+      "effects/charge_effect_01.png",
+      "effects/charge_effect_02.png",
+      "effects/charge_effect_03.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "effects/spawn_effect.png": {
+    "frame_size": [
+      128,
+      128
+    ],
+    "files": [
+      "effects/spawn_effect_00.png",
+      "effects/spawn_effect_01.png",
+      "effects/spawn_effect_02.png",
+      "effects/spawn_effect_03.png"
+    ],
+    "fps": 12,
+    "loop": false
+  },
+  "environment/floor_tiles.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "environment/floor_tiles_00.png",
+      "environment/floor_tiles_01.png",
+      "environment/floor_tiles_02.png",
+      "environment/floor_tiles_03.png"
+    ]
+  },
+  "environment/walls.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "environment/walls_r0_c0.png",
+      "environment/walls_r0_c1.png",
+      "environment/walls_r0_c2.png",
+      "environment/walls_r0_c3.png",
+      "environment/walls_r1_c0.png",
+      "environment/walls_r1_c1.png",
+      "environment/walls_r1_c2.png",
+      "environment/walls_r1_c3.png",
+      "environment/walls_r2_c0.png",
+      "environment/walls_r2_c1.png",
+      "environment/walls_r2_c2.png",
+      "environment/walls_r2_c3.png",
+      "environment/walls_r3_c0.png",
+      "environment/walls_r3_c1.png",
+      "environment/walls_r3_c2.png",
+      "environment/walls_r3_c3.png"
+    ]
+  },
+  "environment/obstacles.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "files": [
+      "environment/obstacles_00.png",
+      "environment/obstacles_01.png",
+      "environment/obstacles_02.png",
+      "environment/obstacles_03.png",
+      "environment/obstacles_04.png",
+      "environment/obstacles_05.png"
+    ]
+  },
+  "environment/decorations.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "environment/decorations_00.png",
+      "environment/decorations_01.png",
+      "environment/decorations_02.png",
+      "environment/decorations_03.png",
+      "environment/decorations_04.png"
+    ]
+  },
+  "ui/ui_icons_main.png": {
+    "frame_size": [
+      64,
+      64
+    ],
+    "files": [
+      "ui/ui_icons_main_00.png",
+      "ui/ui_icons_main_01.png",
+      "ui/ui_icons_main_02.png"
+    ]
+  },
+  "ui/healthbar.png": {
+    "frame_size": [
+      384,
+      96
+    ],
+    "files": [
+      "ui/healthbar_00.png"
+    ]
+  },
+  "ui/xpbar.png": {
+    "frame_size": [
+      384,
+      80
+    ],
+    "files": [
+      "ui/xpbar_00.png"
+    ]
+  },
+  "augments/augment_icons.png": {
+    "frame_size": [
+      80,
+      80
+    ],
+    "files": [
+      "augments/augment_icons_r0_c0.png",
+      "augments/augment_icons_r0_c1.png",
+      "augments/augment_icons_r0_c2.png",
+      "augments/augment_icons_r0_c3.png",
+      "augments/augment_icons_r0_c4.png",
+      "augments/augment_icons_r0_c5.png",
+      "augments/augment_icons_r1_c0.png",
+      "augments/augment_icons_r1_c1.png",
+      "augments/augment_icons_r1_c2.png",
+      "augments/augment_icons_r1_c3.png",
+      "augments/augment_icons_r1_c4.png",
+      "augments/augment_icons_r1_c5.png"
+    ]
+  },
+  "shop/shop_upgrades.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "files": [
+      "shop/shop_upgrades_00.png",
+      "shop/shop_upgrades_01.png",
+      "shop/shop_upgrades_02.png"
+    ]
+  },
+  "cards/card_frames.png": {
+    "frame_size": [
+      192,
+      256
+    ],
+    "files": [
+      "cards/card_frames_00.png",
+      "cards/card_frames_01.png",
+      "cards/card_frames_02.png"
+    ]
+  },
+  "maps/map_01_thumb.png": {
+    "frame_size": [
+      256,
+      256
+    ],
+    "files": [
+      "maps/map_01_thumb_00.png"
+    ]
+  },
+  "maps/map_02_thumb.png": {
+    "frame_size": [
+      256,
+      256
+    ],
+    "files": [
+      "maps/map_02_thumb_00.png"
+    ]
+  },
+  "maps/map_03_thumb.png": {
+    "frame_size": [
+      256,
+      256
+    ],
+    "files": [
+      "maps/map_03_thumb_00.png"
+    ]
+  }
+}
