@@ -67,7 +67,7 @@ class Progression:
 
     def consume_choice(self) -> None:
         if self.pending_choices <= 0:
-            raise ValueError("não há escolhas pendentes")
+            raise ValueError("no pending choices")
         self.pending_choices -= 1
 
     # --- subscrição a eventos (Observer), como `RunStats` -----------------------------

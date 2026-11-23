@@ -38,7 +38,7 @@ class AugmentSelectState(State):
         self._down_keys: set[int] = set()
         self._mouse_held = False
         if not 1 <= len(offer.choices) <= 3:
-            raise ValueError("oferta sem escolhas ou com demasiadas opções")
+            raise ValueError("offer has no choices or too many options")
         self._cursor = 0
         self._surface_size = (1100, 700)
         self._lockout = LOCKOUT_SECONDS

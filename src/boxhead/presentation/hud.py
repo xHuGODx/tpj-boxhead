@@ -10,7 +10,7 @@ _ACCENT = (255,220,120)
 RARITY_COLORS = {Rarity.GRAY:(170,176,186), Rarity.GOLD:(235,190,70), Rarity.PRISMATIC:(190,120,255)}
 
 def round_label(director):
-    return f"RONDA {director.round_number}" + (" · BOSS" if director.is_boss_round else "")
+    return f"ROUND {director.round_number}" + (" · BOSS" if director.is_boss_round else "")
 
 class HUD:
     def __init__(self):
@@ -59,7 +59,7 @@ class HUD:
         surface.blit(self._icon(self._icon_gem), (16, 58))
         xp_bar = pygame.Rect(bar_x, 64, 190, 22)
         self._draw_bar(surface, xp_bar, progression.xp_ratio, (110, 190, 255))
-        label = self._font.render(f"NV {progression.level}", True, (255, 255, 255))
+        label = self._font.render(f"LV {progression.level}", True, (255, 255, 255))
         surface.blit(label, label.get_rect(center=xp_bar.center))
 
         surface.blit(self._icon(self._icon_coin), (16, 102))
@@ -73,14 +73,14 @@ class HUD:
         if director is not None:
             if director.phase is Phase.INTERMISSION:
                 label = (
-                    f"RONDA {director.round_number + 1} EM {max(0, director.intermission_left):.0f}"
+                    f"ROUND {director.round_number + 1} IN {max(0, director.intermission_left):.0f}"
                 )
             else:
                 label = round_label(director)
             text = self._font_big.render(label, True, _TEXT)
             surface.blit(text, text.get_rect(topright=(width - 16, 16)))
             remaining = world.alive_enemy_count + director.pending
-            info = f"INIMIGOS {remaining}   MORTES {world.stats.kills}"
+            info = f"ENEMIES {remaining}   KILLS {world.stats.kills}"
             line = self._font.render(info, True, _MUTED)
             surface.blit(line, line.get_rect(topright=(width - 16, 64)))
 

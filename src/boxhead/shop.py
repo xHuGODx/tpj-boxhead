@@ -32,9 +32,9 @@ class UpgradeDef:
 
 # Valores iniciais (propostas, ajustáveis com playtests); ver docs/game-design.md.
 UPGRADES: tuple[UpgradeDef, ...] = (
-    UpgradeDef("max_health", "Vida máxima", "+10 vida máxima por nível", MaxHealth(10), 5, 50, 1.5),
-    UpgradeDef("speed", "Velocidade", "+4% velocidade por nível", MoveSpeed(0.04), 5, 60, 1.5),
-    UpgradeDef("xp_gain", "Ganho de XP", "+5% XP por nível", XpGain(0.05), 5, 80, 1.6),
+    UpgradeDef("max_health", "Max Health", "+10 max health per level", MaxHealth(10), 5, 50, 1.5),
+    UpgradeDef("speed", "Movement Speed", "+4% movement speed per level", MoveSpeed(0.04), 5, 60, 1.5),
+    UpgradeDef("xp_gain", "XP Gain", "+5% XP per level", XpGain(0.05), 5, 80, 1.6),
 )
 UPGRADES_BY_ID = {u.id: u for u in UPGRADES}
 

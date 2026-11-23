@@ -1,27 +1,27 @@
 # TPJ · Boxhead
 
-Survival shooter para Tópicos de Programação para Jogos: inspirado em Boxhead,
-com rondas infinitas, bosses periódicos, augments de partida e uma loja de
-melhorias permanentes inspirada em Vampire Survivors.
+A survival shooter for the Game Programming Topics course, inspired by Boxhead,
+with endless rounds, periodic bosses, run-specific augments and a permanent
+upgrade shop inspired by Vampire Survivors.
 
-A direção visual usa sprites próprios (custom sprites), criados para o projeto,
-com identidade visual consistente entre jogador, inimigos, armas e cenários.
+The project uses custom sprites with a consistent style for the player, enemies,
+weapons and environments. All in-game text is in English.
 
-O objetivo académico é demonstrar OOP, responsabilidades claras, baixo acoplamento
-e padrões de desenho aplicados a problemas concretos.
+The academic focus is OOP, clear responsibilities, low coupling and software
+design patterns applied to concrete problems.
 
-## Estado atual
+## Current state
 
-Há duas arenas limitadas e um mapa infinito com jogador animado, três armas, dois inimigos, boss,
-rondas, XP, augments e loja permanente. Menu, pausa, seleção e game over estão
-ligados; o resultado da partida é imutável e as recompensas são gravadas uma vez.
-Os sprites fornecidos estão integrados e incluídos no pacote instalável.
-O menu permite escolher o mapa. Inimigos usam navegação local e estados explícitos
-de ataque/recuperação/morte. Áudio e playtest final continuam pendentes.
+Two bounded arenas and an infinite map are playable, with an animated player,
+three weapons, two enemy types, a boss, rounds, XP, augments and permanent upgrades.
+The menu, pause, map and augment selection, and game-over screens are connected.
+Run results are immutable and rewards are saved once per run. Sprites are bundled
+with the installable package. Enemies use local navigation and explicit
+attack/recovery/death states. Audio and final gameplay balancing are still pending.
 
-## Executar
+## Run
 
-Requisitos: Python 3.12 e [uv](https://docs.astral.sh/uv/getting-started/installation/).
+Requires Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
 git clone https://github.com/xHuGODx/tpj-boxhead.git
@@ -30,61 +30,61 @@ uv sync --locked
 uv run boxhead
 ```
 
-Também existe o ponto de entrada `uv run python -m boxhead`. No ecrã inicial,
-**Esc** ou fechar a janela termina a aplicação.
+Alternatively, use `uv run python -m boxhead`. From the main menu, **Esc** or the
+window close button exits the application.
 
-Sem uv, dentro de um ambiente virtual Python 3.12:
+Without uv, inside a Python 3.12 virtual environment:
 
 ```bash
 python -m pip install -e .
 python -m boxhead
 ```
 
-O `uv.lock` fixa o ambiente usado em desenvolvimento. A alternativa com pip
-instala as dependências declaradas, sem reproduzir necessariamente esse lock.
+`uv.lock` pins the development environment. Installing with pip uses the declared
+dependencies without necessarily reproducing that lock.
 
-## Desenvolvimento
+## Controls
 
-O foco da cadeira é a organização do código e a aplicação de padrões de desenho.
-Este projeto usa verificações manuais simples, sem testes automatizados, lint
-obrigatório ou CI/CD. Para conferir uma alteração, abrir o jogo e experimentar
-a funcionalidade correspondente.
+- **WASD**: move and face a direction.
+- **Space**: fire in the direction the player faces; aiming does not use the mouse.
+- **1 / 2 / 3**: switch weapons; on the augment screen, choose a card.
+- **Esc**: pause/resume; **M** from pause abandons the run and returns to the menu.
+- **W/S or arrows**, then **Enter**: navigate menus and the shop.
+- **A/D or arrows**, then **Enter**: choose a map. Retry keeps the selected map.
+- **F3**: display hitboxes.
+- **F11** or **Alt+Enter**: toggle fullscreen from any screen.
 
-## Organização
+Fullscreen can also be toggled in the main menu or enabled at startup with
+`uv run boxhead --fullscreen`. The preference is saved in the profile. The logical
+canvas keeps its aspect ratio and play area; some monitors may show black bars.
+Mouse coordinates are mapped back to the canvas for augment selection.
+
+## Development
+
+The course prioritizes code organization and design patterns. This project uses
+simple manual checks, without automated tests, mandatory linting or CI/CD. Open
+the game and exercise the affected feature when checking a change.
 
 ```text
 src/boxhead/
-├── app.py            # Composição e navegação
-├── core/             # FSM, comandos, eventos, geometria e catálogo
-├── world/            # Partida, combate, rondas, progressão e resultado
-├── presentation/     # HUD e desenho de sprites adicionais
-├── states/           # Input e ecrãs
-├── profile.py        # JSON e confirmação atómica de alterações
-└── shop.py           # Compras e melhorias permanentes
-assets/               # Manifest, spritesheets e recortes
+├── app.py            # Composition and navigation
+├── core/             # FSM, commands, events, geometry and sprite catalog
+├── world/            # Runs, combat, rounds, progression and results
+├── presentation/     # HUD and shared sprite drawing
+├── states/           # Input and screens
+├── profile.py        # JSON persistence and atomic commits
+└── shop.py           # Purchases and permanent upgrades
+assets/               # Manifest, spritesheets and crops
 ```
 
-Na seleção de mapa: A/D ou setas e Enter. Repetir conserva o mapa escolhido.
-Controlos: WASD move, Espaço dispara, 1/2/3 troca de arma, Esc pausa,
-M abandona a partir da pausa, F3 mostra hitboxes. Menu/loja usam W/S e Enter.
+Course documentation and source comments remain in Portuguese:
 
-## Design e desenvolvimento
+- [Game rules and tunable proposals](docs/game-design.md)
+- [Architecture and course slides](docs/architecture.md)
+- [Backlog and implementation order](docs/backlog.md)
+- [Contribution guide](CONTRIBUTING.md)
+- [GitHub issues](https://github.com/xHuGODx/tpj-boxhead/issues)
+- [Assets, integration and retouching provenance](assets/README.md)
 
-- [Regras do jogo e propostas ainda ajustáveis](docs/game-design.md)
-- [Arquitetura e relação com os slides](docs/architecture.md)
-- [Backlog e ordem de implementação](docs/backlog.md)
-- [Como contribuir](CONTRIBUTING.md)
-- [Issues no GitHub](https://github.com/xHuGODx/tpj-boxhead/issues)
-
-Controlos planeados: **WASD** para mover e orientar; **Espaço** para disparar na
-direção em que a personagem está virada. O rato não controla a mira.
-
-Referências de ferramentas: [Pygame](https://pypi.org/project/pygame/) e
-[projetos com uv](https://docs.astral.sh/uv/guides/projects/).
-
-
-Ecrã inteiro: opção no menu principal, **F11** ou **Alt+Enter** em qualquer ecrã.
-A preferência fica guardada no perfil. Também é possível iniciar com
-`uv run boxhead --fullscreen`. O canvas mantém proporções e área de jogo; podem
-existir barras laterais conforme o formato do monitor. Os cliques são convertidos
-para as coordenadas do canvas, incluindo a seleção de augments.
+Tools: [Pygame](https://pypi.org/project/pygame/) and
+[uv projects](https://docs.astral.sh/uv/guides/projects/).

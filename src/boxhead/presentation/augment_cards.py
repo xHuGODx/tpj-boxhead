@@ -17,7 +17,7 @@ COLORS = {
     Rarity.GOLD: (255, 207, 40),
     Rarity.PRISMATIC: (205, 145, 255),
 }
-LABELS = {Rarity.GRAY: "CINZENTO", Rarity.GOLD: "DOURADO", Rarity.PRISMATIC: "PRISMÁTICO"}
+LABELS = {Rarity.GRAY: "GRAY", Rarity.GOLD: "GOLD", Rarity.PRISMATIC: "PRISMATIC"}
 
 
 def wrap(font, text, width):
@@ -104,15 +104,16 @@ class AugmentCards:
             points=[(x,round(y*.75-10)) for x,y in points]
         pygame.draw.polygon(self._canvas,(43,22,61),points)
         pygame.draw.polygon(self._canvas,(236,169,38),points,5)
-        self._text(f"NÍVEL {world.progression.level}",(center,58 if compact else 88),64 if compact else 76,bold=True)
+        self._text(f"LEVEL {world.progression.level}",(center,58 if compact else 88),64 if compact else 76,bold=True)
         self._diamond((center-185,58 if compact else 88),(255,202,45),11)
         self._diamond((center+185,58 if compact else 88),(255,202,45),11)
-        self._text("Escolhe um augment",(center,131 if compact else 181),44,bold=True)
+        self._text("Choose an augment",(center,131 if compact else 181),44,bold=True)
         pygame.draw.line(self._canvas,(175,113,38),(center-310,131 if compact else 181),(center-215,131 if compact else 181),3)
         pygame.draw.line(self._canvas,(175,113,38),(center+215,131 if compact else 181),(center+310,131 if compact else 181),3)
         queued=world.progression.pending_choices-1
         if queued > 0:
-            self._text(f"Mais {queued} escolha(s) depois desta",(center,155 if compact else 218),27,(184,178,194))
+            noun = "choice" if queued == 1 else "choices"
+            self._text(f"{queued} more {noun} after this",(center,155 if compact else 218),27,(184,178,194))
 
     def _card(self, world, augment, rect, index, selected):
         color=COLORS[augment.rarity]
@@ -136,8 +137,8 @@ class AugmentCards:
         self._painter.blit(self._canvas,"augments/augment_icons.png",
                            (rect.centerx,rect.y+138),(112,112),self._icons.get(augment.id,0))
         self._paragraph(augment.name,pygame.Rect(rect.x+40,rect.y+205,rect.width-80,68),44,True)
-        prefix="Arma:" if augment.weapon else "Alvo:"
-        target=augment.weapon or "personagem"
+        prefix="Weapon:" if augment.weapon else "Target:"
+        target=augment.weapon or "player"
         target_font=self._font(32)
         prefix_image=self._font(32,True).render(prefix,True,color)
         target_image=target_font.render(target,True,(210,202,203))
@@ -152,7 +153,7 @@ class AugmentCards:
         self._paragraph(augment.description,effect.inflate(-24,-14),42,True)
         self._divider(rect,rect.y+434,color)
         have=world.inventory.stacks(augment.id)
-        self._paragraph(f"Acumulação: {have} -> {have+1} (máx. {augment.max_stacks})",
+        self._paragraph(f"Stacks: {have} -> {have+1} (max. {augment.max_stacks})",
                         pygame.Rect(rect.x+40,rect.y+452,rect.width-80,38),30,color=(200,190,189))
 
     def draw(self, surface, world, offer, cursor, locked):
@@ -164,7 +165,7 @@ class AugmentCards:
         self._header(world,offer,compact)
         for index,(augment,rect) in enumerate(zip(offer.choices,self._logical_rects(len(offer.choices),compact),strict=True)):
             self._card(world,augment,rect,index,index==cursor)
-        self._text("1 / 2 / 3 ou clique   ·   Setas + Enter   ·   ESC pausa",
+        self._text("1 / 2 / 3 or click   ·   Arrows + Enter   ·   ESC pause",
                    (SIZE[0]//2,785 if compact else 900),32,
                    (155,150,160) if locked else (207,196,190))
         scaled=pygame.transform.smoothscale(self._canvas,(round(SIZE[0]*scale),round(height*scale)))

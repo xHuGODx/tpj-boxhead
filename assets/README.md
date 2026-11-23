@@ -1,45 +1,47 @@
 # Assets
 
-Os sprites estão integrados através de `assets/manifest.json`. O catálogo partilha
-os frames; cada entidade mantém o seu estado de animação. Fontes usam o recurso
-predefinido incluído no Pygame e são criadas ao entrar no ecrã.
+Sprites are integrated through `assets/manifest.json`. The catalog shares image
+frames; each entity owns its animation state. Fonts use Pygame's bundled default
+resource and are prepared when entering a screen.
 
-## Origem e fontes editáveis
+## Sources and editable files
 
-Os oito PNGs iniciais foram fornecidos na branch do colega. Os restantes recursos
-foram fornecidos pelo utilizador em `sprites_cortados.zip`, preservado extraído em
-`assets/sprites_cortados/`. Autoria original não identificada individualmente.
-As informações de produção e limitações fornecidas com o pack estão em
-[sprites_cortados/pixel_art_pygame_pack_v2/README.md](sprites_cortados/pixel_art_pygame_pack_v2/README.md).
-Essas informações são as declarações do pack fornecido, sem verificação independente.
+The first eight PNGs came from the teammate's branch. The remaining resources were
+provided by the user in `sprites_cortados.zip`, kept extracted under
+`assets/sprites_cortados/`. Individual original authors were not identified.
+Production notes and known limitations supplied with the pack are preserved in
+[the original pack README](sprites_cortados/pixel_art_pygame_pack_v2/README.md).
+Those notes are the supplier's statements and have not been independently verified.
 
-Os PNGs completos são as fontes raster editáveis disponíveis; os recortes separados
-estão em `sprites_cortados/frames/`, acompanhados do índice. Não foram fornecidos
-ficheiros de camadas. Os scripts de slicing/demo são material auxiliar, não fazem
-parte do arranque do jogo.
+Full PNG sheets are the available raster sources; individual crops are kept in
+`sprites_cortados/frames/` alongside their index. Layered source files were not
+provided. The bundled slicing/demo scripts are supporting material and are not
+part of game startup. Original files remain unchanged by the retouching pass.
 
-## Convenções de integração
+## Integration conventions
 
-- Procurar primeiro o caminho direto em `assets/`; depois o mesmo caminho dentro
-  de `sprites_cortados/pixel_art_pygame_pack_v2/`. Um PNG ausente usa placeholder.
-- As quatro linhas direcionais são down, left, right, up. O movimento admite oito
-  direções; diagonais usam a representação cardinal mais próxima.
-- Cada frame é centrado na posição da entidade; dimensões, FPS, ordem e loop estão
-  no manifest. Escala/rotação não alteram raios ou hitboxes.
-- O catálogo e os adaptadores preparam recursos antes do desenho. Frames e versões
-  escaladas são partilhados/cacheados; não se lêem ficheiros por entidade/frame.
-- Todos os recursos são incluídos no wheel em `boxhead/data`, permitindo executar
-  de outra diretoria e instalar o pacote fora do checkout.
-- O pack contém animações derivadas programaticamente e possíveis halos/costuras,
-  descritos no README original. Sons ainda não estão implementados.
+- Look up the manifest's optional `source` path, or use the entry's key as the path.
+  Paths are resolved under `assets/`, then under
+  `sprites_cortados/pixel_art_pygame_pack_v2/`. Missing images use placeholders.
+- Directional rows are down, left, right, up. Diagonal movement uses the nearest
+  cardinal direction's animation.
+- Each frame is centered on the entity. Logical frame sizes, grid, FPS and loop
+  behavior are declared in the manifest. Visual scaling does not change hitboxes.
+- The catalog and adapters prepare resources before drawing. Frames and transformed
+  images are shared/cached; rendering never reads files per entity or per frame.
+- All resources are included in the wheel under `boxhead/data`, so the installed
+  game can run outside the checkout.
+- The supplied pack includes synthesized animations and possible halos/seams.
+  Audio is not implemented yet.
 
-## Inventário dos exports
+## Export inventory
 
-Origem comum: recursos fornecidos pela equipa/utilizador. As folhas completas são
-fontes e exports PNG; recortes individuais preservados no bundle. O ponto de origem
-usado é o centro do frame. Todas as entradas abaixo constam do manifest.
+Unless specified in the retouching section below, resources were supplied by the
+team/user. Full sheets are the available PNG sources/exports; individual crops
+remain in the original bundle. The frame center is the rendering origin.
+All entries below are in the manifest.
 
-| Recurso | Frame (px) | Grelha (linhas × colunas) | FPS |
+| Asset | Frame (px) | Grid (rows × columns) | FPS |
 | --- | --- | --- | --- |
 | `player/player_walk.png` | 96 × 96 | 4 × 4 | 9 |
 | `player/player_idle.png` | 96 × 96 | 4 × 1 | 3 |
@@ -98,32 +100,43 @@ usado é o centro do frame. Todas as entradas abaixo constam do manifest.
 | `maps/map_02_thumb.png` | 256 × 256 | 1 × 1 | 8 |
 | `maps/map_03_thumb.png` | 256 × 256 | 1 × 1 | 8 |
 
+## Atlas crop review
 
-## Revisão de recortes
+All 56 sheets (326 frames) match the declared logical dimensions. Some atlas
+objects were misaligned within their cells. The manifest supports `source_rects`,
+`anchor`, `frame_cleanup`, `tile_border`, `labels`, and an optional `source` path.
+Explicit crops keep logical frame sizes; anchors center content or align its base.
 
-Todas as 56 folhas (326 frames) correspondem às dimensões declaradas. O problema
-não era o tamanho da grelha: alguns elementos estavam desalinhados dentro do atlas.
-O manifest suporta agora `source_rects`, `anchor`, `frame_cleanup` e `tile_border`.
-Os recortes explícitos são colocados em frames do mesmo tamanho lógico, sem alterar
-os PNGs de origem. As âncoras centram o conteúdo ou alinham-no pelo chão.
+- Obstacles use complete crate, crate, barrel, rock, large rock, and column frames.
+  Map/chunk obstacle indices and the circular barrel index match that order.
+- Decorations keep complete stones, grass, blood, grate, and bones groups, excluding
+  the stray right-edge line. The grate previously crossed two grid cells.
+- Augment symbols are centered in uniform borders. `labels` maps augment IDs to
+  damage, range, XP, health, and other symbols without presentation-side guessing.
+- Connected-component cleanup removes confirmed detached fragments from selected
+  projectiles and explosion/spawn frames. There is no global color-removal filter
+  that could erase legitimate particles.
+- The player shadow uses its alpha content bounds and is positioned near the feet.
 
-- Obstáculos: removidos fragmentos entre caixas/rochas/colunas. Ordem real registada
-  como caixa, caixa, barril, rocha, rocha grande, coluna. Corrigidos os índices dos
-  mapas e a identificação do barril circular nas arenas e nos chunks.
-- Decorações: preservados os grupos completos de pedras, relva, sangue, grelha e
-  ossos; excluída a linha residual da margem direita. A grelha antes atravessava
-  duas células e aparecia partida.
-- Augments: regiões dos símbolos explicitadas e centradas em molduras uniformes.
-  `labels` associa IDs aos símbolos de dano, alcance, XP, vida, etc., independentemente
-  da ordem do catálogo. A apresentação deixou de tentar adivinhar os recortes.
-- Limpeza limitada a ilhas desconectadas confirmadas no boss/SMG/projéteis e a
-  fragmentos brancos nas explosões/spawns. Partículas legítimas dos outros efeitos
-  mantêm-se; os critérios são definidos por folha/frame, sem filtro global de cores.
-- Sombra: o adaptador usa o conteúdo alfa da imagem e coloca-o junto dos pés, sem
-  duplicar a margem transparente com o deslocamento no renderer.
+## Retouched sprites
 
-Limitações encontradas nos originais: há halos amarelos/magentas junto de alguns
-personagens e zonas residuais de fundo junto do boss, da SMG e da coluna. Elementos
-já fundidos com o desenho não são corrigíveis apenas mudando retângulos de corte;
-precisam de retoque da arte ou de fontes com transparência mais limpa. A limpeza
-por componentes preserva o desenho principal e não reconstrói partes da ilustração.
+Eight replacement sheets are stored in `retouched/` and selected through `source`:
+
+- `retouched/weapons/smg.png`: isolated weapon without the purple rectangular matte.
+- `retouched/environment/obstacles.png`: the five existing corrected obstacle crops
+  plus an isolated replacement column without the neighboring vertical line.
+- `retouched/bosses/boss_01_{walk,idle,hurt,prepare,attack,death}.png`: six boss
+  animation sheets with cleaner silhouettes and reduced background contamination.
+
+Retouching used the built-in `image_gen` tool through the **imagegen** skill.
+[provenance.json](retouched/provenance.json) records the source assets, final paths,
+and full prompt set. Generated results were cropped, resized with nearest-neighbor
+sampling, and packed into the existing logical grids using Pygame. Their colors
+and alpha channels were preserved. Existing frame counts, directional order, FPS,
+and animation loops remain compatible with the gameplay code. No regeneration
+happens at startup.
+
+These are raster retouches rather than recovery of layered source art: a few fine
+colored fringes and soft edge pixels remain, especially around some boss frames
+and the column. The largest rectangular mattes and detached fragments are removed
+or substantially reduced. The original pack remains available for comparison.

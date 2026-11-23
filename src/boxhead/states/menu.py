@@ -6,7 +6,7 @@ import pygame
 
 from boxhead.core.state import State
 
-HINT = "W/S ou setas · ENTER confirma · F11 ecrã inteiro · ESC sai"
+HINT = "W/S or arrows · ENTER select · F11 fullscreen · ESC quit"
 
 
 class MenuState(State):
@@ -23,13 +23,13 @@ class MenuState(State):
         self._on_quit = on_quit
         self._balance = balance
         self._notice = notice
-        self._items: list[tuple[str | Callable[[], str], Callable[[], None]]] = [("Jogar", on_start)]
+        self._items: list[tuple[str | Callable[[], str], Callable[[], None]]] = [("Play", on_start)]
         if on_shop is not None:
-            self._items.append(("Loja", on_shop))
+            self._items.append(("Shop", on_shop))
         if on_fullscreen is not None:
             is_fullscreen = fullscreen or (lambda: False)
-            self._items.append((lambda: "Ecrã inteiro: " + ("Ligado" if is_fullscreen() else "Desligado"), on_fullscreen))
-        self._items.append(("Sair", on_quit))
+            self._items.append((lambda: "Fullscreen: " + ("On" if is_fullscreen() else "Off"), on_fullscreen))
+        self._items.append(("Quit", on_quit))
         self._cursor = 0
 
     @property
@@ -64,7 +64,7 @@ class MenuState(State):
         surface.fill((19, 23, 29))
         width, height = surface.get_size()
         center_x = width // 2
-        subtitle = self._small.render("TÓPICOS DE PROGRAMAÇÃO PARA JOGOS", True, (153, 163, 176))
+        subtitle = self._small.render("GAME PROGRAMMING TOPICS", True, (153, 163, 176))
         surface.blit(subtitle, subtitle.get_rect(center=(center_x, height // 2 - 160)))
         title = self._title.render("BOXHEAD", True, (235, 77, 76))
         surface.blit(title, title.get_rect(center=(center_x, height // 2 - 80)))
@@ -76,7 +76,7 @@ class MenuState(State):
         hint = self._small.render(HINT, True, (153, 163, 176))
         surface.blit(hint, hint.get_rect(center=(center_x, height - 40)))
         if self._balance is not None:
-            coins = self._body.render(f"Moeda: {self._balance}", True, (255, 220, 120))
+            coins = self._body.render(f"Coins: {self._balance}", True, (255, 220, 120))
             surface.blit(coins, coins.get_rect(topright=(width - 24, 20)))
         if self._notice:
             warning = self._small.render(self._notice, True, (240, 150, 100))

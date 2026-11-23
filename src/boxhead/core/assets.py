@@ -28,7 +28,7 @@ def load_image(
         if size is not None and image.get_size() != size:
             image = pygame.transform.scale(image, size)
         return image
-    logger.warning("asset em falta, a usar placeholder: %s", relative)
+    logger.warning("missing asset, using placeholder: %s", relative)
     surface = pygame.Surface(size or fallback_size, pygame.SRCALPHA)
     pygame.draw.rect(surface, fallback_color, surface.get_rect(), border_radius=4)
     return surface

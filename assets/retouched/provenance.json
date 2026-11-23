@@ -1,0 +1,47 @@
+{
+  "tool": "Built-in image_gen (imagegen skill), transparent PNG edits",
+  "integration": "Pygame crop/nearest-neighbor resize/atlas packing only; generated alpha and colors preserved. Original sheets remain unchanged. Source field selects retouched atlases without changing public keys, frame sizes or animation FPS.",
+  "assets": {
+    "bosses/boss_01_walk.png": {
+      "source_asset": "bosses/boss_01_walk.png",
+      "export": "retouched/bosses/boss_01_walk.png",
+      "prompt": "Use case: background-extraction. Edit this game animation atlas. Preserve EXACTLY the 4 by 4 grid: sixteen frames, rows DOWN, LEFT, RIGHT, UP; four walking poses in each row. Keep the same purple-grey stone golem with red crystal, all sixteen poses and facing directions, proportions, frame placements and pixel-art detail. Clean yellow/magenta fringes and grey rectangular background remnants especially over the heads in row 2; reconstruct clean outlines only where necessary. Every frame must have genuine transparent padding and a complete uncropped character. No grid lines, floor, shadows, text or extra frames. Output a square atlas with evenly spaced 4x4 cells, identical scale and bottom alignment within each cell. The source is 768x768; preserve canvas size if possible."
+    },
+    "bosses/boss_01_idle.png": {
+      "source_asset": "bosses/boss_01_idle.png",
+      "export": "retouched/bosses/boss_01_idle.png",
+      "prompt": "Use case: background-extraction. Edit target: the supplied purple stone golem boss idle animation atlas. Remove leftover grey rectangular matte and magenta/yellow outline contamination around the character. Preserve the red crystal, proportions, colors, poses, idle animation progression and all effects. Exactly 4 rows and 1 columns of equal cells, 4 complete frames in original order; directional rows down, left, right, up when four rows. Each character stays centered and feet aligned identically within each cell. True transparent background outside sharp pixel-art silhouettes. No ambient glow or haze, no backdrop, text, grid, cropped characters or extra frames. Maintain original atlas aspect ratio."
+    },
+    "bosses/boss_01_hurt.png": {
+      "source_asset": "bosses/boss_01_hurt.png",
+      "export": "retouched/bosses/boss_01_hurt.png",
+      "prompt": "Use case: background-extraction. Edit target: the supplied purple stone golem boss hurt animation atlas. Remove leftover grey rectangular matte and magenta/yellow outline contamination around the character. Preserve the red crystal, proportions, colors, poses, hurt animation progression and all effects. Exactly 4 rows and 2 columns of equal cells, 8 complete frames in original order; directional rows down, left, right, up when four rows. Each character stays centered and feet aligned identically within each cell. True transparent background outside sharp pixel-art silhouettes. No ambient glow or haze, no backdrop, text, grid, cropped characters or extra frames. Maintain original atlas aspect ratio."
+    },
+    "bosses/boss_01_prepare.png": {
+      "source_asset": "bosses/boss_01_prepare.png",
+      "export": "retouched/bosses/boss_01_prepare.png",
+      "prompt": "Use case: background-extraction. Edit target: the supplied purple stone golem boss prepare animation atlas. Remove leftover grey rectangular matte and magenta/yellow outline contamination around the character. Preserve the red crystal, proportions, colors, poses, prepare animation progression and all effects. Exactly 4 rows and 3 columns of equal cells, 12 complete frames in original order; directional rows down, left, right, up when four rows. Each character stays centered and feet aligned identically within each cell. True transparent background outside sharp pixel-art silhouettes. No ambient glow or haze, no backdrop, text, grid, cropped characters or extra frames. Maintain original atlas aspect ratio."
+    },
+    "bosses/boss_01_attack.png": {
+      "source_asset": "bosses/boss_01_attack.png",
+      "export": "retouched/bosses/boss_01_attack.png",
+      "prompt": "Use case: background-extraction. Edit target: the supplied purple stone golem boss attack animation atlas. Remove leftover grey rectangular matte and magenta/yellow outline contamination around the character. Preserve the red crystal, proportions, colors, poses, attack animation progression and all effects. Exactly 4 rows and 4 columns of equal cells, 16 complete frames in original order; directional rows down, left, right, up when four rows. Each character stays centered and feet aligned identically within each cell. True transparent background outside sharp pixel-art silhouettes. No ambient glow or haze, no backdrop, text, grid, cropped characters or extra frames. Maintain original atlas aspect ratio."
+    },
+    "bosses/boss_01_death.png": {
+      "source_asset": "bosses/boss_01_death.png",
+      "export": "retouched/bosses/boss_01_death.png",
+      "prompt": "Use case: background-extraction. Edit target: the supplied purple stone golem boss death animation atlas. Remove leftover grey rectangular matte and magenta/yellow outline contamination around the character. Preserve the red crystal, proportions, colors, poses, death animation progression and all effects. Exactly 1 rows and 8 columns of equal cells, 8 complete frames in original order; directional rows down, left, right, up when four rows. Each character stays centered and feet aligned identically within each cell. True transparent background outside sharp pixel-art silhouettes. No ambient glow or haze, no backdrop, text, grid, cropped characters or extra frames. Maintain original atlas aspect ratio."
+    },
+    "weapons/smg.png": {
+      "source_asset": "weapons/smg.png",
+      "export": "retouched/weapons/smg.png",
+      "prompt": "Edit target: the provided existing pixel-art SMG sprite, native 112 by 64 px. Background-extraction and cleanup only. Remove the unwanted dark purple rectangular matte and stray pixels attached behind and around the gun, replace with true alpha transparency. Preserve the entire weapon, all barrel, stock, grip and metal details, colors, outline, pointing direction, scale and pixel-art style. Keep the gun centered in the same 112x64 canvas with transparent padding; do not add glow, text, shadows or objects, do not redesign the weapon. This is a production game sprite and must remain compatible with existing animation/drawing code. Output one clean transparent PNG."
+    },
+    "environment/obstacles.png": {
+      "source_asset": "environment/obstacles.png",
+      "export": "retouched/environment/obstacles.png",
+      "prompt": "Use case: background-extraction. Edit target: the provided stone column sprite. Single change: REMOVE the entire soft purple outer glow/haze around the column, all the way to a crisp opaque pixel-art silhouette. Outside the hard stone edges must be alpha zero, including around the pedestal and capital. Keep the column itself unchanged: full capital, shaft, pedestal, shading, proportions and colors. No shadows, glow, particles, backdrop, ground, text or extra objects. Preserve true transparency. Output one clean standalone column PNG.",
+      "initial_prompt": "Use case: background-extraction. The input is an atlas of obstacles. Edit target: ONLY the narrow grey stone column at the far right. Extract that whole column as one standalone pixel-art sprite on true alpha transparency. Remove all purple rectangular matte, the vertical line on its right and fragments from neighboring sprites. Preserve the complete capital, shaft, pedestal, stone shading and pixel-art style; no new objects, text, floor, glow or cast shadow. Output only the clean isolated column with a little transparent padding."
+    }
+  }
+}

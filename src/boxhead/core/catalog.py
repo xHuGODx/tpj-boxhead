@@ -100,10 +100,10 @@ class SpriteCatalog:
             return self._sheets[key]
         entry = self._entries.get(key)
         if entry is None:
-            raise KeyError(f"chave ausente do manifest: {key}")
+            raise KeyError(f"missing manifest key: {key}")
         frame_size = tuple(entry["frame_size"])
         image = load_image(
-            key,
+            entry.get("source", key),
             fallback_color=self._fallback_color(key),
             fallback_size=(
                 frame_size[0] * entry.get("columns", 1),

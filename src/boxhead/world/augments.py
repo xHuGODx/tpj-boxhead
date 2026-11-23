@@ -111,7 +111,7 @@ class GrantBehavior:
 
     def __post_init__(self) -> None:
         if self.kind not in BEHAVIOR_TYPES:  # falha ao definir, não a meio de uma partida
-            raise ValueError(f"comportamento desconhecido: {self.kind!r}")
+            raise ValueError(f"unknown behavior: {self.kind!r}")
 
     def apply(self, modifiers: Modifiers) -> None:
         modifiers.behaviors[self.kind] = modifiers.behaviors.get(self.kind, 0) + 1
@@ -145,35 +145,35 @@ def _gold(id: str, name: str, description: str, effect: Effect, max_stacks: int,
 
 AUGMENTS: tuple[Augment, ...] = (
     # Cinzentos: atributos de uma arma.
-    _gray("pistol_damage", "Pistol", "Heavy Rounds", "+20% dano", WeaponDamage("Pistol", 0.20), 5),
+    _gray("pistol_damage", "Pistol", "Heavy Rounds", "+20% damage", WeaponDamage("Pistol", 0.20), 5),
     _gray(
-        "pistol_rate", "Pistol", "Hair Trigger", "+15% cadência", WeaponFireRate("Pistol", 0.15), 5
+        "pistol_rate", "Pistol", "Hair Trigger", "+15% fire rate", WeaponFireRate("Pistol", 0.15), 5
     ),
     _gray(
-        "shotgun_pellets", "Shotgun", "Extra Pellet", "+1 projétil", WeaponPellets("Shotgun", 1), 4
+        "shotgun_pellets", "Shotgun", "Extra Pellet", "+1 pellet", WeaponPellets("Shotgun", 1), 4
     ),
-    _gray("shotgun_damage", "Shotgun", "Slug Load", "+15% dano", WeaponDamage("Shotgun", 0.15), 5),
+    _gray("shotgun_damage", "Shotgun", "Slug Load", "+15% damage", WeaponDamage("Shotgun", 0.15), 5),
     _gray(
         "shotgun_rate",
         "Shotgun",
         "Pump Action",
-        "+15% cadência",
+        "+15% fire rate",
         WeaponFireRate("Shotgun", 0.15),
         4,
     ),
-    _gray("smg_rate", "SMG", "Overclock", "+12% cadência", WeaponFireRate("SMG", 0.12), 5),
-    _gray("smg_damage", "SMG", "Hot Loads", "+15% dano", WeaponDamage("SMG", 0.15), 5),
-    _gray("pistol_range", "Pistol", "Long Barrel", "+20% alcance", WeaponRange("Pistol", 0.20), 4),
-    _gray("smg_range", "SMG", "Extended Barrel", "+15% alcance", WeaponRange("SMG", 0.15), 4),
+    _gray("smg_rate", "SMG", "Overclock", "+12% fire rate", WeaponFireRate("SMG", 0.12), 5),
+    _gray("smg_damage", "SMG", "Hot Loads", "+15% damage", WeaponDamage("SMG", 0.15), 5),
+    _gray("pistol_range", "Pistol", "Long Barrel", "+20% range", WeaponRange("Pistol", 0.20), 4),
+    _gray("smg_range", "SMG", "Extended Barrel", "+15% range", WeaponRange("SMG", 0.15), 4),
     # Dourados: atributos mais fortes da personagem.
-    _gold("vitality", "Vitality", "+25 vida máxima", MaxHealth(25), 4),
-    _gold("swift", "Swift", "+12% velocidade", MoveSpeed(0.12), 4),
-    _gold("regeneration", "Regeneration", "+1,5 vida/s", Regeneration(1.5), 3),
+    _gold("vitality", "Vitality", "+25 max health", MaxHealth(25), 4),
+    _gold("swift", "Swift", "+12% movement speed", MoveSpeed(0.12), 4),
+    _gold("regeneration", "Regeneration", "+1.5 health/s", Regeneration(1.5), 3),
     _gold("quick_learner", "Quick Learner", "+15% XP", XpGain(0.15), 4),
     _gold(
         "juggernaut",
         "Juggernaut",
-        "+60 vida máxima (exclusivo com Sprinter)",
+        "+60 max health (excludes Sprinter)",
         MaxHealth(60),
         1,
         incompatible_with=("sprinter",),
@@ -181,7 +181,7 @@ AUGMENTS: tuple[Augment, ...] = (
     _gold(
         "sprinter",
         "Sprinter",
-        "+25% velocidade (exclusivo com Juggernaut)",
+        "+25% movement speed (excludes Juggernaut)",
         MoveSpeed(0.25),
         1,
         incompatible_with=("juggernaut",),
@@ -190,7 +190,7 @@ AUGMENTS: tuple[Augment, ...] = (
     Augment(
         "ricochet",
         "Ricochet",
-        "As balas saltam para o inimigo mais próximo (+1 salto por acumulação)",
+        "Bullets bounce to the nearest enemy (+1 bounce per stack)",
         Rarity.PRISMATIC,
         GrantBehavior("ricochet"),
         3,
@@ -198,7 +198,7 @@ AUGMENTS: tuple[Augment, ...] = (
     Augment(
         "chain_reaction",
         "Chain Reaction",
-        "Os inimigos explodem ao morrer e ferem os vizinhos (mais raio e dano por acumulação)",
+        "Enemies explode on death, damaging nearby enemies (more radius and damage per stack)",
         Rarity.PRISMATIC,
         GrantBehavior("chain_reaction"),
         3,
@@ -206,7 +206,7 @@ AUGMENTS: tuple[Augment, ...] = (
     Augment(
         "orbitals",
         "Orbital Satellites",
-        "Satélites orbitam o jogador e ferem quem tocam (+1 satélite por acumulação)",
+        "Satellites orbit you and damage enemies on contact (+1 satellite per stack)",
         Rarity.PRISMATIC,
         GrantBehavior("orbitals"),
         3,
@@ -216,33 +216,33 @@ AUGMENTS: tuple[Augment, ...] = (
 def validate_catalog(catalog: Sequence[Augment]) -> None:
     by_id = {a.id: a for a in catalog}
     if len(by_id) != len(catalog):
-        raise ValueError("IDs de augments repetidos")
+        raise ValueError("duplicate augment IDs")
     known_weapons = {weapon.name for weapon in WEAPONS}
     for augment in catalog:
         if augment.weapon is not None and augment.weapon not in known_weapons:
-            raise ValueError(f"arma desconhecida: {augment.weapon}")
+            raise ValueError(f"unknown weapon: {augment.weapon}")
         if getattr(augment.effect, "weapon", augment.weapon) != augment.weapon:
-            raise ValueError(f"arma do efeito diferente do alvo: {augment.id}")
+            raise ValueError(f"effect weapon does not match target: {augment.id}")
         if any(not isinstance(value, str) or not value
                for value in (augment.id, augment.name, augment.description)):
-            raise ValueError("augment sem identificação ou descrição")
+            raise ValueError("augment missing an ID or description")
         if not isinstance(augment.rarity, Rarity) or not callable(getattr(augment.effect, "apply", None)):
-            raise ValueError(f"raridade/efeito inválido: {augment.id}")
+            raise ValueError(f"invalid rarity/effect: {augment.id}")
         if isinstance(augment.max_stacks, bool) or not isinstance(augment.max_stacks, int) or augment.max_stacks <= 0:
-            raise ValueError(f"limite de acumulação inválido: {augment.id}")
+            raise ValueError(f"invalid stack limit: {augment.id}")
         if augment.rarity is Rarity.GRAY and not augment.weapon:
-            raise ValueError(f"augment cinzento sem arma: {augment.id}")
+            raise ValueError(f"gray augment missing a weapon: {augment.id}")
         if augment.rarity is not Rarity.GRAY and augment.weapon is not None:
-            raise ValueError(f"augment de personagem com alvo de arma: {augment.id}")
+            raise ValueError(f"player augment targets a weapon: {augment.id}")
         refs = (*augment.requires, *augment.incompatible_with)
         if augment.id in refs or any(ref not in by_id for ref in refs):
-            raise ValueError(f"referência inválida: {augment.id}")
+            raise ValueError(f"invalid reference: {augment.id}")
         if set(augment.requires) & set(augment.incompatible_with):
-            raise ValueError(f"pré-requisito incompatível: {augment.id}")
+            raise ValueError(f"incompatible prerequisite: {augment.id}")
     visited, visiting = set(), set()
     def visit(key):
         if key in visiting:
-            raise ValueError("ciclo nos pré-requisitos")
+            raise ValueError("cycle in prerequisites")
         if key in visited:
             return
         visiting.add(key)
@@ -301,7 +301,7 @@ class AugmentInventory:
 
     def add(self, augment: Augment, available_weapons: Iterable[str]) -> None:
         if not self.is_eligible(augment, available_weapons):
-            raise ValueError(f"augment não elegível: {augment.id}")
+            raise ValueError(f"ineligible augment: {augment.id}")
         candidate = dict(self._owned)
         candidate[augment.id] = (augment, self.stacks(augment.id) + 1)
         modifiers = self._compute(candidate)
@@ -339,7 +339,7 @@ class OfferConfig:
 
     def __post_init__(self) -> None:
         if isinstance(self.size, bool) or not isinstance(self.size, int) or not 1 <= self.size <= 3:
-            raise ValueError("uma oferta tem entre uma e três escolhas")
+            raise ValueError("an offer must contain one to three choices")
         keys = [r for r, _ in self.weights]
         values = [w for _, w in self.weights]
         if (not keys or len(set(keys)) != len(keys)
@@ -347,14 +347,14 @@ class OfferConfig:
                 or any(not isinstance(w, (int, float)) or isinstance(w, bool)
                        or not isfinite(w) or w < 0 for w in values)
                 or not isfinite(sum(values)) or sum(values) <= 0):
-            raise ValueError("pesos de raridade inválidos")
+            raise ValueError("invalid rarity weights")
         fallback_keys = [r for r, _ in self.fallback]
         if len(set(fallback_keys)) != len(fallback_keys):
-            raise ValueError("cadeias de fallback repetidas")
+            raise ValueError("duplicate fallback chains")
         for rarity, chain in self.fallback:
             if (not isinstance(rarity, Rarity) or rarity in chain or len(set(chain)) != len(chain)
                     or any(not isinstance(r, Rarity) for r in chain)):
-                raise ValueError("cadeia de fallback inválida")
+                raise ValueError("invalid fallback chain")
 
 
 DEFAULT_OFFER = OfferConfig()

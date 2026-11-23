@@ -41,7 +41,7 @@ class Profile:
 
     def credit(self, amount: int) -> None:
         if amount < 0:
-            raise ValueError("não se credita moeda negativa")
+            raise ValueError("cannot credit negative coins")
         self.balance += amount
 
     def level(self, upgrade_id: str) -> int:
@@ -62,16 +62,16 @@ class Profile:
         upgrades = data.get("upgrades", {})
         preferences = data.get("preferences", {})
         if not _is_count(balance):
-            raise ProfileFormatError(f"saldo inválido: {balance!r}")
+            raise ProfileFormatError(f"invalid balance: {balance!r}")
         if not isinstance(upgrades, dict) or not all(
             isinstance(k, str) and _is_count(v) for k, v in upgrades.items()
         ):
-            raise ProfileFormatError("melhorias inválidas")
+            raise ProfileFormatError("invalid upgrades")
         if not isinstance(preferences, dict):
-            raise ProfileFormatError("preferências inválidas")
+            raise ProfileFormatError("invalid preferences")
         credited_runs = data.get("credited_runs", [])
         if not isinstance(credited_runs, list) or not all(isinstance(i, str) for i in credited_runs):
-            raise ProfileFormatError("registo de partidas inválido")
+            raise ProfileFormatError("invalid run history")
         return cls(balance=balance, upgrades=dict(upgrades), preferences=dict(preferences),
                    credited_runs=list(dict.fromkeys(credited_runs)))
 
@@ -110,23 +110,23 @@ class ProfileStore:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-            return self._recover("o ficheiro do perfil estava ilegível")
+            return self._recover("the profile file could not be read")
         version = data.get("version") if isinstance(data, dict) else None
         if not isinstance(version, int) or isinstance(version, bool) or version < 0:
-            return self._recover("o ficheiro do perfil não tem um formato válido")
+            return self._recover("the profile file has an invalid format")
         if version > FORMAT_VERSION:
             return self._set_aside_newer(version)
         try:
             profile = Profile.from_dict(self._migrate(data, version))
         except ProfileFormatError as error:
-            return self._recover(f"o perfil estava inválido ({error})")
+            return self._recover(f"the profile was invalid ({error})")
         return LoadResult(profile, LoadStatus.LOADED)
 
     def _migrate(self, data: dict[str, Any], version: int) -> dict[str, Any]:
         while version < FORMAT_VERSION:
             step = self._migrations.get(version)
             if step is None:
-                raise ProfileFormatError(f"sem migração a partir da versão {version}")
+                raise ProfileFormatError(f"no migration from version {version}")
             data = step(dict(data))
             version += 1
         return data
@@ -136,9 +136,9 @@ class ProfileStore:
         backup = self.path.with_name(self.path.name + ".corrupt")
         try:
             os.replace(self.path, backup)
-            detail = f"{reason}; guardámos uma cópia em {backup.name} e começámos um perfil novo"
+            detail = f"{reason}; saved a backup to {backup.name} and started a new profile"
         except OSError:
-            detail = f"{reason}; começámos um perfil novo"
+            detail = f"{reason}; started a new profile"
         return LoadResult(Profile(), LoadStatus.RECOVERED, detail)
 
     def _set_aside_newer(self, version: int) -> LoadResult:
@@ -146,8 +146,8 @@ class ProfileStore:
         backup = self.path.with_name(f"{self.path.stem}.v{version}.bak")
         shutil.copy2(self.path, backup)
         detail = (
-            f"o perfil é de uma versão mais recente ({version}); "
-            f"guardámos uma cópia em {backup.name} e começámos um perfil novo"
+            f"the profile uses a newer version ({version}); "
+            f"saved a backup to {backup.name} and started a new profile"
         )
         return LoadResult(Profile(), LoadStatus.INCOMPATIBLE, detail)
 

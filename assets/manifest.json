@@ -15,7 +15,7 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+    "notes": "Detailed redesign generated from the user reference"
   },
   "player/player_idle.png": {
     "frame_size": [
@@ -50,7 +50,7 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Dano sintetizado com flash vermelho"
+    "notes": "Synthesized damage animation with a red flash"
   },
   "player/player_death.png": {
     "frame_size": [
@@ -62,7 +62,7 @@
     "frames": 6,
     "fps": 9,
     "loop": false,
-    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+    "notes": "Death dissolve synthesized from the base sprite"
   },
   "player/player_shadow.png": {
     "frame_size": [
@@ -89,7 +89,7 @@
     ],
     "fps": 12,
     "loop": false,
-    "notes": "Corpo sem arma equipada; efeito do tiro pode ser posicionado separadamente"
+    "notes": "Body without an equipped weapon; firing effects can be positioned separately"
   },
   "enemies/enemy_basic_walk.png": {
     "frame_size": [
@@ -107,7 +107,7 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+    "notes": "Detailed redesign generated from the user reference"
   },
   "enemies/enemy_basic_idle.png": {
     "frame_size": [
@@ -142,7 +142,7 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Dano sintetizado com flash vermelho"
+    "notes": "Synthesized damage animation with a red flash"
   },
   "enemies/enemy_basic_death.png": {
     "frame_size": [
@@ -154,7 +154,7 @@
     "frames": 4,
     "fps": 9,
     "loop": false,
-    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+    "notes": "Death dissolve synthesized from the base sprite"
   },
   "enemies/enemy_basic_shadow.png": {
     "frame_size": [
@@ -181,7 +181,7 @@
     ],
     "fps": 10,
     "loop": false,
-    "notes": "Investida corpo a corpo sintetizada"
+    "notes": "Synthesized melee lunge"
   },
   "enemies/enemy_red_walk.png": {
     "frame_size": [
@@ -199,7 +199,7 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador"
+    "notes": "Detailed redesign generated from the user reference"
   },
   "enemies/enemy_red_idle.png": {
     "frame_size": [
@@ -234,7 +234,7 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Dano sintetizado com flash vermelho"
+    "notes": "Synthesized damage animation with a red flash"
   },
   "enemies/enemy_red_death.png": {
     "frame_size": [
@@ -246,7 +246,7 @@
     "frames": 4,
     "fps": 9,
     "loop": false,
-    "notes": "Dissolve de morte sintetizado a partir do sprite base"
+    "notes": "Death dissolve synthesized from the base sprite"
   },
   "enemies/enemy_red_shadow.png": {
     "frame_size": [
@@ -307,57 +307,8 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Redesenho detalhado gerado a partir da referencia do utilizador",
-    "frame_cleanup": {
-      "0": {
-        "min_area": 40
-      },
-      "1": {
-        "min_area": 40
-      },
-      "2": {
-        "min_area": 40
-      },
-      "3": {
-        "min_area": 40
-      },
-      "4": {
-        "min_area": 40
-      },
-      "5": {
-        "min_area": 40
-      },
-      "6": {
-        "min_area": 40
-      },
-      "7": {
-        "min_area": 40
-      },
-      "8": {
-        "min_area": 40
-      },
-      "9": {
-        "min_area": 40
-      },
-      "10": {
-        "min_area": 40
-      },
-      "11": {
-        "min_area": 40
-      },
-      "12": {
-        "min_area": 40
-      },
-      "13": {
-        "min_area": 40
-      },
-      "14": {
-        "min_area": 40
-      },
-      "15": {
-        "min_area": 40
-      }
-    }
+    "notes": "Detailed redesign generated from the user reference",
+    "source": "retouched/bosses/boss_01_walk.png"
   },
   "bosses/boss_01_idle.png": {
     "frame_size": [
@@ -375,20 +326,7 @@
     ],
     "fps": 3,
     "loop": true,
-    "frame_cleanup": {
-      "0": {
-        "min_area": 40
-      },
-      "1": {
-        "min_area": 40
-      },
-      "2": {
-        "min_area": 40
-      },
-      "3": {
-        "min_area": 40
-      }
-    }
+    "source": "retouched/bosses/boss_01_idle.png"
   },
   "bosses/boss_01_hurt.png": {
     "frame_size": [
@@ -406,33 +344,8 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Dano sintetizado com flash vermelho",
-    "frame_cleanup": {
-      "0": {
-        "min_area": 40
-      },
-      "1": {
-        "min_area": 40
-      },
-      "2": {
-        "min_area": 40
-      },
-      "3": {
-        "min_area": 40
-      },
-      "4": {
-        "min_area": 40
-      },
-      "5": {
-        "min_area": 40
-      },
-      "6": {
-        "min_area": 40
-      },
-      "7": {
-        "min_area": 40
-      }
-    }
+    "notes": "Synthesized damage animation with a red flash",
+    "source": "retouched/bosses/boss_01_hurt.png"
   },
   "bosses/boss_01_death.png": {
     "frame_size": [
@@ -444,33 +357,8 @@
     "frames": 8,
     "fps": 9,
     "loop": false,
-    "notes": "Dissolve de morte sintetizado a partir do sprite base",
-    "frame_cleanup": {
-      "0": {
-        "min_area": 40
-      },
-      "1": {
-        "min_area": 40
-      },
-      "2": {
-        "min_area": 40
-      },
-      "3": {
-        "min_area": 40
-      },
-      "4": {
-        "min_area": 40
-      },
-      "5": {
-        "min_area": 40
-      },
-      "6": {
-        "min_area": 40
-      },
-      "7": {
-        "min_area": 40
-      }
-    }
+    "notes": "Death dissolve synthesized from the base sprite",
+    "source": "retouched/bosses/boss_01_death.png"
   },
   "bosses/boss_01_shadow.png": {
     "frame_size": [
@@ -497,45 +385,8 @@
     ],
     "fps": 7,
     "loop": false,
-    "notes": "Cristal a carregar, efeito sintético",
-    "frame_cleanup": {
-      "0": {
-        "min_area": 40
-      },
-      "1": {
-        "min_area": 40
-      },
-      "2": {
-        "min_area": 40
-      },
-      "3": {
-        "min_area": 40
-      },
-      "4": {
-        "min_area": 40
-      },
-      "5": {
-        "min_area": 40
-      },
-      "6": {
-        "min_area": 40
-      },
-      "7": {
-        "min_area": 40
-      },
-      "8": {
-        "min_area": 40
-      },
-      "9": {
-        "min_area": 40
-      },
-      "10": {
-        "min_area": 40
-      },
-      "11": {
-        "min_area": 40
-      }
-    }
+    "notes": "Charging crystal with a synthetic effect",
+    "source": "retouched/bosses/boss_01_prepare.png"
   },
   "bosses/boss_01_attack.png": {
     "frame_size": [
@@ -553,57 +404,8 @@
     ],
     "fps": 10,
     "loop": false,
-    "notes": "Golpe e bola de fogo sobreposta",
-    "frame_cleanup": {
-      "0": {
-        "min_area": 40
-      },
-      "1": {
-        "min_area": 40
-      },
-      "2": {
-        "min_area": 40
-      },
-      "3": {
-        "min_area": 40
-      },
-      "4": {
-        "min_area": 40
-      },
-      "5": {
-        "min_area": 40
-      },
-      "6": {
-        "min_area": 40
-      },
-      "7": {
-        "min_area": 40
-      },
-      "8": {
-        "min_area": 40
-      },
-      "9": {
-        "min_area": 40
-      },
-      "10": {
-        "min_area": 40
-      },
-      "11": {
-        "min_area": 40
-      },
-      "12": {
-        "min_area": 40
-      },
-      "13": {
-        "min_area": 40
-      },
-      "14": {
-        "min_area": 40
-      },
-      "15": {
-        "min_area": 40
-      }
-    }
+    "notes": "Strike with an overlaid fireball",
+    "source": "retouched/bosses/boss_01_attack.png"
   },
   "weapons/pistol.png": {
     "frame_size": [
@@ -631,11 +433,7 @@
     "columns": 1,
     "rows": 1,
     "frames": 1,
-    "frame_cleanup": {
-      "0": {
-        "min_area": 16
-      }
-    }
+    "source": "retouched/weapons/smg.png"
   },
   "weapons/weapon_icons.png": {
     "frame_size": [
@@ -827,7 +625,7 @@
     "columns": 4,
     "rows": 1,
     "frames": 4,
-    "notes": "4 variacoes de texturas extraidas da referencia original; tileable aproximado"
+    "notes": "4 texture variants extracted from the original reference; approximately tileable"
   },
   "environment/walls.png": {
     "frame_size": [
@@ -837,7 +635,7 @@
     "columns": 4,
     "rows": 4,
     "frames": 16,
-    "notes": "6 tipos reais mais 10 variantes espelhadas/rodadas"
+    "notes": "6 base wall types plus 10 mirrored/rotated variants"
   },
   "environment/obstacles.png": {
     "frame_size": [
@@ -847,46 +645,8 @@
     "columns": 6,
     "rows": 1,
     "frames": 6,
-    "source_rects": [
-      [
-        2,
-        3,
-        71,
-        73
-      ],
-      [
-        88,
-        4,
-        68,
-        72
-      ],
-      [
-        165,
-        1,
-        56,
-        77
-      ],
-      [
-        241,
-        11,
-        60,
-        57
-      ],
-      [
-        321,
-        6,
-        58,
-        65
-      ],
-      [
-        417,
-        1,
-        45,
-        77
-      ]
-    ],
-    "anchor": "bottom",
-    "notes": "Ordem real: caixa, caixa, barril, rocha, rocha grande, coluna. Recortes excluem fragmentos entre objetos."
+    "notes": "Order: crate, crate, barrel, rock, large rock, column. Crops exclude fragments between objects.",
+    "source": "retouched/environment/obstacles.png"
   },
   "environment/decorations.png": {
     "frame_size": [
@@ -929,7 +689,7 @@
       ]
     ],
     "anchor": "bottom",
-    "notes": "Grupos completos: pedras, relva, sangue, grelha, ossos; exclui linha residual na margem direita."
+    "notes": "Complete groups: stones, grass, blood, grate, bones; excludes the residual line at the right edge."
   },
   "ui/ui_icons_main.png": {
     "frame_size": [
@@ -1041,7 +801,7 @@
       ]
     ],
     "tile_border": true,
-    "notes": "Símbolos centrados; o atlas original tem molduras desalinhadas/cortadas.",
+    "notes": "Centered symbols; the original atlas has misaligned/cropped borders.",
     "labels": {
       "pistol_damage": 0,
       "pistol_rate": 9,
@@ -1080,7 +840,7 @@
     "columns": 3,
     "rows": 1,
     "frames": 3,
-    "notes": "Cinzenta, dourada, prismatica. Centros mantidos escuros como na referencia"
+    "notes": "Gray, gold, prismatic. Centers remain dark as in the reference"
   },
   "maps/map_01_thumb.png": {
     "frame_size": [

@@ -12,22 +12,22 @@ from boxhead.core.catalog import catalog
 from boxhead.presentation.sprites import SpritePainter
 from boxhead.shop import UPGRADES, PurchaseResult, UpgradeDef
 
-HINT = "W/S ou setas para escolher · ENTER compra · ESC volta"
+HINT = "W/S or arrows to select · ENTER buy · ESC back"
 MESSAGES = {
-    PurchaseResult.BOUGHT: "Comprado!",
-    PurchaseResult.INSUFFICIENT_FUNDS: "Moeda insuficiente.",
-    PurchaseResult.MAX_LEVEL: "Já está no nível máximo.",
-    PurchaseResult.UNKNOWN: "Melhoria desconhecida.",
-    PurchaseResult.SAVE_FAILED: "Não foi possível guardar. Compra cancelada.",
+    PurchaseResult.BOUGHT: "Purchased!",
+    PurchaseResult.INSUFFICIENT_FUNDS: "Not enough coins.",
+    PurchaseResult.MAX_LEVEL: "Already at maximum level.",
+    PurchaseResult.UNKNOWN: "Unknown upgrade.",
+    PurchaseResult.SAVE_FAILED: "Could not save. Purchase cancelled.",
 }
 
 
 def cost_label(upgrade: UpgradeDef, level: int) -> str:
-    return "MÁX" if level >= upgrade.max_level else f"{upgrade.cost(level)} moeda"
+    return "MAX" if level >= upgrade.max_level else f"{upgrade.cost(level)} coins"
 
 
 def level_label(upgrade: UpgradeDef, level: int) -> str:
-    return f"Nível {level}/{upgrade.max_level}"
+    return f"Level {level}/{upgrade.max_level}"
 
 
 class ShopState(State):
@@ -85,9 +85,9 @@ class ShopState(State):
     def draw(self, surface: pygame.Surface) -> None:
         surface.fill((19, 23, 29))
         width, height = surface.get_size()
-        title = self._title.render("LOJA", True, (235, 77, 76))
+        title = self._title.render("SHOP", True, (235, 77, 76))
         surface.blit(title, title.get_rect(midtop=(width // 2, 40)))
-        coins = self._body.render(f"Moeda: {self._profile.balance}", True, (255, 220, 120))
+        coins = self._body.render(f"Coins: {self._profile.balance}", True, (255, 220, 120))
         surface.blit(coins, coins.get_rect(midtop=(width // 2, 120)))
 
         row_width, row_height = 640, 86

@@ -27,11 +27,11 @@ class WeaponDef:
         values = (self.damage, self.cooldown, self.projectile_speed,
                   self.projectile_range, self.projectile_radius)
         if any(not isfinite(v) or v <= 0 for v in values):
-            raise ValueError("atributos de arma devem ser positivos e finitos")
+            raise ValueError("weapon attributes must be positive and finite")
         if isinstance(self.pellets, bool) or not isinstance(self.pellets, int) or self.pellets < 1:
-            raise ValueError("pellets deve ser um inteiro positivo")
+            raise ValueError("pellets must be a positive integer")
         if not isfinite(self.spread_degrees) or not 0 <= self.spread_degrees <= 360:
-            raise ValueError("dispersão inválida")
+            raise ValueError("invalid spread")
 
 
 PISTOL = WeaponDef(

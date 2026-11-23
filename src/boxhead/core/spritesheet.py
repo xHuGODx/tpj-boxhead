@@ -9,11 +9,11 @@ def cut_grid(image: pygame.Surface, frame_size: tuple[int, int], *, rows: int,
              tile_border=False) -> list[list[pygame.Surface]]:
     fw, fh = frame_size
     if fw <= 0 or fh <= 0 or rows <= 0 or columns <= 0:
-        raise ValueError("dimensões da spritesheet inválidas")
+        raise ValueError("invalid spritesheet dimensions")
     if source_rects is not None and len(source_rects) != rows*columns:
-        raise ValueError("o número de recortes não corresponde à grelha")
+        raise ValueError("crop count does not match grid")
     if anchor not in ("center", "bottom"):
-        raise ValueError("âncora desconhecida")
+        raise ValueError("unknown anchor")
     cleanup = frame_cleanup or {}
     frames = []
     for index in range(rows*columns):
@@ -21,7 +21,7 @@ def cut_grid(image: pygame.Surface, frame_size: tuple[int, int], *, rows: int,
         rect = pygame.Rect(source_rects[index] if source_rects is not None
                            else (col*fw,row*fh,fw,fh))
         if rect.width <= 0 or rect.height <= 0 or not image.get_rect().contains(rect):
-            raise ValueError(f"recorte {index} fora da imagem: {rect}")
+            raise ValueError(f"crop {index} outside image: {rect}")
         source = image.subsurface(rect).copy()
         rule = cleanup.get(str(index), {})
         if rule:

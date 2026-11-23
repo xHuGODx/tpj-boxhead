@@ -8,7 +8,7 @@ import pygame
 
 from boxhead.core.state import State
 
-HINT = "ESC — continuar · M — menu"
+HINT = "ESC — resume · M — menu"
 
 
 class PausedState(State):
@@ -48,7 +48,7 @@ class PausedState(State):
             self._overlay.fill((0, 0, 0, 150))
         surface.blit(self._overlay, (0, 0))
         center = surface.get_rect().center
-        title = self._title.render("PAUSA", True, (235, 77, 76))
+        title = self._title.render("PAUSED", True, (235, 77, 76))
         surface.blit(title, title.get_rect(center=center))
         hint = self._body.render(HINT, True, (225, 230, 237))
         surface.blit(hint, hint.get_rect(center=(center[0], center[1] + 56)))

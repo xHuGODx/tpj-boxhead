@@ -41,7 +41,7 @@ class MapSelectState(State):
     def draw(self, surface):
         surface.fill((19,23,29))
         width,height = surface.get_size()
-        title=self._title.render("ESCOLHER MAPA",True,(235,77,76))
+        title=self._title.render("CHOOSE MAP",True,(235,77,76))
         surface.blit(title,title.get_rect(center=(width//2,100)))
         for index,key in enumerate(self._keys):
             definition=MAPS[key]
@@ -52,8 +52,8 @@ class MapSelectState(State):
             self._painter.blit(surface,definition.thumbnail,(rect.centerx,rect.y+100),(260,170))
             text=self._body.render(definition.name,True,(235,235,240))
             surface.blit(text,text.get_rect(center=(rect.centerx,rect.y+210)))
-            mode="Chunks · sem fronteiras" if definition.infinite else "Arena limitada"
+            mode="Chunks · endless world" if definition.infinite else "Bounded arena"
             text=self._small.render(mode,True,color)
             surface.blit(text,text.get_rect(center=(rect.centerx,rect.y+260)))
-        hint=self._small.render("A/D ou setas · Enter joga · Esc volta",True,(170,180,190))
+        hint=self._small.render("A/D or arrows · Enter play · Esc back",True,(170,180,190))
         surface.blit(hint,hint.get_rect(center=(width//2,height-70)))

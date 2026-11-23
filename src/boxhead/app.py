@@ -57,14 +57,14 @@ class App:
         try:
             self._display.toggle()
         except pygame.error as error:
-            logger.warning("Não foi possível mudar de modo de ecrã: %s", error)
+            logger.warning("Could not change display mode: %s", error)
             return
         candidate = deepcopy(self.profile)
         candidate.preferences["fullscreen"] = self._display.fullscreen
         try:
             self.profile_store.commit(self.profile, candidate)
         except OSError as error:
-            logger.warning("Modo de ecrã alterado, mas preferência não guardada: %s", error)
+            logger.warning("Display mode changed, but preference could not be saved: %s", error)
 
     # ------------------------------------------------------------------ perfil
 
@@ -73,8 +73,8 @@ class App:
             try:
                 self.profile_store.credit_run(self.profile, run_id, result.coins)
             except OSError as error:
-                logger.warning("Recompensa %s pendente: %s", run_id, error)
-                self._profile_notice = "Recompensa por guardar; nova tentativa no menu."
+                logger.warning("Reward %s pending: %s", run_id, error)
+                self._profile_notice = "Reward not saved yet; retrying in the menu."
                 return
             del self._pending_results[run_id]
         self._profile_notice = None
@@ -133,7 +133,7 @@ class App:
 
     def _select_map(self, map_id: str) -> None:
         if map_id not in MAPS:
-            raise ValueError("mapa desconhecido")
+            raise ValueError("unknown map")
         self._selected_map = map_id
         self._start()
 
@@ -217,7 +217,7 @@ class App:
 
     def run(self, *, max_frames: int | None = None) -> None:
         if max_frames is not None and max_frames <= 0:
-            raise ValueError("max_frames tem de ser positivo")
+            raise ValueError("max_frames must be positive")
         machine = None
         try:
             pygame.display.init()

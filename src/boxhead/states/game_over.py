@@ -9,7 +9,7 @@ import pygame
 from boxhead.core.state import State
 from boxhead.world.result import RunResult
 
-HINT = "R — repetir · M/ESC — menu"
+HINT = "R — retry · M/ESC — menu"
 
 
 class GameOverState(State):
@@ -48,13 +48,13 @@ class GameOverState(State):
         surface.blit(title, title.get_rect(center=(w // 2, h // 2 - 110)))
         stats = self._result
         lines = [
-            f"Mapa: {stats.map_name}",
-            f"Ronda: {stats.round}",
-            f"Nível: {stats.level}",
-            f"Mortes: {stats.kills}",
-            f"Tempo: {stats.elapsed:.1f}s",
-            f"Moeda: {stats.coins}"
-            + (f" (saldo: {self._balance})" if self._balance is not None else ""),
+            f"Map: {stats.map_name}",
+            f"Round: {stats.round}",
+            f"Level: {stats.level}",
+            f"Kills: {stats.kills}",
+            f"Time: {stats.elapsed:.1f}s",
+            f"Coins: {stats.coins}"
+            + (f" (balance: {self._balance})" if self._balance is not None else ""),
             HINT,
         ]
         if self._notice:

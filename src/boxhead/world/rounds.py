@@ -50,20 +50,20 @@ class RoundConfig:
     def __post_init__(self) -> None:
         counts = (self.base_enemies, self.max_budget, self.max_alive, self.red_start_round, self.opening_rounds)
         if any(isinstance(v, bool) or not isinstance(v, int) or v < 1 for v in counts):
-            raise ValueError("contagens de ronda devem ser inteiros positivos")
+            raise ValueError("round counts must be positive integers")
         if self.max_budget < self.base_enemies or self.enemy_growth < 1:
-            raise ValueError("curva de inimigos inválida")
+            raise ValueError("invalid enemy scaling curve")
         values = (self.first_intermission, self.intermission, self.spawn_interval,
                   self.min_spawn_distance, self.opening_spawn_interval, self.enemy_growth, self.health_per_round,
                   self.speed_per_round, self.max_speed_multiplier, self.red_chance_per_round,
                   self.max_red_chance, self.boss_escort_fraction, self.boss_health_per_boss,
                   self.boss_damage_per_boss, self.boss_reward_per_boss)
         if any(not isfinite(v) or v < 0 for v in values) or self.spawn_interval == 0 or self.opening_spawn_interval == 0:
-            raise ValueError("tempos e multiplicadores de ronda inválidos")
+            raise ValueError("invalid round timing or multipliers")
         if not 0 <= self.max_red_chance <= 1 or not 0 <= self.boss_escort_fraction <= 1:
-            raise ValueError("probabilidade/fração fora de 0..1")
+            raise ValueError("probability/fraction outside 0..1")
         if isinstance(self.boss_every, bool) or not isinstance(self.boss_every, int) or self.boss_every < 0:
-            raise ValueError("intervalo de bosses inválido")
+            raise ValueError("invalid boss interval")
 
     def enemy_budget(self, round_number: int) -> int:
         if self.enemy_growth == 1:

@@ -88,7 +88,7 @@ class EventQueue:
         while self._pending:
             if generation >= self.MAX_CHAIN:
                 self._pending.clear()
-                raise RuntimeError("cadeia de eventos excedeu o limite")
+                raise RuntimeError("event chain exceeded its limit")
             for _ in range(len(self._pending)):
                 event = self._pending.popleft()
                 for handler in tuple(self._subscribers.get(type(event), ())):

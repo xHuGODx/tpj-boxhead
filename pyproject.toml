@@ -1,7 +1,7 @@
 [project]
 name = "tpj-boxhead"
 version = "0.1.0"
-description = "Survival shooter em Pygame com rondas, augments e progressão permanente."
+description = "Pygame survival shooter with endless rounds, augments and permanent upgrades."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = ["pygame>=2.6.1,<3"]

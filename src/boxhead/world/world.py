@@ -133,9 +133,9 @@ class World:
         a meio (por exemplo, augment adicionado sem escolha consumida).
         """
         if self.progression.pending_choices <= 0:
-            raise ValueError("não há escolhas pendentes")
+            raise ValueError("no pending choices")
         if self._offer is None or augment not in self._offer.choices:
-            raise ValueError("augment não pertence à oferta atual")
+            raise ValueError("augment does not belong to the current offer")
         weapons = [w.name for w in self.player.weapons]
         self.inventory.add(augment, weapons)
         self.player.set_modifiers(self.inventory.modifiers)
