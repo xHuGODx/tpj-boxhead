@@ -15,6 +15,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Boxhead — TPJ")
     parser.add_argument("--frames", type=positive_integer, help="terminar após N frames")
     parser.add_argument("--headless", action="store_true", help="executar sem janela nem áudio")
+    parser.add_argument("--fullscreen", action="store_true", default=None, help="iniciar em ecrã inteiro")
     args = parser.parse_args()
 
     if args.headless:
@@ -22,8 +23,9 @@ def main() -> None:
         os.environ["SDL_AUDIODRIVER"] = "dummy"
 
     from boxhead.app import App
+    from boxhead.config import AppConfig
 
-    App().run(max_frames=args.frames)
+    App(AppConfig(fullscreen=args.fullscreen)).run(max_frames=args.frames)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import pygame
 
 from boxhead.core.state import State
 
-HINT = "W/S ou setas para escolher · ENTER confirma · ESC sai"
+HINT = "W/S ou setas · ENTER confirma · F11 ecrã inteiro · ESC sai"
 
 
 class MenuState(State):
@@ -17,13 +17,18 @@ class MenuState(State):
         on_shop: Callable[[], None] | None = None,
         balance: int | None = None,
         notice: str | None = None,
+        on_fullscreen: Callable[[], None] | None = None,
+        fullscreen: Callable[[], bool] | None = None,
     ) -> None:
         self._on_quit = on_quit
         self._balance = balance
         self._notice = notice
-        self._items: list[tuple[str, Callable[[], None]]] = [("Jogar", on_start)]
+        self._items: list[tuple[str | Callable[[], str], Callable[[], None]]] = [("Jogar", on_start)]
         if on_shop is not None:
             self._items.append(("Loja", on_shop))
+        if on_fullscreen is not None:
+            is_fullscreen = fullscreen or (lambda: False)
+            self._items.append((lambda: "Ecrã inteiro: " + ("Ligado" if is_fullscreen() else "Desligado"), on_fullscreen))
         self._items.append(("Sair", on_quit))
         self._cursor = 0
 
@@ -33,7 +38,7 @@ class MenuState(State):
 
     @property
     def labels(self) -> list[str]:
-        return [label for label, _ in self._items]
+        return [label() if callable(label) else label for label, _ in self._items]
 
     def enter(self) -> None:
         self._title = pygame.font.Font(None, 100)
@@ -63,7 +68,7 @@ class MenuState(State):
         surface.blit(subtitle, subtitle.get_rect(center=(center_x, height // 2 - 160)))
         title = self._title.render("BOXHEAD", True, (235, 77, 76))
         surface.blit(title, title.get_rect(center=(center_x, height // 2 - 80)))
-        for index, (label, _) in enumerate(self._items):
+        for index, label in enumerate(self.labels):
             selected = index == self._cursor
             color = (255, 220, 120) if selected else (225, 230, 237)
             text = self._body.render(f"> {label}" if selected else label, True, color)

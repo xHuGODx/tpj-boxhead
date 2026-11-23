@@ -40,6 +40,7 @@ class AugmentSelectState(State):
         if not 1 <= len(offer.choices) <= 3:
             raise ValueError("oferta sem escolhas ou com demasiadas opções")
         self._cursor = 0
+        self._surface_size = (1100, 700)
         self._lockout = LOCKOUT_SECONDS
         self._overlay: pygame.Surface | None = None
         self._cards: AugmentCards | None = None
@@ -91,7 +92,7 @@ class AugmentSelectState(State):
             elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):  
                 self._choose(self._cursor)
         elif event.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN):
-            size = pygame.display.get_surface().get_size()
+            size = self._surface_size
             for index, rect in enumerate(self._card_rects(size)):
                 if rect.collidepoint(event.pos):
                     self._cursor = index
@@ -110,6 +111,7 @@ class AugmentSelectState(State):
     def draw(self, surface: pygame.Surface) -> None:
         self._resume_target.draw(surface)
         size = surface.get_size()
+        self._surface_size = size
         if self._overlay is None or self._overlay.get_size() != size:
             self._overlay = pygame.Surface(size, pygame.SRCALPHA)
             self._overlay.fill((0, 0, 0, 170))

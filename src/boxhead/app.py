@@ -2,6 +2,7 @@
 
 import logging
 import random
+from copy import deepcopy
 
 import pygame
 
@@ -9,6 +10,7 @@ from boxhead.config import AppConfig
 from boxhead.core.catalog import catalog
 from boxhead.core.events import EventQueue
 from boxhead.core.state import State, StateMachine
+from boxhead.presentation.display import Display
 from boxhead.profile import LoadStatus, Profile, ProfileStore, default_profile_path
 from boxhead.shop import profile_modifiers, purchase
 from boxhead.states.augment_select import AugmentSelectState
@@ -38,6 +40,9 @@ class App:
         self.profile_store = ProfileStore(self.config.profile_path or default_profile_path())
         loaded = self.profile_store.load()
         self.profile: Profile = loaded.profile
+        fullscreen = (self.config.fullscreen if self.config.fullscreen is not None
+                      else self.profile.preferences.get("fullscreen") is True)
+        self._display = Display(self.config.window_size, fullscreen)
         self._profile_notice = loaded.detail if loaded.status in _WARN_STATUSES else None
         self._selected_map = "arena"
         self._pending_results: dict[str, RunResult] = {}
@@ -45,6 +50,21 @@ class App:
 
     def stop(self) -> None:
         self._running = False
+
+    def _toggle_fullscreen(self) -> None:
+        if self._display.screen is None:
+            return
+        try:
+            self._display.toggle()
+        except pygame.error as error:
+            logger.warning("Não foi possível mudar de modo de ecrã: %s", error)
+            return
+        candidate = deepcopy(self.profile)
+        candidate.preferences["fullscreen"] = self._display.fullscreen
+        try:
+            self.profile_store.commit(self.profile, candidate)
+        except OSError as error:
+            logger.warning("Modo de ecrã alterado, mas preferência não guardada: %s", error)
 
     # ------------------------------------------------------------------ perfil
 
@@ -88,6 +108,8 @@ class App:
             on_shop=self._to_shop,
             balance=self.profile.balance,
             notice=self._profile_notice,
+            on_fullscreen=self._toggle_fullscreen,
+            fullscreen=lambda: self._display.fullscreen,
         )
 
     def _to_menu(self) -> None:
@@ -199,7 +221,9 @@ class App:
         try:
             pygame.display.init()
             pygame.font.init()
-            screen = pygame.display.set_mode(self.config.window_size)
+            self._display.open()
+            screen = self._display.canvas
+            assert screen is not None
             pygame.display.set_caption(self.config.title)
             catalog().preload()
             clock = pygame.time.Clock()
@@ -209,8 +233,18 @@ class App:
             frames = 0
             while self._running and (max_frames is None or frames < max_frames):
                 dt = min(clock.tick(self.config.fps) / 1000, self.config.max_frame_seconds)
+                old_mode = self._display.fullscreen
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
+                    event = self._display.map_event(event)
+                    if event is None:
+                        continue
+                    toggle_key = (event.type == pygame.KEYDOWN and
+                                  (event.key == pygame.K_F11 or
+                                   (event.key == pygame.K_RETURN and getattr(event, "mod", 0) & pygame.KMOD_ALT)))
+                    if toggle_key:
+                        if not getattr(event, "repeat", False):
+                            self._toggle_fullscreen()
+                    elif event.type == pygame.QUIT:
                         self.stop()
                     else:
                         machine.handle_event(event)
@@ -218,9 +252,12 @@ class App:
                         break
                 if not self._running:
                     break
+                if self._display.fullscreen != old_mode:
+                    clock.tick()
+                    dt = 0.0
                 machine.update(dt)
                 machine.draw(screen)
-                pygame.display.flip()
+                self._display.present()
                 frames += 1
         finally:
             self._running = False

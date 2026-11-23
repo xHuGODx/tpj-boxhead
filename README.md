@@ -81,3 +81,10 @@ direção em que a personagem está virada. O rato não controla a mira.
 
 Referências de ferramentas: [Pygame](https://pypi.org/project/pygame/) e
 [projetos com uv](https://docs.astral.sh/uv/guides/projects/).
+
+
+Ecrã inteiro: opção no menu principal, **F11** ou **Alt+Enter** em qualquer ecrã.
+A preferência fica guardada no perfil. Também é possível iniciar com
+`uv run boxhead --fullscreen`. O canvas mantém proporções e área de jogo; podem
+existir barras laterais conforme o formato do monitor. Os cliques são convertidos
+para as coordenadas do canvas, incluindo a seleção de augments.

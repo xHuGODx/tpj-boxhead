@@ -12,3 +12,4 @@ class AppConfig:
     max_frame_seconds: float = 0.1
     seed: int | None = None  # None = aleatório; um valor fixo torna a partida reproduzível
     profile_path: Path | None = None  # None = ~/.boxhead/profile.json (ou $BOXHEAD_HOME)
+    fullscreen: bool | None = None  # None usa a preferência guardada
