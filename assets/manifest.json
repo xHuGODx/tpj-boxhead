@@ -15,7 +15,10 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Detailed redesign generated from the user reference"
+    "notes": "Detailed redesign generated from the user reference",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "player/player_idle.png": {
     "frame_size": [
@@ -32,7 +35,10 @@
       "up"
     ],
     "fps": 3,
-    "loop": true
+    "loop": true,
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "player/player_hurt.png": {
     "frame_size": [
@@ -50,7 +56,10 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Synthesized damage animation with a red flash"
+    "notes": "Synthesized damage animation with a red flash",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "player/player_death.png": {
     "frame_size": [
@@ -89,7 +98,10 @@
     ],
     "fps": 12,
     "loop": false,
-    "notes": "Body without an equipped weapon; firing effects can be positioned separately"
+    "notes": "Body without an equipped weapon; firing effects can be positioned separately",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_basic_walk.png": {
     "frame_size": [
@@ -107,7 +119,10 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Detailed redesign generated from the user reference"
+    "notes": "Detailed redesign generated from the user reference",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_basic_idle.png": {
     "frame_size": [
@@ -124,7 +139,10 @@
       "up"
     ],
     "fps": 3,
-    "loop": true
+    "loop": true,
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_basic_hurt.png": {
     "frame_size": [
@@ -142,7 +160,10 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Synthesized damage animation with a red flash"
+    "notes": "Synthesized damage animation with a red flash",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_basic_death.png": {
     "frame_size": [
@@ -181,7 +202,10 @@
     ],
     "fps": 10,
     "loop": false,
-    "notes": "Synthesized melee lunge"
+    "notes": "Synthesized melee lunge",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_red_walk.png": {
     "frame_size": [
@@ -199,7 +223,10 @@
     ],
     "fps": 9,
     "loop": true,
-    "notes": "Detailed redesign generated from the user reference"
+    "notes": "Detailed redesign generated from the user reference",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_red_idle.png": {
     "frame_size": [
@@ -216,7 +243,10 @@
       "up"
     ],
     "fps": 3,
-    "loop": true
+    "loop": true,
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_red_hurt.png": {
     "frame_size": [
@@ -234,7 +264,10 @@
     ],
     "fps": 8,
     "loop": false,
-    "notes": "Synthesized damage animation with a red flash"
+    "notes": "Synthesized damage animation with a red flash",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_red_death.png": {
     "frame_size": [
@@ -272,7 +305,10 @@
       "up"
     ],
     "fps": 8,
-    "loop": false
+    "loop": false,
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "enemies/enemy_red_shoot.png": {
     "frame_size": [
@@ -289,7 +325,10 @@
       "up"
     ],
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 6
   },
   "bosses/boss_01_walk.png": {
     "frame_size": [
@@ -308,7 +347,10 @@
     "fps": 9,
     "loop": true,
     "notes": "Detailed redesign generated from the user reference",
-    "source": "retouched/bosses/boss_01_walk.png"
+    "source": "retouched/bosses/boss_01_walk.png",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 12
   },
   "bosses/boss_01_idle.png": {
     "frame_size": [
@@ -326,7 +368,10 @@
     ],
     "fps": 3,
     "loop": true,
-    "source": "retouched/bosses/boss_01_idle.png"
+    "source": "retouched/bosses/boss_01_idle.png",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 12
   },
   "bosses/boss_01_hurt.png": {
     "frame_size": [
@@ -345,7 +390,10 @@
     "fps": 8,
     "loop": false,
     "notes": "Synthesized damage animation with a red flash",
-    "source": "retouched/bosses/boss_01_hurt.png"
+    "source": "retouched/bosses/boss_01_hurt.png",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 12
   },
   "bosses/boss_01_death.png": {
     "frame_size": [
@@ -386,7 +434,10 @@
     "fps": 7,
     "loop": false,
     "notes": "Charging crystal with a synthetic effect",
-    "source": "retouched/bosses/boss_01_prepare.png"
+    "source": "retouched/bosses/boss_01_prepare.png",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 12
   },
   "bosses/boss_01_attack.png": {
     "frame_size": [
@@ -405,7 +456,10 @@
     "fps": 10,
     "loop": false,
     "notes": "Strike with an overlaid fireball",
-    "source": "retouched/bosses/boss_01_attack.png"
+    "source": "retouched/bosses/boss_01_attack.png",
+    "trim": true,
+    "anchor": "bottom",
+    "padding": 12
   },
   "weapons/pistol.png": {
     "frame_size": [
@@ -414,7 +468,9 @@
     ],
     "columns": 1,
     "rows": 1,
-    "frames": 1
+    "frames": 1,
+    "trim": true,
+    "padding": 4
   },
   "weapons/shotgun.png": {
     "frame_size": [
@@ -423,7 +479,9 @@
     ],
     "columns": 1,
     "rows": 1,
-    "frames": 1
+    "frames": 1,
+    "trim": true,
+    "padding": 4
   },
   "weapons/smg.png": {
     "frame_size": [
@@ -433,7 +491,9 @@
     "columns": 1,
     "rows": 1,
     "frames": 1,
-    "source": "retouched/weapons/smg.png"
+    "source": "retouched/weapons/smg.png",
+    "trim": true,
+    "padding": 4
   },
   "weapons/weapon_icons.png": {
     "frame_size": [
@@ -525,7 +585,29 @@
     "rows": 1,
     "frames": 3,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "source_rects": [
+      [
+        1,
+        6,
+        27,
+        35
+      ],
+      [
+        49,
+        9,
+        17,
+        29
+      ],
+      [
+        71,
+        10,
+        24,
+        27
+      ]
+    ],
+    "uniform_scale": true,
+    "notes": "Explicit complete sprites: exclude neighboring fragments; common scale and centered impact pivot."
   },
   "effects/impact_enemy.png": {
     "frame_size": [
@@ -536,7 +618,35 @@
     "rows": 1,
     "frames": 4,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "source_rects": [
+      [
+        1,
+        8,
+        22,
+        28
+      ],
+      [
+        25,
+        8,
+        22,
+        31
+      ],
+      [
+        60,
+        1,
+        24,
+        46
+      ],
+      [
+        114,
+        6,
+        29,
+        35
+      ]
+    ],
+    "uniform_scale": true,
+    "notes": "Explicit complete sprites: exclude neighboring fragments; common scale and centered impact pivot."
   },
   "effects/impact_wall.png": {
     "frame_size": [
@@ -547,7 +657,35 @@
     "rows": 1,
     "frames": 4,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "source_rects": [
+      [
+        1,
+        4,
+        27,
+        39
+      ],
+      [
+        30,
+        4,
+        17,
+        38
+      ],
+      [
+        55,
+        1,
+        33,
+        46
+      ],
+      [
+        115,
+        6,
+        28,
+        36
+      ]
+    ],
+    "uniform_scale": true,
+    "notes": "Explicit complete sprites: exclude neighboring fragments; common scale and centered impact pivot."
   },
   "effects/explosion_small.png": {
     "frame_size": [
@@ -558,18 +696,68 @@
     "rows": 1,
     "frames": 4,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "source_rects": [
+      [
+        2,
+        23,
+        25,
+        39
+      ],
+      [
+        41,
+        15,
+        37,
+        49
+      ],
+      [
+        82,
+        23,
+        29,
+        38
+      ],
+      [
+        245,
+        2,
+        69,
+        76
+      ]
+    ],
+    "uniform_scale": true,
+    "notes": "Four isolated complete sprites; cut half-sprites between them excluded."
   },
   "effects/explosion_large.png": {
     "frame_size": [
       128,
       128
     ],
-    "columns": 6,
+    "columns": 3,
     "rows": 1,
-    "frames": 6,
+    "frames": 3,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "source_rects": [
+      [
+        37,
+        6,
+        88,
+        116
+      ],
+      [
+        281,
+        22,
+        95,
+        94
+      ],
+      [
+        518,
+        3,
+        116,
+        122
+      ]
+    ],
+    "uniform_scale": true,
+    "notes": "Three complete recovered stages; omit the clipped fragments and damaged final smoke frame. Original art preserved."
   },
   "effects/chain_explosion.png": {
     "frame_size": [
@@ -596,7 +784,50 @@
     "rows": 1,
     "frames": 4,
     "fps": 12,
-    "loop": false
+    "loop": false,
+    "frame_cleanup": {
+      "0": {
+        "keep_largest": true
+      },
+      "1": {
+        "keep_largest": true
+      },
+      "2": {
+        "keep_largest": true
+      },
+      "3": {
+        "keep_largest": true
+      }
+    },
+    "trim": true,
+    "padding": 2,
+    "source_rects": [
+      [
+        0,
+        0,
+        80,
+        80
+      ],
+      [
+        80,
+        0,
+        80,
+        80
+      ],
+      [
+        160,
+        8,
+        80,
+        72
+      ],
+      [
+        240,
+        10,
+        80,
+        70
+      ]
+    ],
+    "uniform_scale": true
   },
   "effects/spawn_effect.png": {
     "frame_size": [
@@ -707,7 +938,17 @@
     ],
     "columns": 1,
     "rows": 1,
-    "frames": 1
+    "frames": 1,
+    "source_rects": [
+      [
+        0,
+        12,
+        379,
+        36
+      ]
+    ],
+    "uniform_scale": true,
+    "padding": 0
   },
   "ui/xpbar.png": {
     "frame_size": [
@@ -716,7 +957,17 @@
     ],
     "columns": 1,
     "rows": 1,
-    "frames": 1
+    "frames": 1,
+    "source_rects": [
+      [
+        0,
+        0,
+        379,
+        46
+      ]
+    ],
+    "uniform_scale": true,
+    "padding": 0
   },
   "augments/augment_icons.png": {
     "frame_size": [
@@ -853,7 +1104,29 @@
     "columns": 3,
     "rows": 1,
     "frames": 3,
-    "notes": "Gray, gold, prismatic. Centers remain dark as in the reference"
+    "notes": "Complete card borders with explicit bounds; exclude the stray right edge of the source.",
+    "source_rects": [
+      [
+        0,
+        0,
+        190,
+        256
+      ],
+      [
+        194,
+        0,
+        190,
+        256
+      ],
+      [
+        388,
+        0,
+        176,
+        256
+      ]
+    ],
+    "uniform_scale": false,
+    "padding": 0
   },
   "maps/map_01_thumb.png": {
     "frame_size": [

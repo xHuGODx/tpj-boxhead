@@ -119,6 +119,9 @@ class SpriteCatalog:
             anchor=entry.get("anchor", "center"),
             frame_cleanup=entry.get("frame_cleanup"),
             tile_border=entry.get("tile_border", False),
+            trim=entry.get("trim", False),
+            padding=entry.get("padding"),
+            uniform_scale=entry.get("uniform_scale", False),
         )
         sheet = SpriteSheet(
             rows=entry.get("rows", 1),

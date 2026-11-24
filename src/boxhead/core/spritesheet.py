@@ -6,7 +6,7 @@ import pygame
 
 def cut_grid(image: pygame.Surface, frame_size: tuple[int, int], *, rows: int,
              columns: int, source_rects=None, anchor="center", frame_cleanup=None,
-             tile_border=False) -> list[list[pygame.Surface]]:
+             tile_border=False, trim=False, padding=None, uniform_scale=False) -> list[list[pygame.Surface]]:
     fw, fh = frame_size
     if fw <= 0 or fh <= 0 or rows <= 0 or columns <= 0:
         raise ValueError("invalid spritesheet dimensions")
@@ -15,6 +15,14 @@ def cut_grid(image: pygame.Surface, frame_size: tuple[int, int], *, rows: int,
     if anchor not in ("center", "bottom"):
         raise ValueError("unknown anchor")
     cleanup = frame_cleanup or {}
+    margin = (12 if tile_border else 4) if padding is None else padding
+    available = (fw-2*margin, fh-2*margin)
+    if margin < 0 or min(available) <= 0:
+        raise ValueError("invalid sprite padding")
+    sheet_scale = 1.0
+    if uniform_scale and source_rects:
+        sheet_scale = min(1.0, available[0]/max(r[2] for r in source_rects),
+                          available[1]/max(r[3] for r in source_rects))
     frames = []
     for index in range(rows*columns):
         row,col = divmod(index,columns)
@@ -25,6 +33,8 @@ def cut_grid(image: pygame.Surface, frame_size: tuple[int, int], *, rows: int,
         source = image.subsurface(rect).copy()
         rule = cleanup.get(str(index), {})
         if rule:
+            for erased in rule.get("clear_rects", []):
+                source.fill((0,0,0,0), pygame.Rect(erased))
             mask = pygame.mask.from_surface(source,0)
             parts = mask.connected_components()
             if rule.get("keep_largest"):
@@ -43,15 +53,19 @@ def cut_grid(image: pygame.Surface, frame_size: tuple[int, int], *, rows: int,
         if tile_border:
             pygame.draw.rect(frame,(25,20,36),frame.get_rect(),border_radius=7)
             pygame.draw.rect(frame,(185,180,197),frame.get_rect().inflate(-2,-2),2,border_radius=7)
-        if source_rects is not None:
-            available = (fw-24,fh-24) if tile_border else (fw-8,fh-8)
-            if source.get_width() > available[0] or source.get_height() > available[1]:
-                scale = min(available[0]/source.get_width(),available[1]/source.get_height())
+        if trim:
+            bounds = source.get_bounding_rect()
+            if bounds.width and bounds.height:
+                source = source.subsurface(bounds).copy()
+        if source_rects is not None or trim:
+            scale = (sheet_scale if uniform_scale and source_rects else
+                     min(1.0,available[0]/source.get_width(),available[1]/source.get_height()))
+            if scale != 1:
                 source = pygame.transform.scale(source,(max(1,round(source.get_width()*scale)),
                                                          max(1,round(source.get_height()*scale))))
             dest = source.get_rect()
             if anchor == "bottom":
-                dest.midbottom = (fw//2,fh-4)
+                dest.midbottom = (fw//2,fh-margin)
             else:
                 dest.center = (fw//2,fh//2)
             frame.blit(source,dest)
