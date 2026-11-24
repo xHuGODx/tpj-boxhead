@@ -7,6 +7,7 @@ from collections.abc import Callable
 import pygame
 
 from boxhead.core.state import State
+from boxhead.presentation.build_panel import BuildPanel
 
 HINT = "WASD select · SPACE / ENTER confirm · ESC resume · M menu"
 
@@ -26,6 +27,9 @@ class PausedState(State):
         self._overlay: pygame.Surface | None = None
         self._cursor = 0
         self._down_keys: set[int] = set()
+        self._world = getattr(resume_target, 'world', getattr(resume_target, '_world', None))
+        self._build_panel = None
+        self._augment_index = 0
 
     def enter(self) -> None:
         held = pygame.key.get_pressed()
@@ -33,8 +37,17 @@ class PausedState(State):
         self._title = pygame.font.Font(None, 64)
         self._body = pygame.font.Font(None, 30)
         self._small = pygame.font.Font(None, 24)
+        if self._world is not None and self._build_panel is None:
+            self._build_panel = BuildPanel()
+
+    def _scroll_augments(self, step):
+        count = len(self._build_panel.owned(self._world)) if self._build_panel else 0
+        self._augment_index = max(0,min(max(0,count-1), self._augment_index+step))
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.MOUSEWHEEL:
+            self._scroll_augments(-event.y)
+            return
         if event.type == pygame.KEYUP:
             self._down_keys.discard(event.key)
             return
@@ -47,6 +60,8 @@ class PausedState(State):
             self._on_resume(self._resume_target)
         elif event.key == pygame.K_m:
             self._on_menu()
+        elif self._build_panel and event.key in (pygame.K_w, pygame.K_UP, pygame.K_s, pygame.K_DOWN):
+            self._scroll_augments(-1 if event.key in (pygame.K_w,pygame.K_UP) else 1)
         elif event.key in (pygame.K_w, pygame.K_a, pygame.K_UP, pygame.K_LEFT,
                            pygame.K_s, pygame.K_d, pygame.K_DOWN, pygame.K_RIGHT):
             self._cursor = 1 - self._cursor
@@ -61,6 +76,9 @@ class PausedState(State):
 
     def draw(self, surface: pygame.Surface) -> None:
         self._resume_target.draw(surface)  
+        if self._build_panel is not None:
+            self._build_panel.draw(surface,self._world,self._augment_index,self._cursor)
+            return
         size = surface.get_size()
         if self._overlay is None or self._overlay.get_size() != size:
             self._overlay = pygame.Surface(size, pygame.SRCALPHA)

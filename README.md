@@ -54,6 +54,9 @@ releasing Space after shooting before confirming a card.
 - **Space**: fire in the direction the player faces; aiming does not use the mouse.
 - **1 / 2 / 3**: choose a card on the augment screen.
 - **Esc**: pause/resume; **M** from pause abandons the run and returns to the menu.
+- The pause build panel shows effective player/weapon stats and every owned augment.
+  Use W/S or the mouse wheel to browse augments, A/D to select Resume/Main menu,
+  and Space to confirm. Escape returns to the exact screen you paused from.
 - **W/S or arrows**, then **Enter**: navigate menus and the shop.
 - **A/D or arrows**, then **Enter**: choose a map. Retry keeps the selected map.
 - **F3**: display hitboxes.

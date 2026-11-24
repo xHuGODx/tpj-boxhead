@@ -100,6 +100,17 @@ dependências reais; algumas tarefas podem avançar independentemente.
 
 ## Regras implementadas de armas, rondas e augments
 
+### Painel da build em pausa
+
+Escape abre um painel escuro com três colunas: stats efetivos do jogador, stats da
+arma atual e arquivo de augments ordenado por raridade. O arquivo mostra todos os
+augments adquiridos, ícones, número de stacks e descrição da seleção. W/S, setas
+verticais ou roda do rato percorrem o arquivo; A/D seleciona a ação no rodapé.
+Espaço confirma e Escape retoma exatamente o ecrã anterior, incluindo seleção de cartas.
+Consultar a build não altera o mundo nem avança temporizadores.
+O DPS apresentado assume que todas as balas acertam, inclui a média de críticos e
+exclui queimaduras, ecos e explosões; é uma estimativa de dano direto, não DPS medido.
+
 ### Rupture Rounds (roxa)
 
 Os impactos dos projéteis principais causam uma explosão laranja usando

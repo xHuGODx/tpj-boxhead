@@ -251,6 +251,39 @@ class ExpansionTests(unittest.TestCase):
         self.assertEqual(w.fx[-1].kind,'round_explosion')
         self.assertEqual(w.fx[-1].radius,150)
 
+    def test_pause_build_is_readonly_scrolls_and_restores_nested_selection(self):
+        from boxhead.states.playing import PlayingState
+        from boxhead.states.paused import PausedState
+        from boxhead.states.augment_select import AugmentSelectState
+        w=world(Modifiers(crit_chance=.6,last_spark=1))
+        for a in AUGMENTS:
+            if w.inventory.is_eligible(a,['Pistol']):
+                w.inventory.add(a,['Pistol'])
+        w.player.set_modifiers(w.inventory.modifiers);w._sync_behaviors()
+        state=PlayingState(None,w.events,lambda s:None,lambda w:None,world=w)
+        state.enter();state.update(.01)
+        resumed=[]
+        pause=PausedState(state,resumed.append,lambda:None);pause.enter()
+        before=(w.elapsed,w.player.health,w.player.ammo,tuple(w.inventory.owned()))
+        for _ in range(50):
+            pause.handle_event(pygame.event.Event(pygame.MOUSEWHEEL,y=-1))
+        self.assertEqual(pause._augment_index,len(pause._build_panel.owned(w))-1)
+        for size in ((1100,700),(800,600),(1920,1080)):
+            pause.update(50);pause.draw(pygame.Surface(size))
+        self.assertEqual((w.elapsed,w.player.health,w.player.ammo,tuple(w.inventory.owned())),before)
+        pause.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+        self.assertIs(resumed[-1],state)
+        offer=w.draw_offer()
+        selection=AugmentSelectState(state,w,offer,lambda a:None);selection.enter()
+        nested=PausedState(selection,resumed.append,lambda:None);nested.enter()
+        self.assertIs(nested._world,w)
+        nested.draw(pygame.Surface((1100,700)))
+        nested.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+        self.assertIs(resumed[-1],selection)
+        empty=world()
+        e=PlayingState(None,empty.events,lambda s:None,lambda w:None,world=empty);e.enter()
+        p=PausedState(e,lambda s:None,lambda:None);p.enter();p.draw(pygame.Surface((1100,700)))
+
 
 if __name__ == '__main__':
     unittest.main()
