@@ -37,14 +37,12 @@ def targets(world, camera, size):
         if direction.y > 0: times.append((safe.bottom-start.y)/direction.y)
         if direction.y < 0: times.append((safe.top-start.y)/direction.y)
         point = start + direction*min(times)
-        distance = enemy.position.distance_to(world.player.position)
         # Nearby bearings share a marker rather than drawing over each other.
         group = next((item for item in result if item['point'].distance_to(point)<36),None)
         if group:
             group['count'] += 1
-            group['distance'] = min(group['distance'],distance)
         else:
-            result.append(dict(point=point, direction=direction, distance=distance, count=1))
+            result.append(dict(point=point, direction=direction, count=1))
     return result
 
 
@@ -61,8 +59,9 @@ class EnemyTracker:
             pygame.draw.polygon(surface,(255,209,105),
                                 (point+direction*13, point-direction*7+side*8,
                                  point-direction*3, point-direction*7-side*8))
-            prefix = f"x{item['count']}  " if item['count']>1 else ''
-            label = self.font.render(f"{prefix}{item['distance']:,.0f}u",True,(255,224,161))
+            if item['count'] <= 1:
+                continue
+            label = self.font.render(f"x{item['count']}",True,(255,224,161))
             center = point-direction*40
             rect = label.get_rect(center=center)
             rect.clamp_ip(surface.get_rect().inflate(-8,-8))
