@@ -196,6 +196,11 @@ Os itens marcados como não continuam por implementar.
 
 ## Mapas e inimigos implementados
 
+Quando não há mais spawns pendentes e restam até cinco inimigos vivos, setas douradas
+apontam para os inimigos fora do ecrã, com distância em unidades do mundo. Alvos com
+direções muito próximas partilham uma seta com contagem. Inimigos visíveis não recebem
+seta; o indicador é apenas visual e não muda a posição nem a IA dos inimigos.
+
 - Barris (obstáculo de índice 2) recebem dano de projéteis e têm a vida de um
   inimigo básico da ronda atual. Dano já recebido é preservado entre rondas.
   Ao chegar a zero desaparecem da colisão/navegação e explodem com animação laranja,

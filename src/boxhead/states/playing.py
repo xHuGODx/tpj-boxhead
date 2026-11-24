@@ -9,6 +9,7 @@ from pygame import Vector2
 
 from boxhead.core.catalog import Animation, catalog
 from boxhead.presentation.hud import HUD
+from boxhead.presentation.enemy_tracker import EnemyTracker
 from boxhead.presentation.sprites import SpritePainter
 from boxhead.core.commands import Move
 from boxhead.core.events import EventQueue
@@ -93,6 +94,7 @@ class PlayingState(State):
         )
 
         self._hud = HUD()
+        self._enemy_tracker = EnemyTracker()
         self._elite_font = pygame.font.Font(None, 17)
         self._painter = SpritePainter(catalog())
         self._painter.prepare([
@@ -213,6 +215,7 @@ class PlayingState(State):
         if self._show_debug:
             self._draw_hitboxes(surface)
         self._hud.draw(surface, self._world)
+        self._enemy_tracker.draw(surface, self._world, self._camera)
 
     def _draw_ammo_pickups(self, surface, top_left, bottom_right) -> None:
         for pickup in self._world.ammo_drops.pickups:
