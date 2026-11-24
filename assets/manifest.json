@@ -1154,5 +1154,459 @@
     "columns": 1,
     "rows": 1,
     "frames": 1
+  },
+  "rage/enemy_rage_walk.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "fps": 9,
+    "loop": true,
+    "source": "rage/enemy_rage_walk.png",
+    "source_rects": [
+      [
+        86,
+        53,
+        160,
+        218
+      ],
+      [
+        391,
+        53,
+        164,
+        218
+      ],
+      [
+        704,
+        60,
+        153,
+        211
+      ],
+      [
+        1012,
+        53,
+        162,
+        216
+      ],
+      [
+        90,
+        352,
+        150,
+        214
+      ],
+      [
+        405,
+        356,
+        149,
+        210
+      ],
+      [
+        704,
+        364,
+        152,
+        202
+      ],
+      [
+        1016,
+        356,
+        154,
+        210
+      ],
+      [
+        85,
+        667,
+        154,
+        202
+      ],
+      [
+        399,
+        667,
+        156,
+        202
+      ],
+      [
+        701,
+        672,
+        155,
+        198
+      ],
+      [
+        1012,
+        663,
+        156,
+        206
+      ],
+      [
+        81,
+        976,
+        164,
+        216
+      ],
+      [
+        393,
+        980,
+        161,
+        212
+      ],
+      [
+        701,
+        979,
+        159,
+        213
+      ],
+      [
+        1012,
+        980,
+        162,
+        211
+      ]
+    ],
+    "anchor": "bottom",
+    "padding": 6,
+    "uniform_scale": true,
+    "frame_cleanup": {
+      "0": {
+        "keep_largest": true
+      },
+      "1": {
+        "keep_largest": true
+      },
+      "2": {
+        "keep_largest": true
+      },
+      "3": {
+        "keep_largest": true
+      },
+      "4": {
+        "keep_largest": true
+      },
+      "5": {
+        "keep_largest": true
+      },
+      "6": {
+        "keep_largest": true
+      },
+      "7": {
+        "keep_largest": true
+      },
+      "8": {
+        "keep_largest": true
+      },
+      "9": {
+        "keep_largest": true
+      },
+      "10": {
+        "keep_largest": true
+      },
+      "11": {
+        "keep_largest": true
+      },
+      "12": {
+        "keep_largest": true
+      },
+      "13": {
+        "keep_largest": true
+      },
+      "14": {
+        "keep_largest": true
+      },
+      "15": {
+        "keep_largest": true
+      }
+    },
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ]
+  },
+  "rage/enemy_rage_idle.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 1,
+    "rows": 4,
+    "frames": 4,
+    "fps": 3,
+    "loop": true,
+    "source": "rage/enemy_rage_walk.png",
+    "source_rects": [
+      [
+        86,
+        53,
+        160,
+        218
+      ],
+      [
+        90,
+        352,
+        150,
+        214
+      ],
+      [
+        85,
+        667,
+        154,
+        202
+      ],
+      [
+        81,
+        976,
+        164,
+        216
+      ]
+    ],
+    "anchor": "bottom",
+    "padding": 6,
+    "uniform_scale": true,
+    "frame_cleanup": {
+      "0": {
+        "keep_largest": true
+      },
+      "1": {
+        "keep_largest": true
+      },
+      "2": {
+        "keep_largest": true
+      },
+      "3": {
+        "keep_largest": true
+      }
+    },
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ]
+  },
+  "rage/enemy_rage_attack.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 4,
+    "frames": 16,
+    "fps": 12,
+    "loop": false,
+    "source": "rage/enemy_rage_attack.png",
+    "source_rects": [
+      [
+        81,
+        44,
+        170,
+        228
+      ],
+      [
+        384,
+        48,
+        177,
+        224
+      ],
+      [
+        696,
+        52,
+        171,
+        221
+      ],
+      [
+        1010,
+        50,
+        171,
+        221
+      ],
+      [
+        87,
+        347,
+        149,
+        221
+      ],
+      [
+        395,
+        350,
+        165,
+        216
+      ],
+      [
+        692,
+        357,
+        166,
+        211
+      ],
+      [
+        1017,
+        349,
+        155,
+        219
+      ],
+      [
+        85,
+        663,
+        156,
+        206
+      ],
+      [
+        389,
+        664,
+        165,
+        205
+      ],
+      [
+        699,
+        667,
+        170,
+        202
+      ],
+      [
+        1017,
+        660,
+        155,
+        209
+      ],
+      [
+        79,
+        969,
+        168,
+        224
+      ],
+      [
+        383,
+        975,
+        171,
+        218
+      ],
+      [
+        692,
+        975,
+        174,
+        218
+      ],
+      [
+        1008,
+        975,
+        173,
+        217
+      ]
+    ],
+    "anchor": "bottom",
+    "padding": 6,
+    "uniform_scale": true,
+    "frame_cleanup": {
+      "0": {
+        "keep_largest": true
+      },
+      "1": {
+        "keep_largest": true
+      },
+      "2": {
+        "keep_largest": true
+      },
+      "3": {
+        "keep_largest": true
+      },
+      "4": {
+        "keep_largest": true
+      },
+      "5": {
+        "keep_largest": true
+      },
+      "6": {
+        "keep_largest": true
+      },
+      "7": {
+        "keep_largest": true
+      },
+      "8": {
+        "keep_largest": true
+      },
+      "9": {
+        "keep_largest": true
+      },
+      "10": {
+        "keep_largest": true
+      },
+      "11": {
+        "keep_largest": true
+      },
+      "12": {
+        "keep_largest": true
+      },
+      "13": {
+        "keep_largest": true
+      },
+      "14": {
+        "keep_largest": true
+      },
+      "15": {
+        "keep_largest": true
+      }
+    },
+    "direction_order": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ]
+  },
+  "rage/enemy_rage_death.png": {
+    "frame_size": [
+      96,
+      96
+    ],
+    "columns": 4,
+    "rows": 1,
+    "frames": 4,
+    "fps": 6,
+    "loop": false,
+    "source": "rage/enemy_rage_death.png",
+    "source_rects": [
+      [
+        127,
+        139,
+        330,
+        443
+      ],
+      [
+        660,
+        206,
+        321,
+        376
+      ],
+      [
+        1203,
+        360,
+        313,
+        222
+      ],
+      [
+        1738,
+        475,
+        262,
+        107
+      ]
+    ],
+    "anchor": "bottom",
+    "padding": 6,
+    "uniform_scale": true,
+    "frame_cleanup": {
+      "0": {
+        "keep_largest": true
+      },
+      "1": {
+        "keep_largest": true
+      },
+      "2": {
+        "keep_largest": true
+      },
+      "3": {
+        "keep_largest": true
+      }
+    }
   }
 }

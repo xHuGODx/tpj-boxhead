@@ -9,7 +9,7 @@ Ambos são o mesmo `Enemy`, parametrizado por uma `EnemyDef` (Type Object).
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Protocol
 
 from pygame import Vector2
@@ -68,6 +68,9 @@ BASIC = EnemyDef(
     coin_reward=1,
     sprite_prefix="enemies/enemy_basic",
 )
+
+RAGE_BASIC = replace(BASIC, name="Rage Basic", sprite_prefix="rage/enemy_rage")
+
 
 RED = EnemyDef(
     name="Red",
@@ -250,6 +253,7 @@ class RangedAttackState(EnemyState):
                             else "projectiles/enemy_fireball.png"),
                 damage_cap_fraction=enemy.damage_cap_fraction,
                 lethal=enemy.lethal_attacks,
+                empowers_basic=enemy.definition is RED,
             ))
 
     def update(self, enemy, dt, target):
@@ -285,6 +289,7 @@ class Enemy:
     damage_cap_fraction: float | None = None
     is_elite: bool = False
     is_prismatic: bool = False
+    is_empowered: bool = False
     lethal_attacks: bool = False
     death_age: float = 0.0
     steering: Vector2 | None = field(default=None, repr=False)
@@ -298,6 +303,20 @@ class Enemy:
         self.max_health = self.health
         self._state = ChaseState()
         self._state.enter(self)
+
+    def empower(self, speed_cap: float) -> bool:
+        """Permanent one-time RAGE; retains IDs, state, health ratio and variant tags."""
+        if not self.alive or self.is_empowered or self.definition is not BASIC:
+            return False
+        self.is_empowered = True
+        self.definition = RAGE_BASIC
+        self.health *= 2
+        self.max_health *= 2
+        self.damage_multiplier *= 2
+        self.timing_multiplier *= .5
+        self.speed = min(speed_cap, self.speed * 1.30)
+        self.reward_multiplier *= 2
+        return True
 
     @property
     def radius(self) -> float:

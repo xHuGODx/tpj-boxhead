@@ -75,6 +75,12 @@ def entries(profile):
                                 ('Hit damage',attack),('Windup',f'{e.windup:g}s'),('Recovery',f'{e.recovery:g}s'),
                                 ('Base XP / coins',f'{e.xp_reward} / {e.coin_reward}'))))
     result.extend((
+        Entry('rage','RAGE','Enemies','EMPOWERED VARIANT',
+              'Red enemy projectiles empower Basic enemies, including Elite and Prismatic variants. The shot is consumed. RAGE cannot stack; red shots pass through Reds, bosses and existing RAGE enemies. Wounded enemies retain their health percentage.',
+              ('rage/enemy_rage_walk.png',0),(
+                  ('Health / damage','2x current values'),('Attack cadence','2x (half windup/recovery)'),
+                  ('Speed','+30%, capped at 220'),('XP / coins','2x existing rewards'),
+                  ('Identification','Flaming sprite + red RAGE tag')),(255,75,55)),
         Entry('elite','Elite','Enemies','ENEMY VARIANT','Basic or Red with extra health. Golden ELITE label. Not a separate attack type.',
               ('augments/augment_icons.png',3),(('Starts at round',str(cfg.elite_start_round)),
               ('Health',f'{cfg.elite_health_multiplier:g}x round health'),('XP',f'{cfg.elite_xp_multiplier:g}x'),

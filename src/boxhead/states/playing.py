@@ -62,6 +62,7 @@ class PlayingState(State):
         self._shooting_timer = 0.0
         self._active_anim: Animation | None = None
         self._animators: dict[int, EnemyAnimator] = {}
+        self._animator_types: dict[int, str] = {}
         self._enemy_sprites: dict[str, EnemySprite] = {}
         self._show_debug = False
         self._presentation_ready = False
@@ -163,13 +164,15 @@ class PlayingState(State):
         for enemy in (*self._world.enemies, *self._world.corpses):
             alive_ids.add(enemy.id)
             animator = self._animators.get(enemy.id)
-            if animator is None:
+            if animator is None or self._animator_types.get(enemy.id) != enemy.definition.name:
                 animator = self._animators[enemy.id] = self._enemy_sprite_for(
                     enemy.definition
                 ).animator()
+                self._animator_types[enemy.id] = enemy.definition.name
             animator.update(enemy, dt)
         for enemy_id in set(self._animators) - alive_ids:
             del self._animators[enemy_id]
+            self._animator_types.pop(enemy_id, None)
 
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -296,6 +299,9 @@ class PlayingState(State):
         scale = enemy.radius * SPRITE_PER_RADIUS / SPRITE_RENDER_SIZE[0]
         self._blit_shadow(surface, screen_pos, scale)
         side = round(SPRITE_RENDER_SIZE[0] * scale)
+        if enemy.is_empowered:
+            side = round(side * 1.12)  # reserve extra silhouette space for the flames
+            screen_pos = screen_pos + Vector2(0,-side*.04)
         frame = self._scale(animator.current, (side, side))
         surface.blit(frame, frame.get_rect(center=screen_pos))
         if enemy.alive and (enemy.is_elite or enemy.is_prismatic):
@@ -306,6 +312,11 @@ class PlayingState(State):
                 midbottom=(int(screen_pos.x), int(screen_pos.y - enemy.radius - 24))
             )
             surface.blit(label, label_rect)
+        if enemy.alive and enemy.is_empowered:
+            label = self._elite_font.render("RAGE",True,(255,65,55))
+            offset = 40 if enemy.is_elite or enemy.is_prismatic else 24
+            surface.blit(label,label.get_rect(midbottom=(int(screen_pos.x),
+                                                        int(screen_pos.y-enemy.radius-offset))))
         if enemy.visual == "prepare":  
             self._draw_telegraph(surface, enemy, screen_pos)
         if enemy.alive and enemy.health < enemy.max_health and not enemy.is_boss:

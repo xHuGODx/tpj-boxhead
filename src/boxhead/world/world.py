@@ -46,7 +46,7 @@ from boxhead.world.behaviors import BEHAVIOR_TYPES, Behavior
 from boxhead.world.enemy import BASIC, Enemy, EnemyDef
 from boxhead.world.fx import Body, Fx
 from boxhead.world.map import ARENA, MapDefinition, ObstacleDef
-from boxhead.world.player import Player
+from boxhead.world.player import Player, SPEED
 from boxhead.world.loot import AmmoDropConfig, AmmoDrops
 from boxhead.world.progression import Progression
 from boxhead.world.projectile import Projectile
@@ -532,7 +532,17 @@ class World:
             t = self._segment_obstacle_hit(start, end, obstacle, proj.radius)
             if t is not None and t < best_t:
                 best_t, best_target = t, obstacle
-        if proj.hostile:  # projétil de inimigo: só pode acertar no jogador
+        if proj.hostile:
+            if proj.empowers_basic:
+                margin = MAX_ENEMY_RADIUS_HINT + int(proj.radius)
+                area = Rect(int(min(start.x,end.x))-margin, int(min(start.y,end.y))-margin,
+                            int(abs(end.x-start.x))+2*margin, int(abs(end.y-start.y))+2*margin)
+                for enemy in self._grid.query(area):
+                    if not enemy.alive or enemy.is_empowered or enemy.definition is not BASIC:
+                        continue
+                    t = segment_circle_hit(start,end,enemy.position,enemy.radius+proj.radius)
+                    if t is not None and t < best_t:
+                        best_t,best_target = t,enemy
             player = self.player
             if player.alive:
                 t = segment_circle_hit(start, end, player.position, player.radius + proj.radius)
@@ -555,6 +565,10 @@ class World:
 
         if best_t <= 1.0:
             if isinstance(best_target, Enemy):
+                if proj.hostile:
+                    best_target.empower(SPEED)
+                    proj.alive = False
+                    return
                 hit_point = start + (end - start) * best_t
                 proj.hit_ids.add(best_target.id)
                 self.combat.hit(self, proj, best_target)

@@ -17,7 +17,8 @@ class Projectile:
     color: tuple[int, int, int] = (255, 220, 120)
     sprite_key: str = "projectiles/player_bullet.png"
     owner_id: int | None = None
-    hostile: bool = False  # True: disparado por inimigos; só acerta no jogador
+    hostile: bool = False  # disparado por inimigos; RED também pode ativar RAGE
+    empowers_basic: bool = False  # RED shots also collide with unempowered Basics
     damage_cap_fraction: float | None = None  # limite relativo à vida máxima do jogador
     lethal: bool = False  # ataques de boss ignoram o limite e matam ao acertar
     alive: bool = True
