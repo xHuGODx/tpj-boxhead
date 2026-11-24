@@ -9,8 +9,9 @@ from pygame import Vector2
 
 from boxhead.core.catalog import Animation, catalog
 from boxhead.presentation.hud import HUD
+from boxhead.presentation.enemy_tracker import EnemyTracker
 from boxhead.presentation.sprites import SpritePainter
-from boxhead.core.commands import Move, Shoot, SwitchWeapon
+from boxhead.core.commands import Move
 from boxhead.core.events import EventQueue
 from boxhead.core.state import State, StateMachine
 from boxhead.world.camera import Camera
@@ -93,12 +94,15 @@ class PlayingState(State):
         )
 
         self._hud = HUD()
+        self._enemy_tracker = EnemyTracker()
+        self._elite_font = pygame.font.Font(None, 17)
         self._painter = SpritePainter(catalog())
         self._painter.prepare([
             "weapons/pistol.png", "weapons/shotgun.png", "weapons/smg.png",
             "projectiles/player_bullet.png", "projectiles/player_pellet.png",
             "projectiles/enemy_fireball.png", "projectiles/boss_projectile.png",
             "projectiles/orbital_satellite.png", "effects/chain_explosion.png",
+            "effects/explosion_large.png",
         ])
 
     def _enemy_sprite_for(self, definition: EnemyDef) -> EnemySprite:
@@ -116,8 +120,6 @@ class PlayingState(State):
                 self._on_pause(self)
             elif event.key == pygame.K_F3:
                 self._show_debug = not self._show_debug
-            elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
-                self._world.apply(SwitchWeapon(event.key - pygame.K_1), 0.0)
         elif event.type == pygame.KEYUP:
             self._pressed.discard(event.key)
         elif event.type == pygame.WINDOWFOCUSLOST:
@@ -130,11 +132,9 @@ class PlayingState(State):
         )
         self._world.apply(Move(direction), dt)
 
-        fired = False
-        if pygame.K_SPACE in self._pressed:
-            fired = self._world.apply(Shoot(), dt)
-            if fired:
-                self._shooting_timer = SHOOT_ANIMATION_SECONDS
+        fired = self._world.fire_held(dt, pygame.K_SPACE in self._pressed)
+        if fired:
+            self._shooting_timer = SHOOT_ANIMATION_SECONDS
         self._shooting_timer = max(0.0, self._shooting_timer - dt)
 
         self._world.update(dt)
@@ -208,12 +208,14 @@ class PlayingState(State):
                 )
 
         self._draw_ammo_pickups(surface, top_left, bottom_right)
+        self._burning_ids = {burn.enemy.id for burn in self._world.combat.burns.values() if burn.enemy.alive}
         self._draw_entities(surface, top_left, bottom_right)
         self._draw_bodies_and_fx(surface)
         self._draw_projectiles(surface)
         if self._show_debug:
             self._draw_hitboxes(surface)
         self._hud.draw(surface, self._world)
+        self._enemy_tracker.draw(surface, self._world, self._camera)
 
     def _draw_ammo_pickups(self, surface, top_left, bottom_right) -> None:
         for pickup in self._world.ammo_drops.pickups:
@@ -271,15 +273,16 @@ class PlayingState(State):
 
     def _draw_player(self, surface: pygame.Surface) -> None:
         screen_pos = self._camera.world_to_screen(self._world.player.position)
-        self._blit_shadow(surface, screen_pos)
-        frame = self._scale(self._active_anim.current, SPRITE_RENDER_SIZE)
+        scale = self._world.player.size_multiplier
+        self._blit_shadow(surface, screen_pos, scale)
+        frame = self._scale(self._active_anim.current, tuple(round(v*scale) for v in SPRITE_RENDER_SIZE))
         surface.blit(frame, frame.get_rect(center=screen_pos))
         player = self._world.player
         key = ("weapons/pistol.png", "weapons/shotgun.png", "weapons/smg.png")[player.weapon_slot]
-        center = screen_pos + player.orientation * 24
+        center = screen_pos + player.orientation * player.radius
         facing_left = player.orientation.x < 0
         baseline = Vector2(-1, 0) if facing_left else Vector2(1, 0)
-        self._painter.blit(surface, key, center, (42, 24),
+        self._painter.blit(surface, key, center, (round(42*scale), round(24*scale)),
                            angle=player.orientation.angle_to(baseline), flip_x=facing_left)
 
     def _draw_enemy(self, surface: pygame.Surface, enemy: Enemy) -> None:
@@ -287,12 +290,22 @@ class PlayingState(State):
         if animator is None: 
             return
         screen_pos = self._camera.world_to_screen(enemy.position)
+        if enemy.id in self._burning_ids:
+            pygame.draw.circle(surface, (255, 125, 35), screen_pos, round(enemy.radius+4), 2)
         
         scale = enemy.radius * SPRITE_PER_RADIUS / SPRITE_RENDER_SIZE[0]
         self._blit_shadow(surface, screen_pos, scale)
         side = round(SPRITE_RENDER_SIZE[0] * scale)
         frame = self._scale(animator.current, (side, side))
         surface.blit(frame, frame.get_rect(center=screen_pos))
+        if enemy.alive and (enemy.is_elite or enemy.is_prismatic):
+            text = "PRISMATIC" if enemy.is_prismatic else "ELITE"
+            color = (190, 120, 255) if enemy.is_prismatic else (255, 205, 75)
+            label = self._elite_font.render(text, True, color)
+            label_rect = label.get_rect(
+                midbottom=(int(screen_pos.x), int(screen_pos.y - enemy.radius - 24))
+            )
+            surface.blit(label, label_rect)
         if enemy.visual == "prepare":  
             self._draw_telegraph(surface, enemy, screen_pos)
         if enemy.alive and enemy.health < enemy.max_health and not enemy.is_boss:
@@ -320,13 +333,27 @@ class PlayingState(State):
         sprite = self._env.obstacle_for(obstacle.sprite_index)
         tl = self._camera.world_to_screen(Vector2(obstacle.rect.topleft))
         surface.blit(sprite, (int(tl.x), int(tl.y)))
+        if obstacle.is_barrel:
+            health = self._world.barrel_health(obstacle)
+            maximum = self._world.barrel_max_health
+            if 0 < health < maximum:
+                bar = pygame.Rect(round(tl.x) + 20, round(tl.y) - 8, 40, 5)
+                pygame.draw.rect(surface, (50, 20, 20), bar)
+                pygame.draw.rect(surface, (255, 160, 50),
+                                 (bar.x, bar.y, round(bar.width * health / maximum), bar.height))
 
     def _draw_bodies_and_fx(self, surface: pygame.Surface) -> None:
         for fx in self._world.fx:
-            frames = range(self._painter.frame_count("effects/chain_explosion.png"))
+            if fx.kind == "critical":
+                pygame.draw.circle(surface, (255, 240, 120),
+                                   self._camera.world_to_screen(fx.position), round(fx.radius+5), 2)
+                continue
+            key = ("effects/explosion_large.png" if fx.kind in ("barrel_explosion", "round_explosion")
+                   else "effects/chain_explosion.png")
+            frames = range(self._painter.frame_count(key))
             index = min(len(frames)-1, int(fx.progress * len(frames)))
             side = max(8, round(fx.radius * 2))
-            self._painter.blit(surface, "effects/chain_explosion.png",
+            self._painter.blit(surface, key,
                                self._camera.world_to_screen(fx.position), (side, side), index)
         for body in self._world.bodies:
             self._painter.blit(surface, "projectiles/orbital_satellite.png",
@@ -335,6 +362,9 @@ class PlayingState(State):
 
     def _draw_projectiles(self, surface: pygame.Surface) -> None:
         for proj in self._world.projectiles:
+            if proj.critical:
+                pygame.draw.circle(surface, (255, 225, 95),
+                                   self._camera.world_to_screen(proj.position), max(4, round(proj.radius+2)), 1)
             side = max(14, round(proj.radius * 4))
             self._painter.blit(surface, proj.sprite_key,
                                self._camera.world_to_screen(proj.position), (side, side),

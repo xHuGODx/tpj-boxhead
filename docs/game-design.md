@@ -6,7 +6,8 @@
 - Movimento com WASD; Espaço dispara na orientação da personagem.
 - Mapas limitados e um modo de mapa infinito.
 - Rondas infinitas com dificuldade crescente e bosses periódicos, inicialmente a cada 10 rondas.
-- Três armas: pistola desde o início, SMG ao começar a ronda 5 e shotgun ao começar a ronda 10.
+- Três armas: pistola grátis; SMG e shotgun compradas permanentemente na loja,
+  selecionáveis desde a ronda 1. Q/E na escolha de mapa seleciona a única arma da partida.
 - Munições finitas por arma e 35% de probabilidade de cada inimigo largar uma caixa de munições.
 - Cada ronda concluída concede uma escolha adicional de augment para a arma do golpe final.
 - Dois inimigos iniciais: normal e vermelho inspirado no original.
@@ -28,8 +29,8 @@ As regras seguintes permitem avançar, mas são ajustáveis durante implementaç
 | --- | --- |
 | Orientação | Oito direções; diagonais normalizadas; ao parar mantém a última orientação; começa virado para baixo. |
 | Disparo | Segurar Espaço repete disparos respeitando cooldown e munições; cada disparo consome uma bala/cartucho, independentemente dos pellets. |
-| Troca de arma | Teclas 1/2/3, com cooldown por arma para impedir contornar a cadência. |
-| Disponibilidade de armas | Pistola na ronda 1; SMG no início da 5; shotgun no início da 10. Teclas fixas 1=pistola, 2=shotgun, 3=SMG. |
+| Escolha de arma | Q/E antes da partida escolhe uma arma; não é possível trocar em combate. Teclas 1/2/3 escolhem cartas nos menus de augments. |
+| Disponibilidade de armas | Pistola grátis, SMG por 250 moedas e shotgun por 400. As compras desbloqueiam opções de arma para levar desde a ronda 1. |
 | Munições | Reserva inicial/máxima/por caixa: pistola 60/180/18, SMG 120/360/60, shotgun 24/72/8. Sem carregadores/recarga. |
 | Drops | Cada morte tem 35% de chance de largar uma caixa na posição do inimigo; recolha por contacto abastece todas as armas desbloqueadas. |
 | Rondas | Orçamento finito de inimigos por ronda; termina quando não há spawns pendentes nem inimigos vivos. |
@@ -39,7 +40,7 @@ As regras seguintes permitem avançar, mas são ajustáveis durante implementaç
 | Boss | Um boss inicial com fases de perseguição, preparação, ataque e recuperação, nas rondas 10, 20, 30… |
 | XP | Recompensa automática por morte de inimigo; pickups físicos podem ser acrescentados depois. |
 | Moeda permanente | Ganha em mortes/rondas, separada do XP; creditada uma vez no fim da partida. |
-| Loja | Níveis de vida máxima, velocidade e ganho de XP, com custos crescentes e limites configuráveis. |
+| Loja | Vida, movimento, XP, regeneração, AD e attack speed com limites; compras únicas de SMG/shotgun. |
 | Mapas | Começar por uma arena limitada aberta; depois variantes com obstáculos e mapa infinito por chunks. |
 | Fim de partida | Morte mostra ronda, nível, tempo, mortes e moeda; permite repetir ou regressar ao menu. |
 
@@ -99,17 +100,64 @@ dependências reais; algumas tarefas podem avançar independentemente.
 
 ## Regras implementadas de armas, rondas e augments
 
+### Painel da build em pausa
+
+Escape abre um painel escuro com três colunas: stats efetivos do jogador, stats da
+arma atual e arquivo de augments ordenado por raridade. O arquivo mostra todos os
+augments adquiridos, ícones, número de stacks e descrição da seleção. W/S, setas
+verticais ou roda do rato percorrem o arquivo; A/D seleciona a ação no rodapé.
+Espaço confirma e Escape retoma exatamente o ecrã anterior, incluindo seleção de cartas.
+Consultar a build não altera o mundo nem avança temporizadores.
+O DPS apresentado assume que todas as balas acertam, inclui a média de críticos e
+exclui queimaduras, ecos e explosões; é uma estimativa de dano direto, não DPS medido.
+
+### Rupture Rounds (roxa)
+
+Os impactos dos projéteis principais causam uma explosão laranja usando
+`effects/explosion_large.png`, a mesma animação dos barris. O dano extra é 10% do AD
+por stack; o raio é 90 + 10 por stack adicional, multiplicado por Blast Bloom.
+São capturados no disparo, não recebem o multiplicador crítico e acumulam sem teto.
+Cada pellet/ricochete principal pode explodir ao atingir um inimigo ou obstáculo.
+A explosão danifica inimigos e barris próximos, não o jogador, e não ativa efeitos
+de acerto nem cria outras explosões de bala. Mortes podem ativar Chain Reaction e
+barris podem detonar normalmente. Ecos de Aftershot não recebem este efeito.
+Esta alteração foi feita depois da geração de `dist/Boxhead-Windows.zip`; esse ZIP
+não foi reconstruído e conserva a versão enviada anteriormente.
+
+A expansão definida em `implementation-prompt-augments.md` está implementada nos
+itens marcados como sim. São dez cartas novas: três douradas (Precision, Dead Center,
+Blast Bloom) e sete roxas (Split Chamber, Ember Rounds, Slipstream Feed, Last Spark,
+Siege Frame, Redline e Aftershot).
+As regras numéricas e de interação do prompt são a referência desta expansão.
+Os itens marcados como não continuam por implementar.
+
+- Disparo contínuo usa o tempo decorrido e pode criar vários tiros por frame,
+  respeitando munição e cooldown. Cada bala só avança pelo tempo restante do seu
+  primeiro frame. Não há crédito de tiros por estar parado, sem munição ou em pausa.
+- Críticos são sorteados por bala principal, capturados ao disparar e conservados
+  nos ricochetes. A chance acima de 100% converte o excedente em dano crítico.
+- Queimaduras preservam duração e autoria; ecos não gastam munição, não critam e
+  não disparam efeitos primários nem outros ecos. Barris não ativam efeitos de acerto.
+- Last Spark resolve a morte no fim da fase de dano, consumindo no máximo uma carga
+  por frame, sem imunidade no seguinte. Siege Frame verifica geometria antes da compra.
+- Os ícones explícitos e os casos de reutilização estão em `icon-map.md`.
+
 - Disparo: `Player.try_fire()` verifica vida, cooldown e reserva em `Arsenal`, consumindo
   uma munição apenas por disparo aceite. O mundo cria os
   projéteis apenas quando aceita o comando; a animação usa esse resultado. Cada arma
-  conserva o seu cooldown ao trocar. Input e simulação usam passos variáveis, pelo
-  que o instante do disparo fica quantizado ao frame (no máximo um tiro por frame).
+  conserva o seu cooldown. Input e simulação usam passos variáveis, e o disparo
+  contínuo calcula os tiros devidos dentro de cada frame pelo tempo decorrido.
 - Nove cinzentos, três por arma: pistola (dano, cadência, alcance), shotgun (pellets,
-  dano, cadência), SMG (cadência, dano, alcance). Há seis dourados e três prismáticos.
+  dano, cadência), SMG (cadência, dano, alcance). Há onze dourados e onze prismáticos.
+- Stats globais: AD base 100 e attack speed base 1,00. Dano final da arma = dano
+  base × AD/100 × modificador específico; cadência final = cadência base × attack
+  speed × modificador específico. A loja oferece +5 AD/+0,05 AS por nível (máximo
+  cinco); cartas douradas concedem +20 AD/+0,15 AS sem limite. Melhorias por arma
+  foram removidas da loja e o custo original é devolvido uma vez ao carregar o perfil.
 - Modificadores numéricos são aditivos em relação à base: dois +20% dão 1,40×.
-  Limites derivados: dano 0,1–5×; alcance 0,1–3×; velocidade de movimento 0,1–3×;
-  pellets 1–32 e intervalo mínimo entre tiros 0,05 s. Vida/regen/XP respeitam os
-  limites de acumulação do catálogo. Aumentar vida máxima cura o incremento.
+  Augments acumulam sem limite em todas as ofertas. Dano, cadência, alcance,
+  pellets e velocidade de movimento não têm teto de atributos. Aumentar vida
+  máxima cura o incremento. Pré-requisitos e incompatibilidades mantêm-se.
 - A base permanente é copiada ao criar a partida. Recalcular atributos começa
   sempre nessa base, sem reaplicar multiplicadores anteriores.
 - Uma oferta sorteada pertence ao mundo e mantém-se até ser consumida. Cada
@@ -117,8 +165,8 @@ dependências reais; algumas tarefas podem avançar independentemente.
 - A fila `AugmentChoice` distingue level-ups de recompensas de ronda, guardando nível,
   número de ronda e arma alvo. A morte final pode gerar ambas sem perder nenhuma.
   Armas bloqueadas não aparecem nas escolhas de level-up. Bónus de ronda só oferecem
-  os cinzentos da arma alvo e podem ultrapassar os limites de acumulação normais para
-  continuarem disponíveis nas rondas infinitas; os limites derivados mantêm-se.
+  os cinzentos da arma alvo; todos os augments continuam disponíveis para acumular
+  nas rondas infinitas.
 - Projéteis guardam a arma de origem. Ricochetes e explosões encadeadas preservam
   essa autoria, mesmo com troca de arma. Mortes por satélites independentes usam a
   arma ativa. `RoundCompleted` transporta a arma do último inimigo morto.
@@ -133,8 +181,10 @@ dependências reais; algumas tarefas podem avançar independentemente.
   teclado não confirmam automaticamente a próxima. Esc abre pausa; continuar
   preserva a mesma oferta, e abandonar descarta as escolhas dessa partida.
 - As rondas não têm limite numérico. O orçamento cresce até 300 inimigos por ronda
-  (configurável), com máximo de 25 ativos. Vida e composição continuam a escalar.
-  Bosses e escoltas seguem a configuração de cada décima ronda.
+  (configurável), com máximo de 50 ativos. A vida cresce 20 pontos percentuais por
+  ronda até à 10 e, depois, multiplica por 1,20 em cada ronda. O dano normal cresce
+  5 pontos percentuais por ronda, mas cada acerto fica limitado a 49% da vida máxima
+  do jogador. Bosses e escoltas seguem a configuração de cada décima ronda.
 - Spawns usam posições fora da distância de segurança, dentro dos limites e livres
   de obstáculos e inimigos; se nenhuma estiver disponível, o orçamento espera.
   Layouts novos precisam de pontos de spawn suficientes para essa distância.
@@ -145,6 +195,19 @@ dependências reais; algumas tarefas podem avançar independentemente.
 
 
 ## Mapas e inimigos implementados
+
+Quando não há mais spawns pendentes e restam até cinco inimigos vivos, setas douradas
+apontam para os inimigos fora do ecrã, com distância em unidades do mundo. Alvos com
+direções muito próximas partilham uma seta com contagem. Inimigos visíveis não recebem
+seta; o indicador é apenas visual e não muda a posição nem a IA dos inimigos.
+
+- Barris (obstáculo de índice 2) recebem dano de projéteis e têm a vida de um
+  inimigo básico da ronda atual. Dano já recebido é preservado entre rondas.
+  Ao chegar a zero desaparecem da colisão/navegação e explodem com animação laranja,
+  raio de 180 unidades e dano igual a duas vezes essa vida. A explosão atinge inimigos,
+  jogador (máximo de 49% da vida máxima por explosão) e outros barris. Barris não dão
+  recompensas próprias; mortes de inimigos causadas pela explosão seguem as regras
+  normais. A destruição persiste na partida, mesmo ao descarregar chunks no infinito.
 
 - O menu oferece Arena, Ruínas e Terras infinitas, com miniaturas. As duas arenas
   têm layouts abertos distintos, limites e zonas de spawn alcançáveis. O mesmo
@@ -171,8 +234,21 @@ dependências reais; algumas tarefas podem avançar independentemente.
   Matar o boss também desativa os projéteis que ele já tinha disparado.
 - O vermelho só prepara/dispara com linha de visão. O boss alterna a rotação
   das rajadas em anel; ataques e projéteis ficam parados em pausa/seleção.
-- Bosses nas rondas 10, 20, 30… acompanham metade do orçamento normal. Por boss
-  adicional: +50% vida, +15% dano e +25% recompensas. A ronda só termina depois
+- A presença de vermelhos começa em 10% na ronda 3, cresce 10 pontos percentuais
+  por ronda e fica limitada a 50% desde a ronda 7.
+- Desde a ronda 5, inimigos normais ou vermelhos podem ser elites. A probabilidade
+  começa em 5%, cresce 2 pontos percentuais por ronda até 30%, e elites têm 3x vida,
+  1,5x XP e uma etiqueta visual.
+- Nas rondas 5, 10, 15… um spawn normal é substituído por um Prismatic, normal ou
+  vermelho, com 5x a vida da ronda e etiqueta roxa. Não acumula o modificador elite.
+  A sua morte e a morte de cada boss concedem, separadamente, uma escolha garantida
+  entre augments prismáticos. A escolha pausa a partida e permite ultrapassar os
+  stacks sem limite; XP e o bónus de fim de ronda continuam independentes.
+- Windup e recovery mantêm os valores base até à ronda 9; desde a ronda 10 diminuem
+  6% por ronda até ao mínimo de 70%.
+- Bosses nas rondas 10, 20, 30… acompanham metade do orçamento normal. A vida é
+  multiplicada por 10 entre bosses (1x, 10x, 100x…) e qualquer projétil do boss é
+  letal. As recompensas mantêm +25% por boss adicional. A ronda só termina depois
   de acabar o orçamento e morrerem todos os inimigos, incluindo as escoltas.
 
 

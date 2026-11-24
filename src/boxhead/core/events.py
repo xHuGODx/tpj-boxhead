@@ -23,6 +23,7 @@ class EnemyKilled(Event):
     coin_reward: int
     is_boss: bool = False
     weapon_name: str | None = None
+    is_prismatic: bool = False
 
 
 @dataclass(frozen=True)

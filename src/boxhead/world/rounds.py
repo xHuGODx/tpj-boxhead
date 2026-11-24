@@ -33,37 +33,72 @@ class RoundConfig:
     spawn_interval: float = 0.45
     opening_spawn_interval: float = 0.25
     opening_rounds: int = 3
-    max_alive: int = 25  # limita a carga; o resto do orçamento espera
+    max_alive: int = 50  # limita a carga; o resto do orçamento espera
     min_spawn_distance: float = 400.0
-    health_per_round: float = 0.08
+    health_per_round: float = 0.20
+    health_exponential_start: int = 10
+    health_growth: float = 1.20
+    damage_per_round: float = 0.05
+    normal_damage_cap: float = 0.49
     speed_per_round: float = 0.03
     max_speed_multiplier: float = 1.5
+    timing_reduction_start: int = 10
+    timing_reduction_per_round: float = 0.06
+    min_timing_multiplier: float = 0.70
     red_start_round: int = 3  # o vermelho só aparece a partir desta ronda
-    red_chance_per_round: float = 0.08
-    max_red_chance: float = 0.35
+    red_chance_per_round: float = 0.10
+    max_red_chance: float = 0.50
+    elite_start_round: int = 5
+    elite_start_chance: float = 0.05
+    elite_chance_per_round: float = 0.02
+    max_elite_chance: float = 0.30
+    elite_health_multiplier: float = 3.0
+    elite_xp_multiplier: float = 1.5
+    prismatic_every: int = 5
+    prismatic_health_multiplier: float = 5.0
     boss_every: int = 10  # 0 desliga os bosses
     boss_escort_fraction: float = 0.5  # fração do orçamento normal que acompanha o boss
-    boss_damage_per_boss: float = 0.15
     boss_reward_per_boss: float = 0.25
-    boss_health_per_boss: float = 0.5  # +50% de vida por cada boss já derrotado/aparecido
+    boss_health_growth: float = 10.0  # 1.º boss 1x, 2.º 10x, 3.º 100x, ...
 
     def __post_init__(self) -> None:
-        counts = (self.base_enemies, self.max_budget, self.max_alive, self.red_start_round, self.opening_rounds)
+        counts = (
+            self.base_enemies, self.max_budget, self.max_alive, self.red_start_round,
+            self.opening_rounds, self.health_exponential_start, self.timing_reduction_start,
+            self.elite_start_round,
+        )
         if any(isinstance(v, bool) or not isinstance(v, int) or v < 1 for v in counts):
             raise ValueError("round counts must be positive integers")
         if self.max_budget < self.base_enemies or self.enemy_growth < 1:
             raise ValueError("invalid enemy scaling curve")
         values = (self.first_intermission, self.intermission, self.spawn_interval,
                   self.min_spawn_distance, self.opening_spawn_interval, self.enemy_growth, self.health_per_round,
-                  self.speed_per_round, self.max_speed_multiplier, self.red_chance_per_round,
-                  self.max_red_chance, self.boss_escort_fraction, self.boss_health_per_boss,
-                  self.boss_damage_per_boss, self.boss_reward_per_boss)
+                  self.health_growth, self.damage_per_round, self.normal_damage_cap,
+                  self.speed_per_round, self.max_speed_multiplier, self.timing_reduction_per_round,
+                  self.min_timing_multiplier, self.red_chance_per_round, self.max_red_chance,
+                  self.elite_start_chance, self.elite_chance_per_round, self.max_elite_chance,
+                  self.elite_health_multiplier, self.elite_xp_multiplier,
+                  self.boss_escort_fraction, self.boss_health_growth,
+                  self.boss_reward_per_boss)
         if any(not isfinite(v) or v < 0 for v in values) or self.spawn_interval == 0 or self.opening_spawn_interval == 0:
             raise ValueError("invalid round timing or multipliers")
-        if not 0 <= self.max_red_chance <= 1 or not 0 <= self.boss_escort_fraction <= 1:
+        probabilities = (
+            self.normal_damage_cap, self.max_red_chance, self.elite_start_chance,
+            self.max_elite_chance, self.boss_escort_fraction,
+        )
+        if any(not 0 <= value <= 1 for value in probabilities):
             raise ValueError("probability/fraction outside 0..1")
+        if self.health_growth < 1 or self.boss_health_growth < 1:
+            raise ValueError("health growth must be at least one")
+        if not 0 < self.min_timing_multiplier <= 1:
+            raise ValueError("invalid minimum attack timing multiplier")
         if isinstance(self.boss_every, bool) or not isinstance(self.boss_every, int) or self.boss_every < 0:
             raise ValueError("invalid boss interval")
+        if (isinstance(self.prismatic_every, bool) or not isinstance(self.prismatic_every, int)
+                or self.prismatic_every < 1):
+            raise ValueError("invalid prismatic interval")
+        if not isfinite(self.prismatic_health_multiplier) or self.prismatic_health_multiplier < 1:
+            raise ValueError("invalid prismatic health multiplier")
 
     def enemy_budget(self, round_number: int) -> int:
         if self.enemy_growth == 1:
@@ -73,17 +108,31 @@ class RoundConfig:
         return min(self.max_budget, max(1, round(self.base_enemies * self.enemy_growth ** exponent)))
 
     def health_multiplier(self, round_number: int) -> float:
-        return 1.0 + self.health_per_round * (round_number - 1)
+        linear_rounds = self.health_exponential_start - 1
+        linear_multiplier = 1.0 + self.health_per_round * min(
+            max(0, round_number - 1), linear_rounds
+        )
+        exponential_rounds = max(0, round_number - self.health_exponential_start)
+        return linear_multiplier * self.health_growth ** exponential_rounds
+
+    def damage_multiplier(self, round_number: int) -> float:
+        return 1.0 + self.damage_per_round * max(0, round_number - 1)
 
     def speed_multiplier(self, round_number: int) -> float:
         return min(self.max_speed_multiplier, 1.0 + self.speed_per_round * (round_number - 1))
+
+    def timing_multiplier(self, round_number: int) -> float:
+        if round_number < self.timing_reduction_start:
+            return 1.0
+        rounds_in = round_number - self.timing_reduction_start + 1
+        return max(self.min_timing_multiplier, 1.0 - self.timing_reduction_per_round * rounds_in)
 
     def is_boss_round(self, round_number: int) -> bool:
         return self.boss_every > 0 and round_number % self.boss_every == 0
 
     def boss_health_multiplier(self, round_number: int) -> float:
         boss_index = max(1, round_number // max(1, self.boss_every))
-        return 1.0 + self.boss_health_per_boss * (boss_index - 1)
+        return self.boss_health_growth ** (boss_index - 1)
 
     def round_total(self, round_number: int) -> int:
         """Inimigos a criar na ronda: o orçamento normal, ou escoltas mais o boss."""
@@ -98,6 +147,15 @@ class RoundConfig:
             return 0.0
         rounds_in = round_number - self.red_start_round + 1
         return min(self.max_red_chance, self.red_chance_per_round * rounds_in)
+
+    def elite_chance(self, round_number: int) -> float:
+        if round_number < self.elite_start_round:
+            return 0.0
+        rounds_in = round_number - self.elite_start_round
+        return min(
+            self.max_elite_chance,
+            self.elite_start_chance + self.elite_chance_per_round * rounds_in,
+        )
 
 
 DEFAULT_ROUNDS = RoundConfig()
@@ -118,6 +176,7 @@ class RoundDirector:
         self.pending = 0  # inimigos do orçamento ainda por criar
         self.is_boss_round = False
         self._boss_pending = False
+        self._prismatic_pending = False
         self._spawn_cooldown = 0.0
 
     def update(self, dt: float, world: World) -> None:
@@ -145,13 +204,17 @@ class RoundDirector:
         self.pending = self.config.round_total(self.round_number)
         self.is_boss_round = self.config.is_boss_round(self.round_number)
         self._boss_pending = self.is_boss_round  # o boss é o primeiro a aparecer
+        self._prismatic_pending = self.round_number % self.config.prismatic_every == 0
         self.phase = Phase.SPAWNING
         self._spawn_cooldown = 0.0
         world.events.publish(RoundStarted(self.round_number))
 
     def _spawn_one(self, world: World) -> None:
         cfg, n = self.config, self.round_number
-        definition = BOSS if self._boss_pending else self._pick_definition(world)
+        is_boss = self._boss_pending
+        is_prismatic = not is_boss and self._prismatic_pending
+        definition = BOSS if is_boss else self._pick_definition(world)
+        is_elite = not is_boss and not is_prismatic and world.rng.random() < cfg.elite_chance(n)
         position = self._pick_spawn_point(world, definition)
         self._spawn_cooldown = (cfg.opening_spawn_interval if n <= cfg.opening_rounds
                                 else cfg.spawn_interval)
@@ -160,15 +223,24 @@ class RoundDirector:
             return
         world.spawn_enemy(
             definition, position, jitter=0,
-            health_multiplier=(cfg.boss_health_multiplier(n) if self._boss_pending
-                               else cfg.health_multiplier(n)),
-            speed_multiplier=(1.0 if self._boss_pending else cfg.speed_multiplier(n)),
-            damage_multiplier=(1+cfg.boss_damage_per_boss*(n//max(1,cfg.boss_every)-1)
-                               if self._boss_pending else 1.0),
+            health_multiplier=(cfg.boss_health_multiplier(n) if is_boss else
+                               cfg.health_multiplier(n) *
+                               (cfg.prismatic_health_multiplier if is_prismatic else
+                                cfg.elite_health_multiplier if is_elite else 1.0)),
+            speed_multiplier=(1.0 if is_boss else cfg.speed_multiplier(n)),
+            damage_multiplier=(1.0 if is_boss else cfg.damage_multiplier(n)),
             reward_multiplier=(1+cfg.boss_reward_per_boss*(n//max(1,cfg.boss_every)-1)
-                               if self._boss_pending else 1.0),
+                               if is_boss else 1.0),
+            xp_reward_multiplier=(cfg.elite_xp_multiplier if is_elite else 1.0),
+            timing_multiplier=cfg.timing_multiplier(n),
+            damage_cap_fraction=(None if is_boss else cfg.normal_damage_cap),
+            is_elite=is_elite,
+            is_prismatic=is_prismatic,
+            lethal_attacks=is_boss,
         )
         self._boss_pending = False
+        if is_prismatic:
+            self._prismatic_pending = False
         self.pending -= 1
 
     def _pick_definition(self, world: World) -> EnemyDef:

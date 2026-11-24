@@ -1,0 +1,19 @@
+BOXHEAD - Windows edition
+
+Extract the ZIP, then double-click Boxhead.exe.
+No Python installation or separate assets folder is needed.
+
+CONTROLS
+WASD: move. SPACE: shoot in your movement/facing direction.
+ESC: pause. F11: fullscreen. F3: debug hitboxes.
+Menus: WASD to navigate, SPACE to confirm.
+Map selection: A/D selects map; W/S selects your purchased weapon.
+Augments: WASD + SPACE, 1/2/3, or click. Release SPACE after shooting
+before confirming an augment.
+
+The pistol is free. Unlock more weapons and permanent upgrades in the shop.
+Choose ONE weapon before each run. You keep it for the whole run.
+
+Progress saves locally in %USERPROFILE%\.boxhead\profile.json.
+Your friend's progress starts fresh; this package contains no personal save.
+The first launch may take a few seconds to unpack the bundled runtime.

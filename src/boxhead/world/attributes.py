@@ -25,6 +25,19 @@ class WeaponModifiers:
 
 @dataclass
 class Modifiers:
+    projectile_count: int = 1
+    crit_chance: float = 0.0
+    crit_damage_bonus: float = 0.0
+    blast_radius_bonus: float = 0.0
+    ember_rounds: int = 0
+    slipstream_feed: int = 0
+    last_spark: int = 0
+    siege_stacks: int = 0
+    redline: int = 0
+    aftershot: int = 0
+    rupture_rounds: int = 0
+    attack_damage_bonus: float = 0.0
+    attack_speed_bonus: float = 0.0
     max_health_bonus: float = 0.0
     speed_multiplier: float = 1.0
     regen_per_second: float = 0.0
@@ -42,12 +55,13 @@ class Modifiers:
         return self.weapons.get(name) or WeaponModifiers()
 
 
-def derive_weapon(base: WeaponDef, mods: WeaponModifiers) -> WeaponDef:
+def derive_weapon(base: WeaponDef, mods: WeaponModifiers,
+                  attack_damage: float = 100.0, attack_speed: float = 1.0) -> WeaponDef:
     """Arma efetiva; `base` é partilhada e imutável, por isso devolve uma cópia."""
     return replace(
         base,
-        damage=base.damage * max(0.1, min(5.0, mods.damage_multiplier)),
-        cooldown=max(0.05, base.cooldown / max(0.1, mods.fire_rate_multiplier)),
-        pellets=max(1, min(32, base.pellets + mods.extra_pellets)),
-        projectile_range=base.projectile_range * max(0.1, min(3.0, mods.range_multiplier)),
+        damage=base.damage * max(0.1, mods.damage_multiplier) * max(0.1, attack_damage / 100),
+        cooldown=base.cooldown / (max(0.1, mods.fire_rate_multiplier) * max(0.1, attack_speed)),
+        pellets=max(1, base.pellets + mods.extra_pellets),
+        projectile_range=base.projectile_range * max(0.1, mods.range_multiplier),
     )

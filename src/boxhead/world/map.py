@@ -17,6 +17,14 @@ class ObstacleDef:
     sprite_index: int
     circular: bool = False
 
+    @property
+    def is_barrel(self) -> bool:
+        return self.sprite_index == 2
+
+    @property
+    def key(self) -> tuple[int, int, int]:
+        return self.rect.x, self.rect.y, self.sprite_index
+
 
 @dataclass(frozen=True)
 class DecorationDef:

@@ -10,11 +10,16 @@ from boxhead.world.map import MAPS
 
 
 class MapSelectState(State):
-    def __init__(self, on_select: Callable[[str], None], on_back: Callable[[], None], selected: str):
+    def __init__(self, on_select: Callable[[str], None], on_back: Callable[[], None], selected: str,
+                 weapons: tuple[str, ...] = ("Pistol",), selected_weapon: str = "Pistol",
+                 on_weapon: Callable[[str], None] | None = None):
         self._on_select = on_select
         self._on_back = on_back
         self._keys = tuple(MAPS)
         self._cursor = self._keys.index(selected)
+        self._weapons = weapons
+        self._weapon_cursor = weapons.index(selected_weapon) if selected_weapon in weapons else 0
+        self._on_weapon = on_weapon or (lambda name: None)
 
     def enter(self):
         self._title = pygame.font.Font(None, 54)
@@ -32,7 +37,11 @@ class MapSelectState(State):
             self._cursor = (self._cursor-1)%len(self._keys)
         elif event.key in (pygame.K_RIGHT,pygame.K_d):
             self._cursor = (self._cursor+1)%len(self._keys)
-        elif event.key in (pygame.K_RETURN,pygame.K_SPACE):
+        elif event.key in (pygame.K_q, pygame.K_e, pygame.K_w, pygame.K_s, pygame.K_UP, pygame.K_DOWN):
+            step = -1 if event.key in (pygame.K_q, pygame.K_w, pygame.K_UP) else 1
+            self._weapon_cursor = (self._weapon_cursor + step) % len(self._weapons)
+        elif event.key in (pygame.K_RETURN,pygame.K_KP_ENTER,pygame.K_SPACE):
+            self._on_weapon(self._weapons[self._weapon_cursor])
             self._on_select(self._keys[self._cursor])
 
     def update(self, dt):
@@ -55,5 +64,8 @@ class MapSelectState(State):
             mode="Chunks · endless world" if definition.infinite else "Bounded arena"
             text=self._small.render(mode,True,color)
             surface.blit(text,text.get_rect(center=(rect.centerx,rect.y+260)))
-        hint=self._small.render("A/D or arrows · Enter play · Esc back",True,(170,180,190))
+        weapon = self._body.render(f"Run weapon: < {self._weapons[self._weapon_cursor]} >  (W/S or Q/E)",
+                                  True, (255,220,120))
+        surface.blit(weapon, weapon.get_rect(center=(width//2,height-110)))
+        hint=self._small.render("A/D map · W/S weapon · SPACE / ENTER play · ESC back",True,(170,180,190))
         surface.blit(hint,hint.get_rect(center=(width//2,height-70)))

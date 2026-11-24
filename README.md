@@ -45,10 +45,24 @@ dependencies without necessarily reproducing that lock.
 
 ## Controls
 
+The main-menu Encyclopedia opens a searchable reference for augments, weapons,
+enemies, permanent upgrades and round/reward rules. A/D changes categories, W/S
+or the mouse wheel browses entries, F edits the search, Backspace clears it and
+Escape returns to the menu (or exits search editing first). Mouse selection is supported.
+The archive is read-only and uses the current game catalogs and local purchase levels.
+
+Menus support WASD navigation and Space to confirm, alongside arrows and Enter.
+On map selection, A/D selects the map and W/S selects the run weapon (Q/E also works).
+Pause and game-over screens also have selectable actions. Augment selection requires
+releasing Space after shooting before confirming a card.
+
 - **WASD**: move and face a direction.
 - **Space**: fire in the direction the player faces; aiming does not use the mouse.
-- **1 / 2 / 3**: switch weapons; on the augment screen, choose a card.
+- **1 / 2 / 3**: choose a card on the augment screen.
 - **Esc**: pause/resume; **M** from pause abandons the run and returns to the menu.
+- The pause build panel shows effective player/weapon stats and every owned augment.
+  Use W/S or the mouse wheel to browse augments, A/D to select Resume/Main menu,
+  and Space to confirm. Escape returns to the exact screen you paused from.
 - **W/S or arrows**, then **Enter**: navigate menus and the shop.
 - **A/D or arrows**, then **Enter**: choose a map. Retry keeps the selected map.
 - **F3**: display hitboxes.
@@ -61,14 +75,22 @@ Mouse coordinates are mapped back to the canvas for augment selection.
 
 ## Weapons, ammo and round rewards
 
-Each run starts with the pistol. Other weapons unlock automatically at the start
-of their round and arrive with their own ammo supply. Their keys stay fixed.
+The pistol is free. Buy SMG and Shotgun permanently in the shop to unlock more
+loadout options. On map selection, use Q/E to choose ONE weapon for the whole run.
+Only that weapon receives ammo and weapon augments; there is no switching in combat.
 
-| Weapon | Key | Unlock round | Starting ammo | Capacity | Ammo per crate |
-| --- | --- | --- | --- | --- | --- |
-| Pistol | 1 | 1 | 60 | 180 | 18 |
-| SMG | 3 | 5 | 120 | 360 | 60 |
-| Shotgun | 2 | 10 | 24 | 72 | 8 |
+| Weapon | Shop price | Starting ammo | Capacity | Ammo per crate |
+| --- | --- | --- | --- | --- |
+| Pistol | Free | 60 | 180 | 18 |
+| SMG | 250 | 120 | 360 | 60 |
+| Shotgun | 400 | 24 | 72 | 8 |
+
+The character starts with 100 AD and 1.00x attack speed, both shown in the HUD.
+Weapon damage scales with AD/100; attack speed multiplies each weapon's firing
+rate. Shop levels add +5 AD or +0.05 attack speed, up to five levels each. Gold
+augments add +20 AD or +0.15 attack speed and stack without limits. Gray augments
+continue to specialize individual weapons. Removed weapon-specific shop upgrades
+are refunded once on startup.
 
 A successful trigger pull consumes one bullet or shell; shotgun pellets share a
 single shell. There are no magazines or reload controls. Each killed enemy has a
@@ -81,13 +103,44 @@ augments for the weapon that killed the final enemy. This reward is separate fro
 XP level-ups; simultaneous rewards are queued and resolved one at a time. Bullets
 and ricochets retain their firing weapon after switching, and chain explosions
 inherit their triggering weapon. Independent orbital kills credit the active weapon.
-Round bonuses can exceed normal augment stack limits, while derived stat caps
-still apply. All ammo, unlocks and round rewards reset with each new run.
+All run augments stack without limits. Damage, fire rate, pellet count, range and
+movement speed have no upper stat caps. Permanent shop upgrades retain their
+individual level limits. Ammo and round rewards reset with each new run; weapon
+ownership persists.
 
 ## Development
 
+### Windows executable
+
+Install the build tool in the existing virtual environment and run the packaging script:
+
+```powershell
+uv pip install --python .venv\Scripts\python.exe -r requirements-build.txt
+.\scripts\build-windows.ps1
+```
+
+Share `dist/Boxhead-Windows.zip`. It contains a standalone `Boxhead.exe` and controls
+in `PLAY-WINDOWS.txt`. Python, Pygame and sprites are bundled; personal saves are not.
+Recipients extract the ZIP and run the executable. Progress remains in their own
+`%USERPROFILE%\.boxhead` folder. Build outputs are ignored by Git.
+
+### Checks
+
+The augment expansion adds Split Chamber, Precision/Dead Center, Ember Rounds,
+Blast Bloom, Slipstream Feed, Last Spark, Siege Frame, Redline and Aftershot.
+The HUD shows projectile count, critical stats, explosion radius, revival charges
+and temporary hit stacks. Run augments have unlimited stacks; new shop entries
+retain the limits and prices in `docs/implementation-prompt-augments.md`.
+Icon assignments and intentional symbol reuse are documented in `docs/icon-map.md`.
+
+Focused regression checks can be run with:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 The course prioritizes code organization and design patterns. This project uses
-simple manual checks, without automated tests, mandatory linting or CI/CD. Open
+manual checks plus focused combat regression tests, without mandatory linting or CI/CD. Open
 the game and exercise the affected feature when checking a change.
 
 ```text

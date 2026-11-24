@@ -33,6 +33,7 @@ class AugmentChoice:
     level: int
     weapon: str | None = None
     round_number: int | None = None
+    prismatic_source: str | None = None
 
 
 class Progression:
@@ -59,6 +60,9 @@ class Progression:
 
     def reward_round(self, round_number: int, weapon: str) -> None:
         self._choices.append(AugmentChoice(self.level, weapon, round_number))
+
+    def reward_prismatic(self, source: str) -> None:
+        self._choices.append(AugmentChoice(self.level, prismatic_source=source))
 
     @property
     def xp_needed(self) -> int:
@@ -105,4 +109,6 @@ class Progression:
         self._events = None
 
     def _on_kill(self, event: EnemyKilled) -> None:
+        if event.is_boss or event.is_prismatic:
+            self.reward_prismatic("Boss" if event.is_boss else "Prismatic enemy")
         self.add_xp(event.xp_reward)

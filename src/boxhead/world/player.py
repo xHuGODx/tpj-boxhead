@@ -18,6 +18,8 @@ from boxhead.world.arsenal import Arsenal
 SPEED = 220.0
 RADIUS = 24
 MAX_HEALTH = 100
+BASE_ATTACK_DAMAGE = 100.0
+BASE_ATTACK_SPEED = 1.0
 
 
 @dataclass
@@ -28,6 +30,10 @@ class Player:
     weapon_slot: int = 0
     weapons: tuple[WeaponDef, ...] = WEAPONS  # definições base, partilhadas e imutáveis
     modifiers: Modifiers = field(default_factory=Modifiers)
+    owned_weapons: tuple[str, ...] = ("Pistol",)
+    temporary_move: float = 0.0
+    temporary_as: float = 0.0
+    revivals_used: int = 0
     _cooldowns: list[float] = field(init=False, repr=False)
     _effective_weapons: tuple[WeaponDef, ...] = field(init=False, repr=False)
     arsenal: Arsenal = field(init=False)
@@ -36,14 +42,38 @@ class Player:
         # Um cooldown por arma: trocar de arma não permite contornar a cadência.
         self._cooldowns = [0.0] * len(self.weapons)
         self._effective_weapons = self._derive_weapons()
-        self.arsenal = Arsenal(self.weapons)
-        if not self.arsenal.is_unlocked(self.weapons[self.weapon_slot].name):
+        if self.weapons[self.weapon_slot].name not in self.owned_weapons:
             self.weapon_slot = next(i for i, w in enumerate(self.weapons)
-                                    if self.arsenal.is_unlocked(w.name))
+                                    if w.name in self.owned_weapons)
+        selected = self.weapons[self.weapon_slot].name
+        self.arsenal = Arsenal(self.weapons, (selected,))
         self.health = min(self.health, self.max_health)
 
     def _derive_weapons(self) -> tuple[WeaponDef, ...]:
-        return tuple(derive_weapon(w, self.modifiers.for_weapon(w.name)) for w in self.weapons)
+        return tuple(derive_weapon(w, self.modifiers.for_weapon(w.name),
+                                   self.attack_damage, self.attack_speed) for w in self.weapons)
+
+    @property
+    def attack_damage(self) -> float:
+        return (BASE_ATTACK_DAMAGE + self.modifiers.attack_damage_bonus) * (1 + .15 * self.modifiers.siege_stacks)
+
+    @property
+    def attack_speed(self) -> float:
+        movement = self.modifiers.speed_multiplier - 1 + self.temporary_move
+        conversion = .5 * movement if self.modifiers.slipstream_feed else 0
+        return BASE_ATTACK_SPEED + self.modifiers.attack_speed_bonus + self.temporary_as + conversion
+
+    @property
+    def size_multiplier(self) -> float:
+        return 1 + .05 * self.modifiers.siege_stacks
+
+    @property
+    def crit_multiplier(self) -> float:
+        return 2 + self.modifiers.crit_damage_bonus + .5 * max(0, self.modifiers.crit_chance - 1)
+
+    @property
+    def revivals_left(self) -> int:
+        return max(0, self.modifiers.last_spark - self.revivals_used)
 
     def set_modifiers(self, modifiers: Modifiers) -> None:
         """Aplica novos modificadores (sempre calculados a partir da base da partida).
@@ -57,20 +87,22 @@ class Player:
 
     @property
     def radius(self) -> float:
-        return RADIUS
+        return RADIUS * self.size_multiplier
 
     @property
     def max_health(self) -> float:
-        return MAX_HEALTH + self.modifiers.max_health_bonus
+        return (MAX_HEALTH + self.modifiers.max_health_bonus) * (1 + .30 * self.modifiers.siege_stacks)
 
     @property
     def speed(self) -> float:
-        return SPEED * max(0.1, min(3.0, self.modifiers.speed_multiplier))
+        return SPEED * max(0.1, self.modifiers.speed_multiplier + self.temporary_move)
 
     @property
     def weapon(self) -> WeaponDef:
         """Arma ativa, já com os modificadores aplicados."""
-        return self._effective_weapons[self.weapon_slot]
+        return derive_weapon(self.weapons[self.weapon_slot],
+                             self.modifiers.for_weapon(self.weapons[self.weapon_slot].name),
+                             self.attack_damage, self.attack_speed)
 
     @property
     def can_fire(self) -> bool:
@@ -93,7 +125,8 @@ class Player:
         return self.health > 0
 
     def take_damage(self, amount: float) -> None:
-        self.health = max(0.0, self.health - amount)
+        if self.alive:
+            self.health = max(0.0, self.health - amount)
 
     def apply(self, command: Command, dt: float) -> None:
         if isinstance(command, Move) and command.direction.length_squared() > 0:
@@ -110,11 +143,10 @@ class Player:
         weapon = self.weapon
         if not self.arsenal.consume(weapon.name):
             return None
-        self._cooldowns[self.weapon_slot] = weapon.cooldown
+        self._cooldowns[self.weapon_slot] += weapon.cooldown
         return weapon
 
     def update(self, dt: float) -> None:
-        self._cooldowns = [max(0.0, c - dt) for c in self._cooldowns]
         regen = self.modifiers.regen_per_second
         if regen > 0 and self.alive:
             self.health = min(self.max_health, self.health + regen * dt)

@@ -7,6 +7,7 @@ import pygame
 
 from boxhead.core.catalog import catalog
 from boxhead.presentation.sprites import SpritePainter
+from boxhead.presentation.icons import augment_icon
 from boxhead.world.augments import Rarity
 
 SIZE = (1536, 1024)
@@ -38,7 +39,6 @@ class AugmentCards:
         self._fonts = {}
         self._painter = SpritePainter(catalog())
         self._painter.prepare(["cards/card_frames.png", "augments/augment_icons.png"])
-        self._icons = catalog().indices("augments/augment_icons.png")
 
     @staticmethod
     def _transform(size):
@@ -108,10 +108,14 @@ class AugmentCards:
         pygame.draw.polygon(self._canvas,(236,169,38),points,5)
         title = (f"ROUND {choice.round_number}" if round_reward
                  else f"LEVEL {choice.level if choice else world.progression.level}")
+        if choice and choice.prismatic_source:
+            title = "PRISMATIC REWARD"
         self._text(title,(center,58 if compact else 88),64 if compact else 76,bold=True)
         self._diamond((center-185,58 if compact else 88),(255,202,45),11)
         self._diamond((center+185,58 if compact else 88),(255,202,45),11)
         subtitle = f"{choice.weapon} round reward" if round_reward else "Choose an augment"
+        if choice and choice.prismatic_source:
+            subtitle = f"{choice.prismatic_source} reward"
         self._text(subtitle,(center,131 if compact else 181),44,bold=True)
         pygame.draw.line(self._canvas,(175,113,38),(center-310,131 if compact else 181),(center-215,131 if compact else 181),3)
         pygame.draw.line(self._canvas,(175,113,38),(center+215,131 if compact else 181),(center+310,131 if compact else 181),3)
@@ -139,8 +143,9 @@ class AugmentCards:
         self._text(str(index+1),(x+27,y+38),52,(255,224,154),True)
         label=self._font(32,True).render(LABELS[augment.rarity],True,color)
         self._canvas.blit(label,label.get_rect(topright=(rect.right-38,rect.y+39)))
-        self._painter.blit(self._canvas,"augments/augment_icons.png",
-                           (rect.centerx,rect.y+138),(112,112),self._icons.get(augment.id,0))
+        icon_key, icon_index = augment_icon(augment.id)
+        self._painter.blit(self._canvas,icon_key,
+                           (rect.centerx,rect.y+138),(112,112),icon_index)
         self._paragraph(augment.name,pygame.Rect(rect.x+40,rect.y+205,rect.width-80,68),44,True)
         prefix="Weapon:" if augment.weapon else "Target:"
         target=augment.weapon or "player"
@@ -159,7 +164,7 @@ class AugmentCards:
         self._divider(rect,rect.y+434,color)
         have=world.inventory.stacks(augment.id)
         choice = world.progression.next_choice
-        limit = "round bonus" if choice and choice.weapon else f"max. {augment.max_stacks}"
+        limit = "unlimited"
         self._paragraph(f"Stacks: {have} -> {have+1} ({limit})",
                         pygame.Rect(rect.x+40,rect.y+452,rect.width-80,38),30,color=(200,190,189))
 
@@ -172,7 +177,7 @@ class AugmentCards:
         self._header(world,offer,compact)
         for index,(augment,rect) in enumerate(zip(offer.choices,self._logical_rects(len(offer.choices),compact),strict=True)):
             self._card(world,augment,rect,index,index==cursor)
-        self._text("1 / 2 / 3 or click   ·   Arrows + Enter   ·   ESC pause",
+        self._text("WASD navigate · SPACE choose · 1/2/3 or click · ESC pause",
                    (SIZE[0]//2,785 if compact else 900),32,
                    (155,150,160) if locked else (207,196,190))
         scaled=pygame.transform.smoothscale(self._canvas,(round(SIZE[0]*scale),round(height*scale)))

@@ -6,7 +6,7 @@ import pygame
 
 from boxhead.core.state import State
 
-HINT = "W/S or arrows · ENTER select · F11 fullscreen · ESC quit"
+HINT = "WASD / arrows navigate · SPACE / ENTER select · F11 fullscreen · ESC quit"
 
 
 class MenuState(State):
@@ -19,6 +19,7 @@ class MenuState(State):
         notice: str | None = None,
         on_fullscreen: Callable[[], None] | None = None,
         fullscreen: Callable[[], bool] | None = None,
+        on_encyclopedia: Callable[[], None] | None = None,
     ) -> None:
         self._on_quit = on_quit
         self._balance = balance
@@ -26,6 +27,8 @@ class MenuState(State):
         self._items: list[tuple[str | Callable[[], str], Callable[[], None]]] = [("Play", on_start)]
         if on_shop is not None:
             self._items.append(("Shop", on_shop))
+        if on_encyclopedia is not None:
+            self._items.append(("Encyclopedia", on_encyclopedia))
         if on_fullscreen is not None:
             is_fullscreen = fullscreen or (lambda: False)
             self._items.append((lambda: "Fullscreen: " + ("On" if is_fullscreen() else "Off"), on_fullscreen))
@@ -50,9 +53,9 @@ class MenuState(State):
             return
         if event.key == pygame.K_ESCAPE:
             self._on_quit()
-        elif event.key in (pygame.K_UP, pygame.K_w):
+        elif event.key in (pygame.K_UP, pygame.K_LEFT, pygame.K_w, pygame.K_a):
             self._cursor = (self._cursor - 1) % len(self._items)
-        elif event.key in (pygame.K_DOWN, pygame.K_s):
+        elif event.key in (pygame.K_DOWN, pygame.K_RIGHT, pygame.K_s, pygame.K_d):
             self._cursor = (self._cursor + 1) % len(self._items)
         elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
             self._items[self._cursor][1]()
