@@ -45,6 +45,12 @@ dependencies without necessarily reproducing that lock.
 
 ## Controls
 
+The main-menu Encyclopedia opens a searchable reference for augments, weapons,
+enemies, permanent upgrades and round/reward rules. A/D changes categories, W/S
+or the mouse wheel browses entries, F edits the search, Backspace clears it and
+Escape returns to the menu (or exits search editing first). Mouse selection is supported.
+The archive is read-only and uses the current game catalogs and local purchase levels.
+
 Menus support WASD navigation and Space to confirm, alongside arrows and Enter.
 On map selection, A/D selects the map and W/S selects the run weapon (Q/E also works).
 Pause and game-over screens also have selectable actions. Augment selection requires

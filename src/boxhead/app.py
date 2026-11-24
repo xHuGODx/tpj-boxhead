@@ -21,6 +21,7 @@ from boxhead.world.map import MAPS
 from boxhead.states.paused import PausedState
 from boxhead.states.playing import PlayingState
 from boxhead.states.shop import ShopState
+from boxhead.states.encyclopedia import EncyclopediaState
 from boxhead.world.result import RunReason, RunResult
 from boxhead.world.world import World
 from boxhead.world.player import Player
@@ -115,6 +116,7 @@ class App:
             self._to_map_select,
             self.stop,
             on_shop=self._to_shop,
+            on_encyclopedia=self._to_encyclopedia,
             balance=self.profile.balance,
             notice=self._profile_notice,
             on_fullscreen=self._toggle_fullscreen,
@@ -125,6 +127,10 @@ class App:
         self._retry_rewards()
         assert self._machine is not None
         self._machine.change(self._make_menu())
+
+    def _to_encyclopedia(self) -> None:
+        assert self._machine is not None
+        self._machine.change(EncyclopediaState(self.profile,self._to_menu))
 
     def _to_shop(self) -> None:
         assert self._machine is not None

@@ -284,6 +284,39 @@ class ExpansionTests(unittest.TestCase):
         e=PlayingState(None,empty.events,lambda s:None,lambda w:None,world=empty);e.enter()
         p=PausedState(e,lambda s:None,lambda:None);p.enter();p.draw(pygame.Surface((1100,700)))
 
+    def test_encyclopedia_catalog_search_navigation_and_readonly_profile(self):
+        from boxhead.states.encyclopedia import EncyclopediaState
+        from boxhead.states.menu import MenuState
+        from boxhead.presentation.encyclopedia import CATEGORIES
+        calls=[];profile=Profile(balance=1234,upgrades={'weapon_smg':1})
+        before=profile.to_dict()
+        menu=MenuState(lambda:None,lambda:None,on_encyclopedia=lambda:calls.append('archive'))
+        menu._cursor=menu.labels.index('Encyclopedia')
+        menu.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_SPACE))
+        self.assertEqual(calls,['archive']);calls.clear()
+        state=EncyclopediaState(profile,lambda:calls.append('back'));state.enter()
+        self.assertEqual(len([e for e in state.archive if e.category=='Augments']),len(AUGMENTS))
+        self.assertEqual(len([e for e in state.archive if e.category=='Shop']),len(UPGRADES))
+        for i in range(len(CATEGORIES)):
+            state.set_category(i)
+            for n in range(len(state.filtered())):
+                state.cursor=n;state.draw(pygame.Surface((1100,700)))
+        state.set_category(0)
+        state.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_f))
+        state.handle_event(pygame.event.Event(pygame.TEXTINPUT,text='rupture'))
+        self.assertEqual({e.key for e in state.filtered()},{'rupture_rounds','blast_bloom'})
+        state.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+        self.assertFalse(calls);self.assertFalse(state.editing)
+        state.query='no-such-item';state.draw(pygame.Surface((800,600)))
+        self.assertEqual(state.filtered(),[])
+        state.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_BACKSPACE))
+        self.assertEqual(len(state.filtered()),len(AUGMENTS))
+        state.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_d))
+        self.assertEqual(state.category,1)
+        state.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+        self.assertEqual(calls,['back']);state.exit()
+        self.assertEqual(profile.to_dict(),before)
+
 
 if __name__ == '__main__':
     unittest.main()
