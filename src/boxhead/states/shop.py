@@ -10,9 +10,10 @@ from boxhead.core.state import State
 from boxhead.profile import Profile
 from boxhead.core.catalog import catalog
 from boxhead.presentation.sprites import SpritePainter
+from boxhead.presentation.icons import shop_icon
 from boxhead.shop import UPGRADES, PurchaseResult, UpgradeDef
 
-HINT = "W/S or arrows to select · ENTER buy · ESC back"
+HINT = "WASD / arrows select · SPACE / ENTER buy · ESC back"
 MESSAGES = {
     PurchaseResult.BOUGHT: "Purchased!",
     PurchaseResult.INSUFFICIENT_FUNDS: "Not enough coins.",
@@ -23,10 +24,14 @@ MESSAGES = {
 
 
 def cost_label(upgrade: UpgradeDef, level: int) -> str:
+    if upgrade.weapon and level > 0:
+        return "OWNED"
     return "MAX" if level >= upgrade.max_level else f"{upgrade.cost(level)} coins"
 
 
 def level_label(upgrade: UpgradeDef, level: int) -> str:
+    if upgrade.weapon:
+        return "Permanent unlock"
     return f"Level {level}/{upgrade.max_level}"
 
 
@@ -59,7 +64,7 @@ class ShopState(State):
         self._body = pygame.font.Font(None, 34)
         self._small = pygame.font.Font(None, 24)
         self._painter = SpritePainter(catalog())
-        self._painter.prepare(["shop/shop_upgrades.png"])
+        self._painter.prepare(["shop/shop_upgrades.png", "augments/augment_icons.png", "weapons/weapon_icons.png"])
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type != pygame.KEYDOWN:
@@ -67,9 +72,9 @@ class ShopState(State):
         count = len(self._upgrades)
         if event.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
             self._on_back()
-        elif event.key in (pygame.K_UP, pygame.K_w):
+        elif event.key in (pygame.K_UP, pygame.K_LEFT, pygame.K_w, pygame.K_a):
             self._cursor = (self._cursor - 1) % count
-        elif event.key in (pygame.K_DOWN, pygame.K_s):
+        elif event.key in (pygame.K_DOWN, pygame.K_RIGHT, pygame.K_s, pygame.K_d):
             self._cursor = (self._cursor + 1) % count
         elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
             self._purchase(self._upgrades[self._cursor])
@@ -92,15 +97,20 @@ class ShopState(State):
 
         row_width, row_height = 640, 86
         left = (width - row_width) // 2
-        for index, upgrade in enumerate(self._upgrades):
+        visible_count = max(1, (height - 310) // (row_height + 14))
+        first = min(max(0, self._cursor - visible_count + 1),
+                    max(0, len(self._upgrades) - visible_count))
+        for index in range(first, min(len(self._upgrades), first + visible_count)):
+            upgrade = self._upgrades[index]
             level = self._profile.level(upgrade.id)
-            rect = pygame.Rect(left, 190 + index * (row_height + 14), row_width, row_height)
+            rect = pygame.Rect(left, 190 + (index - first) * (row_height + 14), row_width, row_height)
             selected = index == self._cursor
             maxed = level >= upgrade.max_level
             pygame.draw.rect(surface, (28, 32, 42), rect, border_radius=10)
             border = (255, 220, 120) if selected else (70, 78, 92)
             pygame.draw.rect(surface, border, rect, 3 if selected else 1, border_radius=10)
-            self._painter.blit(surface, "shop/shop_upgrades.png", (rect.x-32, rect.centery), (48,48), index)
+            icon_key, icon = shop_icon(upgrade.id)
+            self._painter.blit(surface, icon_key, (rect.x-32, rect.centery), (48,48), icon)
             name = self._body.render(upgrade.name, True, (255, 255, 255))
             surface.blit(name, (rect.x + 18, rect.y + 12))
             desc = self._small.render(upgrade.description, True, (180, 188, 200))
@@ -120,3 +130,5 @@ class ShopState(State):
             surface.blit(text, text.get_rect(center=(width // 2, height - 90)))
         hint = self._small.render(HINT, True, (153, 163, 176))
         surface.blit(hint, hint.get_rect(center=(width // 2, height - 40)))
+        position = self._small.render(f"{self._cursor + 1} / {len(self._upgrades)}", True, (153, 163, 176))
+        surface.blit(position, position.get_rect(topright=(left + row_width, 160)))

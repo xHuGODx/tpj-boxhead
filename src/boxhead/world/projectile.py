@@ -18,7 +18,12 @@ class Projectile:
     sprite_key: str = "projectiles/player_bullet.png"
     owner_id: int | None = None
     hostile: bool = False  # True: disparado por inimigos; só acerta no jogador
+    damage_cap_fraction: float | None = None  # limite relativo à vida máxima do jogador
+    lethal: bool = False  # ataques de boss ignoram o limite e matam ao acertar
     alive: bool = True
     bounces_left: int = 0  # saltos que ainda pode dar (augment Ricochet)
     hit_ids: set[int] = field(default_factory=set)  # alvos já acertados: não repete o mesmo
     weapon_name: str | None = None  # arma de origem; trocar de arma não muda a autoria
+    primary: bool = True
+    critical: bool = False
+    first_step: float | None = None

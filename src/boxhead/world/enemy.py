@@ -124,6 +124,7 @@ class Target(Protocol):
 
     position: Vector2
     radius: float
+    max_health: float
 
     def change_state(self, state: EnemyState) -> None:
         self._state.exit(self)
@@ -174,7 +175,7 @@ class RecoveryState(EnemyState):
 
     def update(self, enemy, dt, target):
         self.elapsed += dt
-        return ChaseState() if self.elapsed >= enemy.definition.recovery else None
+        return ChaseState() if self.elapsed >= enemy.recovery else None
 
 
 class AttackState(EnemyState):
@@ -189,9 +190,14 @@ class AttackState(EnemyState):
         if offset.length_squared():
             enemy.orientation = offset.normalize()
         self.elapsed += dt
-        if self.elapsed >= enemy.definition.windup:
+        if self.elapsed >= enemy.windup:
             if enemy.can_see and offset.length() <= enemy.reach(target)+enemy.definition.strike_leeway:
-                target.take_damage(enemy.definition.contact_damage*enemy.damage_multiplier)
+                damage = enemy.definition.contact_damage * enemy.damage_multiplier
+                if enemy.lethal_attacks:
+                    damage = target.max_health
+                elif enemy.damage_cap_fraction is not None:
+                    damage = min(damage, target.max_health * enemy.damage_cap_fraction)
+                target.take_damage(damage)
             return RecoveryState()
         return None
 
@@ -202,7 +208,7 @@ class PrepareRangedState(EnemyState):
 
     def enter(self, enemy):
         self.elapsed = 0.0
-        self.windup = enemy.definition.windup
+        self.windup = enemy.windup
 
     @property
     def progress(self):
@@ -242,6 +248,8 @@ class RangedAttackState(EnemyState):
                 color=attack.color, hostile=True, owner_id=enemy.id,
                 sprite_key=("projectiles/boss_projectile.png" if attack.ring
                             else "projectiles/enemy_fireball.png"),
+                damage_cap_fraction=enemy.damage_cap_fraction,
+                lethal=enemy.lethal_attacks,
             ))
 
     def update(self, enemy, dt, target):
@@ -272,6 +280,12 @@ class Enemy:
     alive: bool = True
     damage_multiplier: float = 1.0
     reward_multiplier: float = 1.0
+    xp_reward_multiplier: float = 1.0
+    timing_multiplier: float = 1.0
+    damage_cap_fraction: float | None = None
+    is_elite: bool = False
+    is_prismatic: bool = False
+    lethal_attacks: bool = False
     death_age: float = 0.0
     steering: Vector2 | None = field(default=None, repr=False)
     can_see: bool = True
@@ -306,6 +320,14 @@ class Enemy:
     @property
     def is_boss(self) -> bool:
         return self.definition.is_boss
+
+    @property
+    def windup(self) -> float:
+        return self.definition.windup * self.timing_multiplier
+
+    @property
+    def recovery(self) -> float:
+        return self.definition.recovery * self.timing_multiplier
 
     def reach(self, target: Target) -> float:
         """Distância entre centros a partir da qual está encostado ao alvo."""

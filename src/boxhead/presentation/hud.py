@@ -4,6 +4,7 @@ import pygame
 from boxhead.core.catalog import catalog
 from boxhead.world.augments import Rarity
 from boxhead.world.rounds import Phase
+from boxhead.presentation.icons import ICONS
 _TEXT = (225,230,237)
 _MUTED = (153,163,176)
 _ACCENT = (255,220,120)
@@ -18,7 +19,9 @@ class HUD:
         self._icon_heart, self._icon_coin, self._icon_gem = icons[:3]
         self._font = pygame.font.Font(None, 28)
         self._font_big = pygame.font.Font(None, 44)
+        self._small = pygame.font.Font(None, 22)
         self._weapon_icons = catalog().sheet("weapons/weapon_icons.png").animation().frames
+        self._augment_icons = catalog().sheet("augments/augment_icons.png").animation().frames
         self._scaled = {}
 
     def _scale(self, image, size):
@@ -86,6 +89,16 @@ class HUD:
 
         timer = self._font.render(f"{world.map.name} · {world.elapsed:.1f}s", True, _TEXT)
         surface.blit(timer, timer.get_rect(topright=(width - 16, 96)))
+        stats = self._font.render(f"AD {player.attack_damage:g}   AS {player.attack_speed:.2f}x", True, _ACCENT)
+        surface.blit(stats, stats.get_rect(topright=(width - 16, 126)))
+        mods = player.modifiers
+        lines = [f"PROJECTILES x{mods.projectile_count}   CRIT {mods.crit_chance:.0%} / {player.crit_multiplier:.2f}x",
+                 f"BLAST x{1+mods.blast_radius_bonus:.2f}   REVIVES {player.revivals_left}",
+                 f"SLIP {world.combat.slip_hits} ({max(0,world.combat.slip_until-world.elapsed):.1f}s)   "
+                 f"REDLINE {world.combat.rhythm_hits} ({max(0,world.combat.rhythm_until-world.elapsed):.1f}s)"]
+        for i, line in enumerate(lines):
+            text = self._small.render(line, True, _MUTED)
+            surface.blit(text, text.get_rect(topright=(width-16, 156+i*22)))
         cooldown = pygame.Rect(width // 2 - 100, surface.get_height() - 56, 200, 7)
         self._draw_bar(surface, cooldown, 1 - player.cooldown_ratio, (255, 220, 120))
         self._draw_boss_bar(surface)
@@ -97,7 +110,7 @@ class HUD:
         )
         surface.blit(ammo, ammo.get_rect(center=(width // 2, surface.get_height() - 80)))
         if player.ammo == 0:
-            hint = "OUT OF AMMO · Collect ammo crates or switch weapons"
+            hint = "OUT OF AMMO · Collect ammo crates"
         elif world.ammo_notice_left > 0:
             hint = "Ammo collected"
         else:
@@ -105,29 +118,12 @@ class HUD:
         if hint:
             text = self._font.render(hint, True, ammo_color)
             surface.blit(text, text.get_rect(center=(width // 2, surface.get_height() - 111)))
-        if world.unlock_notice_left > 0:
-            text = self._font_big.render("Unlocked: " + ", ".join(world.recent_unlocks), True, _ACCENT)
-            surface.blit(text, text.get_rect(center=(width // 2, surface.get_height() - 145)))
 
-        slot_width = 240
-        cursor_x = (width - len(player.weapons) * slot_width) // 2 + 30
-        for slot, weapon in enumerate(player.weapons):
-            active = slot == player.weapon_slot
-            unlocked = player.arsenal.is_unlocked(weapon.name)
-            color = _ACCENT if active else (_MUTED if unlocked else (95, 100, 110))
-            suffix = str(player.arsenal.ammo(weapon.name)) if unlocked else f"R{weapon.unlock_round}"
-            label = self._font.render(f"{slot + 1} {weapon.name} · {suffix}", True, color)
-            surface.blit(self._scale(self._weapon_icons[slot], (28,28)), (cursor_x-30, surface.get_height()-40))
-            surface.blit(label, (cursor_x, surface.get_height() - 36))
-            if active:
-                pygame.draw.line(
-                    surface,
-                    color,
-                    (cursor_x, surface.get_height() - 12),
-                    (cursor_x + label.get_width(), surface.get_height() - 12),
-                    2,
-                )
-            cursor_x += slot_width
+        label = self._font.render(f"Loadout: {player.weapon.name}", True, _ACCENT)
+        rect = label.get_rect(midbottom=(width // 2, surface.get_height() - 12))
+        surface.blit(self._scale(self._weapon_icons[player.weapon_slot], (28,28)),
+                     (rect.left - 36, rect.centery - 14))
+        surface.blit(label, rect)
 
     def _draw_boss_bar(self, surface: pygame.Surface) -> None:
         boss = next((e for e in self._world.enemies if e.is_boss and e.alive), None)
@@ -145,5 +141,6 @@ class HUD:
         for augment, stacks in owned:
             suffix = f" x{stacks}" if stacks > 1 else ""
             text = self._font.render(f"{augment.name}{suffix}", True, RARITY_COLORS[augment.rarity])
-            surface.blit(text, (16, y))
+            surface.blit(self._scale(self._augment_icons[ICONS[augment.id]], (20,20)), (16,y))
+            surface.blit(text, (42, y))
             y += 22

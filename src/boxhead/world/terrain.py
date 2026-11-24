@@ -22,6 +22,12 @@ class Terrain:
 
     def __init__(self, definition: MapDefinition):
         self.definition = definition
+        self.obstacles = definition.obstacles
+        self._destroyed_obstacles: set[tuple[int, int, int]] = set()
+
+    def destroy_obstacle(self, obstacle: ObstacleDef) -> None:
+        self._destroyed_obstacles.add(obstacle.key)
+        self.obstacles = tuple(o for o in self.obstacles if o.key != obstacle.key)
 
     def __getattr__(self, name):
         # Configuração imutável é partilhada; só o terreno infinito tem estado de carga.
@@ -81,7 +87,8 @@ class InfiniteTerrain(Terrain):
                 for y in range(cell[1]-CHUNK_RADIUS,cell[1]+CHUNK_RADIUS+1)}
         self.chunks = {key: self.chunks[key] if key in self.chunks else self.generate_chunk(*key)
                        for key in sorted(keys)}
-        self.obstacles = tuple(o for chunk in self.chunks.values() for o in chunk.obstacles)
+        self.obstacles = tuple(o for chunk in self.chunks.values() for o in chunk.obstacles
+                               if o.key not in self._destroyed_obstacles)
         self.decorations = tuple(d for chunk in self.chunks.values() for d in chunk.decorations)
         side = (2*CHUNK_RADIUS+1)*CHUNK_SIZE
         self.bounds = Rect((cell[0]-CHUNK_RADIUS)*CHUNK_SIZE,

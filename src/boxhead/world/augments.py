@@ -36,6 +36,31 @@ class Effect(Protocol):
 
 
 @dataclass(frozen=True)
+class StatBonus:
+    field: str
+    amount: float | int
+
+    def apply(self, modifiers: Modifiers) -> None:
+        setattr(modifiers, self.field, getattr(modifiers, self.field) + self.amount)
+
+
+@dataclass(frozen=True)
+class AttackDamage:
+    amount: float
+
+    def apply(self, modifiers: Modifiers) -> None:
+        modifiers.attack_damage_bonus += self.amount
+
+
+@dataclass(frozen=True)
+class AttackSpeed:
+    amount: float
+
+    def apply(self, modifiers: Modifiers) -> None:
+        modifiers.attack_speed_bonus += self.amount
+
+
+@dataclass(frozen=True)
 class WeaponDamage:
     weapon: str
     amount: float  # fração: 0,20 = +20 %
@@ -127,7 +152,7 @@ class Augment:
     description: str
     rarity: Rarity
     effect: Effect
-    max_stacks: int = 1
+    max_stacks: int = 1  # legacy catalog metadata; stacking is unlimited
     weapon: str | None = None  # só é oferecido se a arma estiver disponível
     requires: tuple[str, ...] = ()  # ids que o jogador já tem de possuir
     incompatible_with: tuple[str, ...] = ()  # ids que impedem a oferta
@@ -144,6 +169,16 @@ def _gold(id: str, name: str, description: str, effect: Effect, max_stacks: int,
 
 
 AUGMENTS: tuple[Augment, ...] = (
+    _gold("crit_chance", "Precision", "+15 percentage points of critical chance", StatBonus("crit_chance", .15), 1),
+    _gold("crit_damage", "Dead Center", "+0.15 critical damage multiplier", StatBonus("crit_damage_bonus", .15), 1),
+    _gold("blast_bloom", "Blast Bloom", "+20% explosion radius (not barrels)", StatBonus("blast_radius_bonus", .20), 1),
+    Augment("split_chamber", "Split Chamber", "+1 projectile count: multiplies the full salvo", Rarity.PRISMATIC, StatBonus("projectile_count", 1)),
+    Augment("ember_rounds", "Ember Rounds", "Hits burn for 3s: 2% AD damage/s per stack", Rarity.PRISMATIC, StatBonus("ember_rounds", 1)),
+    Augment("slipstream_feed", "Slipstream Feed", "Hits: +0.5% movement/stack for 5s; half bonus movement becomes AS", Rarity.PRISMATIC, StatBonus("slipstream_feed", 1)),
+    Augment("last_spark", "Last Spark", "+1 revival at 50% health, no invulnerability", Rarity.PRISMATIC, StatBonus("last_spark", 1)),
+    Augment("siege_frame", "Siege Frame", "+30% max health, +15% AD, +5% size per stack", Rarity.PRISMATIC, StatBonus("siege_stacks", 1)),
+    Augment("redline", "Redline", "Critical hits: +0.02 AS/stack for 4s, stacking", Rarity.PRISMATIC, StatBonus("redline", 1)),
+    Augment("aftershot", "Aftershot", "Repeat salvo at 40% damage after 0.2s (+1 echo/stack)", Rarity.PRISMATIC, StatBonus("aftershot", 1)),
     # Cinzentos: atributos de uma arma.
     _gray("pistol_damage", "Pistol", "Heavy Rounds", "+20% damage", WeaponDamage("Pistol", 0.20), 5),
     _gray(
@@ -166,6 +201,8 @@ AUGMENTS: tuple[Augment, ...] = (
     _gray("pistol_range", "Pistol", "Long Barrel", "+20% range", WeaponRange("Pistol", 0.20), 4),
     _gray("smg_range", "SMG", "Extended Barrel", "+15% range", WeaponRange("SMG", 0.15), 4),
     # Dourados: atributos mais fortes da personagem.
+    _gold("attack_damage", "Attack Damage", "+20 AD for all weapons", AttackDamage(20), 1),
+    _gold("attack_speed", "Attack Speed", "+15% base attack speed for all weapons", AttackSpeed(0.15), 1),
     _gold("vitality", "Vitality", "+25 max health", MaxHealth(25), 4),
     _gold("swift", "Swift", "+12% movement speed", MoveSpeed(0.12), 4),
     _gold("regeneration", "Regeneration", "+1.5 health/s", Regeneration(1.5), 3),
@@ -290,8 +327,6 @@ class AugmentInventory:
 
     def is_eligible(self, augment: Augment, available_weapons: Iterable[str], *,
                     ignore_stack_limit: bool = False) -> bool:
-        if not ignore_stack_limit and self.stacks(augment.id) >= augment.max_stacks:
-            return False
         if augment.weapon is not None and augment.weapon not in set(available_weapons):
             return False
         if any(self.stacks(required) == 0 for required in augment.requires):
@@ -373,16 +408,28 @@ def draw_weapon_offer(
     catalog: Sequence[Augment], inventory: AugmentInventory,
     available_weapons: Iterable[str], weapon: str, rng: random.Random,
 ) -> Offer:
-    """Bónus de ronda: só a arma do golpe final, mesmo depois do limite normal.
+    """Bónus de ronda: só a arma do golpe final.
 
-    Os limites derivados de dano/cadência/pellets continuam a proteger a simulação.
-    O bypass aplica-se apenas a estas recompensas, nunca aos level-ups.
+    Todos os augments podem acumular sem limite, incluindo nos level-ups.
     """
     weapons = tuple(available_weapons)
     pool = [augment for augment in catalog
             if augment.weapon == weapon and augment.rarity is Rarity.GRAY
             and inventory.is_eligible(augment, weapons, ignore_stack_limit=True)]
     return Offer(tuple(rng.sample(pool, min(3, len(pool)))), Rarity.GRAY, Rarity.GRAY)
+
+
+def draw_prismatic_offer(
+    catalog: Sequence[Augment], inventory: AugmentInventory,
+    available_weapons: Iterable[str], rng: random.Random,
+) -> Offer:
+    """Guaranteed purple reward; bonus stacks remain available in endless runs."""
+    weapons = tuple(available_weapons)
+    pool = [augment for augment in catalog
+            if augment.rarity is Rarity.PRISMATIC
+            and inventory.is_eligible(augment, weapons, ignore_stack_limit=True)]
+    return Offer(tuple(rng.sample(pool, min(3, len(pool)))),
+                 Rarity.PRISMATIC, Rarity.PRISMATIC)
 
 
 def draw_offer(
@@ -439,5 +486,6 @@ __all__ = [
     "OfferConfig",
     "Rarity",
     "draw_offer",
+    "draw_prismatic_offer",
     "draw_weapon_offer",
 ]

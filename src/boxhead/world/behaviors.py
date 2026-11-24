@@ -103,8 +103,9 @@ class ChainReaction(Behavior):
                 weapon_name: str | None = None) -> None:
         if depth >= self.MAX_DEPTH:
             return
-        world.add_fx("explosion", enemy.position, self.radius, 0.35)
-        for target in world.enemies_near(enemy.position, self.radius):
+        radius = self.radius * (1 + world.player.modifiers.blast_radius_bonus)
+        world.add_fx("explosion", enemy.position, radius, 0.35)
+        for target in world.enemies_near(enemy.position, radius):
             if target is not enemy:
                 world.damage_enemy(target, self.damage, chain_depth=depth + 1,
                                    weapon_name=weapon_name)

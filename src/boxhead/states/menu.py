@@ -6,7 +6,7 @@ import pygame
 
 from boxhead.core.state import State
 
-HINT = "W/S or arrows · ENTER select · F11 fullscreen · ESC quit"
+HINT = "WASD / arrows navigate · SPACE / ENTER select · F11 fullscreen · ESC quit"
 
 
 class MenuState(State):
@@ -50,9 +50,9 @@ class MenuState(State):
             return
         if event.key == pygame.K_ESCAPE:
             self._on_quit()
-        elif event.key in (pygame.K_UP, pygame.K_w):
+        elif event.key in (pygame.K_UP, pygame.K_LEFT, pygame.K_w, pygame.K_a):
             self._cursor = (self._cursor - 1) % len(self._items)
-        elif event.key in (pygame.K_DOWN, pygame.K_s):
+        elif event.key in (pygame.K_DOWN, pygame.K_RIGHT, pygame.K_s, pygame.K_d):
             self._cursor = (self._cursor + 1) % len(self._items)
         elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
             self._items[self._cursor][1]()

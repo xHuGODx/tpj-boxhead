@@ -55,7 +55,9 @@ class AugmentSelectState(State):
 
     def enter(self) -> None:
         held = pygame.key.get_pressed()
-        self._down_keys = {key for key in (*_NUMBER_KEYS, pygame.K_RETURN, pygame.K_KP_ENTER) if held[key]}
+        self._down_keys = {key for key in (*_NUMBER_KEYS, pygame.K_RETURN, pygame.K_KP_ENTER,
+                                           pygame.K_SPACE, pygame.K_w, pygame.K_a,
+                                           pygame.K_s, pygame.K_d) if held[key]}
         self._mouse_held = pygame.mouse.get_pressed()[0]
         self._lockout = LOCKOUT_SECONDS
         if self._cards is None:
@@ -85,11 +87,11 @@ class AugmentSelectState(State):
                 self._on_pause(self)
             elif event.key in _NUMBER_KEYS[:count]:
                 self._choose(_NUMBER_KEYS.index(event.key))
-            elif event.key == pygame.K_LEFT:
+            elif event.key in (pygame.K_LEFT, pygame.K_UP, pygame.K_a, pygame.K_w):
                 self._cursor = (self._cursor - 1) % count
-            elif event.key == pygame.K_RIGHT:
+            elif event.key in (pygame.K_RIGHT, pygame.K_DOWN, pygame.K_d, pygame.K_s):
                 self._cursor = (self._cursor + 1) % count
-            elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):  
+            elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
                 self._choose(self._cursor)
         elif event.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN):
             size = self._surface_size

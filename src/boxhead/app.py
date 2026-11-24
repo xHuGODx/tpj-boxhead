@@ -12,7 +12,7 @@ from boxhead.core.events import EventQueue
 from boxhead.core.state import State, StateMachine
 from boxhead.presentation.display import Display
 from boxhead.profile import LoadStatus, Profile, ProfileStore, default_profile_path
-from boxhead.shop import profile_modifiers, purchase
+from boxhead.shop import profile_modifiers, purchase, owned_weapons, refund_legacy_weapon_upgrades
 from boxhead.states.augment_select import AugmentSelectState
 from boxhead.states.game_over import GameOverState
 from boxhead.states.menu import MenuState
@@ -23,6 +23,8 @@ from boxhead.states.playing import PlayingState
 from boxhead.states.shop import ShopState
 from boxhead.world.result import RunReason, RunResult
 from boxhead.world.world import World
+from boxhead.world.player import Player
+from boxhead.world.weapons import WEAPONS
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +42,18 @@ class App:
         self.profile_store = ProfileStore(self.config.profile_path or default_profile_path())
         loaded = self.profile_store.load()
         self.profile: Profile = loaded.profile
+        candidate = deepcopy(self.profile)
+        if refund_legacy_weapon_upgrades(candidate):
+            try:
+                self.profile_store.commit(self.profile, candidate)
+            except OSError as error:
+                logger.warning("Could not refund retired upgrades: %s", error)
         fullscreen = (self.config.fullscreen if self.config.fullscreen is not None
                       else self.profile.preferences.get("fullscreen") is True)
         self._display = Display(self.config.window_size, fullscreen)
         self._profile_notice = loaded.detail if loaded.status in _WARN_STATUSES else None
         self._selected_map = "arena"
+        self._selected_weapon = "Pistol"
         self._pending_results: dict[str, RunResult] = {}
         self._active_world: World | None = None  # partida em curso, ainda por creditar
 
@@ -129,7 +138,15 @@ class App:
 
     def _to_map_select(self) -> None:
         assert self._machine is not None
-        self._machine.change(MapSelectState(self._select_map, self._to_menu, self._selected_map))
+        self._machine.change(MapSelectState(
+            self._select_map, self._to_menu, self._selected_map,
+            owned_weapons(self.profile), self._selected_weapon, self._select_weapon,
+        ))
+
+    def _select_weapon(self, weapon: str) -> None:
+        if weapon not in owned_weapons(self.profile):
+            raise ValueError("weapon not owned")
+        self._selected_weapon = weapon
 
     def _select_map(self, map_id: str) -> None:
         if map_id not in MAPS:
@@ -148,6 +165,12 @@ class App:
             events=self._events,
             rng=random.Random(self.config.seed),
             base_modifiers=profile_modifiers(self.profile),
+            player=Player(
+                position=pygame.Vector2(MAPS[self._selected_map].player_start),
+                owned_weapons=owned_weapons(self.profile),
+                weapon_slot=next(i for i, weapon in enumerate(WEAPONS)
+                                 if weapon.name == self._selected_weapon),
+            ),
         )
         self._active_world = world
         playing = PlayingState(
