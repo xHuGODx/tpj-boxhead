@@ -15,7 +15,7 @@ por afinidade. A raridade é indicada pela carta, não pelo ícone. Não foram c
 | 3 | Coração | Vitality, Juggernaut, Siege Frame |
 | 4 | XP | Quick Learner |
 | 5 | Setas a ricochetear | Ricochet |
-| 6 | Explosão laranja | Chain Reaction, Blast Bloom, Ember Rounds |
+| 6 | Explosão laranja | Chain Reaction, Blast Bloom, Ember Rounds, Rupture Rounds |
 | 7 | Satélite roxo | Orbital Satellites |
 | 8 | Bala inclinada, variante rápida | Cadência das armas, AS, Redline |
 | 9 | Duas munições | Aftershot |

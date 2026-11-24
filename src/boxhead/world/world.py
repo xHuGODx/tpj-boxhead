@@ -55,7 +55,10 @@ from boxhead.world.stats import RunStats
 from boxhead.world.terrain import create_terrain
 from boxhead.world.navigation import Navigator
 from boxhead.world.enemy import ChaseState
-from boxhead.world.combat import CombatEffects, PARALLEL_SPACING
+from boxhead.world.combat import (
+    CombatEffects, PARALLEL_SPACING, ROUND_BLAST_RADIUS,
+    ROUND_BLAST_RADIUS_PER_STACK, ROUND_BLAST_AD_RATIO,
+)
 
 MUZZLE_GAP = 6  # distância da boca da arma ao contorno do jogador
 SPAWN_JITTER = 10  # evita inimigos criados no mesmo ponto ficarem empilhados
@@ -245,9 +248,10 @@ class World:
         hits = [(t, o) for o in self.map.obstacles
                 if (t := self._segment_obstacle_hit(start, end, o, projectile.radius)) is not None]
         if hits:
-            _, obstacle = min(hits, key=lambda item: item[0])
+            t, obstacle = min(hits, key=lambda item: item[0])
             if obstacle.is_barrel:
                 self.damage_barrel(obstacle, projectile.damage, weapon_name=projectile.weapon_name)
+            self.detonate_round(projectile, start + (end-start)*t)
             return
         self.projectiles.append(projectile)
 
@@ -274,6 +278,10 @@ class World:
                 sprite_key=("projectiles/player_pellet.png" if weapon.name == "Shotgun"
                             else "projectiles/player_bullet.png"),
                 weapon_name=weapon.name,
+                blast_damage=ROUND_BLAST_AD_RATIO * p.attack_damage * p.modifiers.rupture_rounds,
+                blast_radius=((ROUND_BLAST_RADIUS + ROUND_BLAST_RADIUS_PER_STACK *
+                               (p.modifiers.rupture_rounds-1)) * (1+p.modifiers.blast_radius_bonus)
+                              if p.modifiers.rupture_rounds else 0.0),
             )
             for behavior in self.behaviors.values():
                 behavior.on_fire(self, projectile)
@@ -455,6 +463,19 @@ class World:
 
     # ------------------------------------------------------------------ projéteis
 
+    def detonate_round(self, projectile, point) -> None:
+        """Primary impacts splash enemies/barrels; splash never creates another bullet proc."""
+        if not projectile.primary or projectile.hostile or projectile.blast_damage <= 0:
+            return
+        radius = projectile.blast_radius
+        self.add_fx("round_explosion", point, radius, .4)
+        for enemy in tuple(self.enemies):
+            if enemy.alive and enemy.position.distance_to(point) <= radius + enemy.radius:
+                self.damage_enemy(enemy, projectile.blast_damage, weapon_name=projectile.weapon_name)
+        for obstacle in tuple(self.map.obstacles):
+            if obstacle.is_barrel and Vector2(obstacle.rect.center).distance_to(point) <= radius + obstacle.rect.width/2:
+                self.damage_barrel(obstacle, projectile.blast_damage, weapon_name=projectile.weapon_name)
+
     @property
     def barrel_max_health(self) -> float:
         multiplier = (self.director.config.health_multiplier(max(1, self.director.round_number))
@@ -540,13 +561,16 @@ class World:
                 if proj.critical:
                     self.add_fx("critical", best_target.position, best_target.radius, .15)
                 self.damage_enemy(best_target, proj.damage, weapon_name=proj.weapon_name)
+                self.detonate_round(proj, hit_point)
                 continues = False  # um comportamento (Ricochet) pode manter o projétil em voo
                 for behavior in tuple(self.behaviors.values()):
                     continues = behavior.on_hit(self, proj, best_target, hit_point) or continues
                 if continues:
                     return
-            elif isinstance(best_target, ObstacleDef) and best_target.is_barrel:
-                self.damage_barrel(best_target, proj.damage, weapon_name=proj.weapon_name)
+            elif isinstance(best_target, ObstacleDef):
+                if best_target.is_barrel:
+                    self.damage_barrel(best_target, proj.damage, weapon_name=proj.weapon_name)
+                self.detonate_round(proj, start + (end-start)*best_t)
             elif best_target is self.player:
                 damage = self.player.max_health if proj.lethal else proj.damage
                 if proj.damage_cap_fraction is not None and not proj.lethal:

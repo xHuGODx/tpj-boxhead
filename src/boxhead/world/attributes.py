@@ -35,6 +35,7 @@ class Modifiers:
     siege_stacks: int = 0
     redline: int = 0
     aftershot: int = 0
+    rupture_rounds: int = 0
     attack_damage_bonus: float = 0.0
     attack_speed_bonus: float = 0.0
     max_health_bonus: float = 0.0

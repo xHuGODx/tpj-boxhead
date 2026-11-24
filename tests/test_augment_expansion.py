@@ -218,6 +218,39 @@ class ExpansionTests(unittest.TestCase):
         w.fire_held(0,True)
         self.assertEqual(len(w.projectiles),1)
 
+    def test_explosive_rounds_direct_splash_and_no_secondary_procs(self):
+        w=world(Modifiers(rupture_rounds=1,aftershot=1,ember_rounds=1))
+        first=w.spawn_enemy(BASIC,Vector2(0,100),health_multiplier=20,jitter=0)
+        near=w.spawn_enemy(BASIC,Vector2(60,100),health_multiplier=20,jitter=0)
+        far=w.spawn_enemy(BASIC,Vector2(400,100),health_multiplier=20,jitter=0)
+        w.rebuild_spatial_index(); w.fire_held(0,True)
+        p=w.projectiles[0]; p.first_step=None
+        w._advance_projectile(p,.15)
+        self.assertAlmostEqual(first.health,965) # 25 direct + 10 splash
+        self.assertAlmostEqual(near.health,990)
+        self.assertAlmostEqual(far.health,1000)
+        self.assertEqual(len(w.combat.burns),1) # splash does not apply Ember
+        self.assertEqual(sum(f.kind=='round_explosion' for f in w.fx),1)
+        self.assertEqual(w.player.health,100) # bullet splash has no friendly fire
+        w.elapsed=.2; w.combat.update(w)
+        echo=next(p for p in w.projectiles if not p.primary)
+        self.assertEqual(echo.blast_damage,0)
+        before=len(w.fx); w.detonate_round(echo,Vector2(0,100))
+        self.assertEqual(len(w.fx),before)
+
+    def test_explosive_round_snapshot_scaling_and_barrels(self):
+        barrel=ObstacleDef(Rect(120,60,80,80),2,True)
+        w=world(Modifiers(rupture_rounds=2,attack_damage_bonus=100,blast_radius_bonus=.5),
+                obstacles=(barrel,))
+        w.fire_held(0,True); p=w.projectiles[0]
+        self.assertEqual(p.blast_damage,40)
+        self.assertEqual(p.blast_radius,150)
+        w.player.set_modifiers(Modifiers())
+        w.detonate_round(p,Vector2(100,100))
+        self.assertEqual(w.barrel_health(barrel),10)
+        self.assertEqual(w.fx[-1].kind,'round_explosion')
+        self.assertEqual(w.fx[-1].radius,150)
+
 
 if __name__ == '__main__':
     unittest.main()

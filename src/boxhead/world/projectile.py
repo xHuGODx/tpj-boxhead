@@ -27,3 +27,5 @@ class Projectile:
     primary: bool = True
     critical: bool = False
     first_step: float | None = None
+    blast_damage: float = 0.0
+    blast_radius: float = 0.0

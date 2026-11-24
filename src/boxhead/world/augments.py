@@ -169,6 +169,7 @@ def _gold(id: str, name: str, description: str, effect: Effect, max_stacks: int,
 
 
 AUGMENTS: tuple[Augment, ...] = (
+    Augment("rupture_rounds", "Rupture Rounds", "Main bullet impacts explode: 10% AD damage/stack; +10 radius/extra stack", Rarity.PRISMATIC, StatBonus("rupture_rounds", 1)),
     _gold("crit_chance", "Precision", "+15 percentage points of critical chance", StatBonus("crit_chance", .15), 1),
     _gold("crit_damage", "Dead Center", "+0.15 critical damage multiplier", StatBonus("crit_damage_bonus", .15), 1),
     _gold("blast_bloom", "Blast Bloom", "+20% explosion radius (not barrels)", StatBonus("blast_radius_bonus", .20), 1),

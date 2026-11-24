@@ -832,7 +832,8 @@
       "last_spark": 11,
       "siege_frame": 3,
       "redline": 8,
-      "aftershot": 9
+      "aftershot": 9,
+      "rupture_rounds": 6
     }
   },
   "shop/shop_upgrades.png": {

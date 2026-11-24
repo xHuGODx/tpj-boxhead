@@ -15,7 +15,7 @@ ICONS = {
     "chain_reaction": 6, "orbitals": 7, "crit_chance": 10,
     "crit_damage": 0, "split_chamber": 2, "ember_rounds": 6,
     "blast_bloom": 6, "slipstream_feed": 1, "last_spark": 11,
-    "siege_frame": 3, "redline": 8, "aftershot": 9,
+    "siege_frame": 3, "redline": 8, "aftershot": 9, "rupture_rounds": 6,
 }
 
 

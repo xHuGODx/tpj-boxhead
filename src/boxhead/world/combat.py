@@ -13,6 +13,9 @@ REDLINE_AS_PER_HIT = .02
 ECHO_DELAY = .20
 ECHO_DAMAGE = .40
 PARALLEL_SPACING = 10.0
+ROUND_BLAST_RADIUS = 90.0
+ROUND_BLAST_RADIUS_PER_STACK = 10.0
+ROUND_BLAST_AD_RATIO = .10
 
 
 @dataclass
@@ -69,6 +72,7 @@ class CombatEffects:
         for n in range(world.player.modifiers.aftershot):
             copies = tuple(replace(p, position=Vector2(p.position), velocity=Vector2(p.velocity),
                                    damage=p.damage * ECHO_DAMAGE, primary=False, critical=False,
+                                   blast_damage=0.0, blast_radius=0.0,
                                    hit_ids=set()) for p in templates)
             self.echoes.append((fired_at + ECHO_DELAY * (n + 1), copies))
 

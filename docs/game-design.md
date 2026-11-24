@@ -100,6 +100,19 @@ dependências reais; algumas tarefas podem avançar independentemente.
 
 ## Regras implementadas de armas, rondas e augments
 
+### Rupture Rounds (roxa)
+
+Os impactos dos projéteis principais causam uma explosão laranja usando
+`effects/explosion_large.png`, a mesma animação dos barris. O dano extra é 10% do AD
+por stack; o raio é 90 + 10 por stack adicional, multiplicado por Blast Bloom.
+São capturados no disparo, não recebem o multiplicador crítico e acumulam sem teto.
+Cada pellet/ricochete principal pode explodir ao atingir um inimigo ou obstáculo.
+A explosão danifica inimigos e barris próximos, não o jogador, e não ativa efeitos
+de acerto nem cria outras explosões de bala. Mortes podem ativar Chain Reaction e
+barris podem detonar normalmente. Ecos de Aftershot não recebem este efeito.
+Esta alteração foi feita depois da geração de `dist/Boxhead-Windows.zip`; esse ZIP
+não foi reconstruído e conserva a versão enviada anteriormente.
+
 A expansão definida em `implementation-prompt-augments.md` está implementada nos
 itens marcados como sim. São dez cartas novas: três douradas (Precision, Dead Center,
 Blast Bloom) e sete roxas (Split Chamber, Ember Rounds, Slipstream Feed, Last Spark,
@@ -124,7 +137,7 @@ Os itens marcados como não continuam por implementar.
   conserva o seu cooldown. Input e simulação usam passos variáveis, e o disparo
   contínuo calcula os tiros devidos dentro de cada frame pelo tempo decorrido.
 - Nove cinzentos, três por arma: pistola (dano, cadência, alcance), shotgun (pellets,
-  dano, cadência), SMG (cadência, dano, alcance). Há onze dourados e dez prismáticos.
+  dano, cadência), SMG (cadência, dano, alcance). Há onze dourados e onze prismáticos.
 - Stats globais: AD base 100 e attack speed base 1,00. Dano final da arma = dano
   base × AD/100 × modificador específico; cadência final = cadência base × attack
   speed × modificador específico. A loja oferece +5 AD/+0,05 AS por nível (máximo

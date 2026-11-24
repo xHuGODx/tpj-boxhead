@@ -345,7 +345,7 @@ class PlayingState(State):
                 pygame.draw.circle(surface, (255, 240, 120),
                                    self._camera.world_to_screen(fx.position), round(fx.radius+5), 2)
                 continue
-            key = ("effects/explosion_large.png" if fx.kind == "barrel_explosion"
+            key = ("effects/explosion_large.png" if fx.kind in ("barrel_explosion", "round_explosion")
                    else "effects/chain_explosion.png")
             frames = range(self._painter.frame_count(key))
             index = min(len(frames)-1, int(fx.progress * len(frames)))
