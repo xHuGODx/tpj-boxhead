@@ -101,6 +101,22 @@ ownership persists.
 
 ## Development
 
+### Windows executable
+
+Install the build tool in the existing virtual environment and run the packaging script:
+
+```powershell
+uv pip install --python .venv\Scripts\python.exe -r requirements-build.txt
+.\scripts\build-windows.ps1
+```
+
+Share `dist/Boxhead-Windows.zip`. It contains a standalone `Boxhead.exe` and controls
+in `PLAY-WINDOWS.txt`. Python, Pygame and sprites are bundled; personal saves are not.
+Recipients extract the ZIP and run the executable. Progress remains in their own
+`%USERPROFILE%\.boxhead` folder. Build outputs are ignored by Git.
+
+### Checks
+
 The augment expansion adds Split Chamber, Precision/Dead Center, Ember Rounds,
 Blast Bloom, Slipstream Feed, Last Spark, Siege Frame, Redline and Aftershot.
 The HUD shows projectile count, critical stats, explosion radius, revival charges
