@@ -73,6 +73,30 @@ Fullscreen can also be toggled in the main menu or enabled at startup with
 canvas keeps its aspect ratio and play area; some monitors may show black bars.
 Mouse coordinates are mapped back to the canvas for augment selection.
 
+## Dev Arena
+
+Open **Dev Arena** in the main menu to test builds without rounds or profile
+rewards. The sandbox starts with base player stats and all three weapons, with
+infinite ammunition. The augment editor opens first and pauses the simulation.
+
+- Browse with **W/S**, arrows or the mouse wheel. Click a rarity tab to filter,
+  and press **F** or click the search box to search names, effects and weapons.
+- **D / Right / Space / +** adds one stack; **A / Left / -** removes one.
+  The on-screen +/- buttons also edit stacks. Normal augment incompatibilities still apply.
+- **Tab** switches between the editor and combat. **WASD / Space** moves/fires.
+- **1/2/3** or **Q/E** switches weapons during training; **Q/E** also works in the editor.
+- **R** resets the damage meter and targets, keeping the build.
+- **T** switches between an immortal dummy and 1000 HP targets that respawn.
+- **G** switches between one and three nearby targets for ricochet and area tests.
+- **Esc** opens the existing build/pause panel during combat. **M** there returns
+  to the menu. The editor also has a Menu button and a Clear Build button.
+
+The meter reports raw damage (including overkill), damage per second since the
+first hit, last damage event, highest damage event and target kills. Burns,
+explosions, orbitals and echoes use the normal combat system. Editing augments,
+switching weapons or changing targets resets the measurement and active effects.
+Training grants no coins, XP or permanent unlocks; shop bonuses are not applied.
+
 ## Weapons, ammo and round rewards
 
 The pistol is free. Buy SMG and Shotgun permanently in the shop to unlock more

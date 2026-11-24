@@ -22,6 +22,7 @@ from boxhead.states.paused import PausedState
 from boxhead.states.playing import PlayingState
 from boxhead.states.shop import ShopState
 from boxhead.states.encyclopedia import EncyclopediaState
+from boxhead.states.dev_arena import DevArenaState
 from boxhead.world.result import RunReason, RunResult
 from boxhead.world.world import World
 from boxhead.world.player import Player
@@ -117,6 +118,7 @@ class App:
             self.stop,
             on_shop=self._to_shop,
             on_encyclopedia=self._to_encyclopedia,
+            on_dev_arena=self._to_dev_arena,
             balance=self.profile.balance,
             notice=self._profile_notice,
             on_fullscreen=self._toggle_fullscreen,
@@ -131,6 +133,17 @@ class App:
     def _to_encyclopedia(self) -> None:
         assert self._machine is not None
         self._machine.change(EncyclopediaState(self.profile,self._to_menu))
+
+    def _to_dev_arena(self) -> None:
+        assert self._machine is not None
+        # Training owns a separate event queue and is never an active credited run.
+        self._machine.change(DevArenaState(
+            self._machine, self._pause_training, self._to_menu, self.config.window_size,
+        ))
+
+    def _pause_training(self, state: State) -> None:
+        assert self._machine is not None
+        self._machine.change(PausedState(state, self._resume, self._to_menu))
 
     def _to_shop(self) -> None:
         assert self._machine is not None
